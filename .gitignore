@@ -1,4 +1,7 @@
 *.vscode
 *.vs
 
+**/__pycache__
+*.sqlite3
+
 # Adicionar mais no futuro por favor não esquecer
