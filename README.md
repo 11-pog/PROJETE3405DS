@@ -1,3 +1,3 @@
-# Projete 2025 - Team 3405
+# Projete 2025 - Equipe 3405
 
 E começa denovo
