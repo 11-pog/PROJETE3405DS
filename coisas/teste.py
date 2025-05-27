@@ -1,33 +1,40 @@
-from math import inf
-from typing import Any, List, Optional, Set
+from typing import Any, Iterable, List, Set
 import networkx as nx
 
-from networkx.classes.function import density
 
-def find_related(G: nx.Graph, starting_point: Any, start: int, stop: Optional[int] = None) -> Set[Any]:
-    _found: Set[Any] = set()
+# oi
 
-    def __find(point: Any, n: int) -> None:
-        __in_slice = n >= start and (stop is None or (stop is not None and n < stop))
-        __continue = (stop is not None and n < stop - 1) or (stop is None and n < start)
+
+def find_related(G: nx.Graph, starting_point: Any, depth: int | slice = 1) -> Set[Any] | List[Set[Any]]:
+    _max = depth + 1 if isinstance(depth, int) else depth.stop
+    _found: List[Set[Any]] = [set() for _ in range(_max)]
+    
+    def __find(points: Iterable[Any], n: int) -> None:
+        __continue: bool = n < _max - 1
         
-        for neighbor in G.neighbors(point):
-            if neighbor != starting_point:
-                if __in_slice:
-                    _found.add(neighbor)
-                
-                if __continue:
-                    __find(neighbor, n + 1)
-                    
-    __find(starting_point, 0)
-    return _found
+        for point in points:
+            for neighbor in G.neighbors(point):
+                if all(neighbor not in s for s in _found[:n + 1]) and neighbor != starting_point:
+                    _found[n].add(neighbor)
+        
+        if __continue:
+            __find(_found[n], n + 1)
+    
+    __find([starting_point], 0)
+    return _found[depth]
+
 
 G: nx.Graph = nx.Graph()
 
-G.add_edge("Protagonista", "roberto")
-G.add_edge("roberto", "laiz")
-G.add_edge("laiz", "fabiano")
+G.add_edge("protagas", "roberto")
+G.add_edge("roberto", "falber")
+G.add_edge("falber", "laiz")
+G.add_edge("laiz", "jonifer")
+G.add_edge("jonifer", "protagas")
 G.add_edge("fabiano", "nichalas")
+G.add_edge("fabiano", "protagas")
 
 
-jonas = find_related(G, "laiz", 1)
+found = find_related(G, "protagas", 1)
+print(found)
+# out: {'falber', 'laiz', 'nichalas'}

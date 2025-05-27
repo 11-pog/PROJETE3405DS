@@ -1,4 +1,6 @@
 *.vscode
 *.vs
 
+**/__pycache__
+
 # Adicionar mais no futuro por favor não esquecer
