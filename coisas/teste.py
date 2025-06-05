@@ -10,17 +10,17 @@ def find_related(G: nx.Graph, starting_point: Any, depth: int | slice = 1) -> Se
     _max = depth + 1 if isinstance(depth, int) else depth.stop
     _found: List[Set[Any]] = [set() for _ in range(_max)]
     
-    def __find(n: int) -> None:
+    def _find(n: int) -> None:
         for point in _found[n - 1]:
             for neighbor in G.neighbors(point):
                 if all(neighbor not in s for s in _found[:n + 1]) and neighbor != starting_point:
                     _found[n].add(neighbor)
         
         if n < _max - 1:
-            __find(n + 1)
+            _find(n + 1)
     
     _found[0] = set(G.neighbors(starting_point))
-    __find(1)
+    _find(1)
     return _found[depth]
 
 
