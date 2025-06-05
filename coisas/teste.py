@@ -24,7 +24,7 @@ def find_related(G: nx.Graph, starting_point: Any, depth: int | slice = 1, set_p
     _find(1)
     
     _final_depth = depth + 1 if isinstance(depth, int) else slice(depth.start + 1, depth.stop + 1, depth.step)
-    _result = _found[_final_depth] if set_per_layer or isinstance(depth, int) else [item for items in _found[_final_depth] for item in items]
+    _result = list(_found[_final_depth]) if set_per_layer or isinstance(depth, int) else [item for items in _found[_final_depth] for item in items]
     
     return _result
 
