@@ -10,7 +10,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>oi app/index.tsx to edit this screen.</Text>
+      <Text>Are you sure?</Text>
     </View>
   );
 }
