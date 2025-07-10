@@ -1,7 +1,8 @@
 import React from "react";
 import { Text, View, Button } from "react-native";
+import Login from './pages/login/Login';
 
-export default function Index({navigation}) {
+export default function Index() {
   return (
     <View
       style={{
@@ -22,6 +23,13 @@ export default function Index({navigation}) {
           Read-Cycle</Text>
 
  <Button title="Ir para a outra página"/>
+
+    <div>
+      <Login />
+    </div>
+
     </View>
+
+    
   );
 }
