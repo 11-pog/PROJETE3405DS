@@ -20,7 +20,7 @@ from .views import cadastrarusuario
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/usuarios/registrar/', cadastrarusuario.as_view()),
-    #path('api/usuarios/registrar/', cadastrarusuario.as_view()),
+    path('pages/registrar/registrar/', cadastrarusuario.as_view()),
+    path('pages/cadastrar/cadastrar/', loginusuario.as_view()),
 ]
 
