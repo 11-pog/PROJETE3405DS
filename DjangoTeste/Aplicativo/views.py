@@ -14,7 +14,7 @@ class cadastrarusuario(APIView):
         
        if User.objects.filter(username=usuario).exists():
         return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
-
+       else:
         user = User.objects.create_user(username=usuario, password=senha, email=email, numero=numero)
         return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
        
@@ -26,7 +26,7 @@ class loginusuario(APIView):
         user = authenticate(username=usuario, password=senha)
         if user is None:
          return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        else:
          return Response({'mensagem': 'Login bem-sucedido'}, status=status.HTTP_200_OK)
     
 # Create your views here.
