@@ -16,13 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import cadastrarusuario
-from .views import loginusuario
+from Aplicativo.views import RegistrarUsuario
+from Aplicativo.views import LoginUsuario
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/registrar/', loginusuario.as_view()),
-    path('api/cadastrar/', cadastrarusuario.as_view()),
+    path('api/login/', LoginUsuario.as_view()),
+    path('api/registrar/', RegistrarUsuario.as_view()),
 ]
 
