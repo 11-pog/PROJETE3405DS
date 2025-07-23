@@ -33,7 +33,7 @@ export default function Inicial() {
     backgroundColor: "#335C67",
   color:"#F5F5F5",
   border: 0,
-  borderRadius: 9999, 
+  borderRadius: 100, 
   padding: 10, 
   fontSize: 16,
   marginTop: 105,
@@ -41,7 +41,7 @@ export default function Inicial() {
 
     }}  
 
-    onClick={BotaoLogin}>
+    onClick={GoToLogin}>
       Entrar
     </button>
     
@@ -50,13 +50,13 @@ export default function Inicial() {
     backgroundColor: "#335C67",
     color:"#F5F5F5",
     border: 0,
-    borderRadius: 9999, 
+    borderRadius: 100, 
     padding: 10, 
     fontSize: 16,
     marginTop: 20,
     
      }}
-    onClick={BotaoCadastrar} >
+    onClick={GoToCadastrar} >
       Cadastrar
     </button>
 
@@ -76,23 +76,15 @@ Toque o mundo.
     </View>
   );
 
-  function BotaoLogin() {
+  function GoToLogin() {
       navigate('/pages/login/login');
     }
-  function BotaoCadastrar(){
+  function GoToCadastrar(){
     navigate ('/pages/cadastrar/cadastrar');
   }
-  
-  //encontrar uma forma de usar essa function para não ficar repetindo em todos os botões
-   function Btn(){
-  backgroundColor: "#335C67";
-  color:"#F5F5F5";
-  border: 0;
-  borderRadius: 9999; 
-  padding: 10; 30;
-  fontSize: 16;
-      }
+    
 }
+
 
 
 
