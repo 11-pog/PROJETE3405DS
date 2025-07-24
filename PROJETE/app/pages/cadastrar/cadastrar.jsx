@@ -1,9 +1,14 @@
+import { View, Text } from "react-native";
+
 function Cadastrar(){
     return (
-       
-    <h1>Pagina de cadastro
-    </h1>
+      <View>
+        <Text>Pagina de cadastro
+        </Text>
+      </View> 
+   
+   
     
-)
+);
 }
 export default Cadastrar
