@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { Text, View, Button, TextInput, Alert } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
 
 function Login() {
-  const [texto, setTexto] = useState(""); // controla o campo de texto
+  const [Email, setEmail] = useState(""); // controla o campo de texto
+  const [Senha, setSenha] = useState(""); // controla o campo de texto
 
+ 
   function Alerta() {
-    Alert.alert("Você digitou:", texto); // alerta do React Native
+    Alert.alert("Email digitado:", Email); // alerta do React Native
+    Alert.alert("Senha digitada:", Senha); // alerta do React Native
+
   }
 
   return (
@@ -29,6 +33,7 @@ function Login() {
         Página de login
       </Text>
 
+
       <Text
         style={{
           fontSize: 18,
@@ -36,12 +41,13 @@ function Login() {
           color: "#333",
         }}
       >
-        E-mail
+        E-mail:
       </Text>
 
+
       <TextInput
-        value={texto}
-        onChangeText={setTexto}
+        value={Email}
+        onChangeText={setEmail}
         placeholder="Escreva aqui..."
         style={{
           padding: 10,
@@ -54,7 +60,47 @@ function Login() {
         }}
       />
 
-      <Button title="Mostrar" onPress={Alerta} color="#335C67" />
+      
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "bold",
+          color: "#333",
+        }}
+      >
+        Senha:
+      </Text>
+
+      <TextInput
+        value={Senha}
+        onChangeText={setSenha}
+        placeholder="Escreva aqui..."
+        style={{
+          padding: 10,
+          borderRadius: 30,
+          borderWidth: 1,
+          borderColor: "#ccc",
+          marginTop: 10,
+          marginBottom: 20,
+          backgroundColor: "#fff",
+        }}
+      />
+
+        <TouchableOpacity
+         onPress={Alerta} 
+         style={{
+          
+          backgroundColor: "#335C67",
+          borderRadius: 100,
+          paddingVertical: 10,
+          paddingHorizontal: 30,
+          }}
+
+        >
+        <Text
+        style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>Mostar</Text>
+        </TouchableOpacity>
+      
     </View>
   );
 }
