@@ -4,7 +4,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 
 # Create your models here.
 
-phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Número inválido.") # negocio do chat sla
+phone_regex_pattern = r'^\+?1?\d{9,15}$'
+phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inválido.") # negocio do chat sla
 
 # Modelo de usuario pro banco de dados porque o padrão do django não tem numero de telefone
 # Os outro campos como nome, senha, email, etc, são derivados de AbstractUser, então não é necessário implementa-los denovo
