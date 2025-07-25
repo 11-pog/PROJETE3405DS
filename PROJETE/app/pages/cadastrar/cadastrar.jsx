@@ -8,7 +8,7 @@ function Login() {
   const [Cidade, setCidade] = useState("");
 
 
- 
+
   function Alerta() {
     Alert.alert("Email digitado:", Email); // alerta do React Native
     Alert.alert("Senha digitada:", Senha); // alerta do React Native
@@ -16,7 +16,7 @@ function Login() {
   }
 
   return (
-    
+
 
 
     <View
@@ -39,7 +39,7 @@ function Login() {
         Página de login
       </Text>
 
-    <Text
+      <Text
         style={{
           fontSize: 18,
           fontWeight: "bold",
@@ -118,8 +118,8 @@ function Login() {
         }}
       />
 
-       
-            <Text CIDADE
+
+      <Text CIDADE
         style={{
           fontSize: 18,
           fontWeight: "bold",
@@ -144,21 +144,21 @@ function Login() {
         }}
       />
 
-  
 
-        <TouchableOpacity
-        onPress={Alerta} 
-         style={{
-          
+
+      <TouchableOpacity
+        onPress={Alerta}
+        style={{
+
           backgroundColor: "#335C67",
           borderRadius: 100,
           paddingVertical: 10,
           paddingHorizontal: 30,
-          }}>
+        }}>
         <Text
-        style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center",}}>Mostar</Text>
-        </TouchableOpacity>
-      
+          style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center", }}>Mostar</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
