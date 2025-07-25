@@ -5,7 +5,7 @@ function Login() {
   const [Email, setEmail] = useState(""); // controla o campo de texto
   const [Senha, setSenha] = useState(""); // controla o campo de texto
 
- 
+
   function Alerta() {
     Alert.alert("Email digitado:", Email); // alerta do React Native
     Alert.alert("Senha digitada:", Senha); // alerta do React Native
@@ -60,7 +60,7 @@ function Login() {
         }}
       />
 
-      
+
       <Text
         style={{
           fontSize: 18,
@@ -86,21 +86,21 @@ function Login() {
         }}
       />
 
-        <TouchableOpacity
-         onPress={Alerta} 
-         style={{
-          
+      <TouchableOpacity
+        onPress={Alerta}
+        style={{
+
           backgroundColor: "#335C67",
           borderRadius: 100,
           paddingVertical: 10,
           paddingHorizontal: 30,
-          }}
+        }}
 
-        >
+      >
         <Text
-        style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>Mostar</Text>
-        </TouchableOpacity>
-      
+          style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>Mostar</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
