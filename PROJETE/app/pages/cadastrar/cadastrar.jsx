@@ -36,7 +36,7 @@ function Login() {
           marginBottom: 20,
         }}
       >
-        Página de login
+        Cadastrar novo usuário
       </Text>
 
       <Text
@@ -57,8 +57,7 @@ function Login() {
         style={{
           padding: 10,
           borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
+          borderWidth: 0,
           marginTop: 10,
           marginBottom: 20,
           backgroundColor: "#fff",
@@ -84,8 +83,7 @@ function Login() {
         style={{
           padding: 10,
           borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
+          borderWidth: 0,
           marginTop: 10,
           marginBottom: 20,
           backgroundColor: "#fff",
@@ -110,8 +108,7 @@ function Login() {
         style={{
           padding: 10,
           borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
+          borderWidth: 0,
           marginTop: 10,
           marginBottom: 20,
           backgroundColor: "#fff",
@@ -126,7 +123,7 @@ function Login() {
           color: "#333",
         }}
       >
-        Cidade
+        Cidade:
       </Text>
 
       <TextInput
@@ -136,8 +133,7 @@ function Login() {
         style={{
           padding: 10,
           borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
+          borderWidth: 0,
           marginTop: 5,
           marginBottom: 20,
           backgroundColor: "#fff",
