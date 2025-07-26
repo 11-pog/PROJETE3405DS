@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
 import MeuInput from "../../functions/textBox";
+import Botao from "../../functions/botoes";
 
 function Login() {
   const [Nome, setNome] = useState("");
@@ -73,17 +74,9 @@ function Login() {
 
 
 
-      <TouchableOpacity
-        onPress={Alerta}
-        style={{
-          backgroundColor: "#335C67",
-          borderRadius: 100,
-          paddingVertical: 10,
-          paddingHorizontal: 30,
-        }}>
-        <Text
-          style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center", }}>Mostar</Text>
-      </TouchableOpacity>
+      <Botao
+      texto={"Cadastrar"}
+      />
 
     </View>
   );

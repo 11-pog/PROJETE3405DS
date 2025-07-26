@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
 import MeuInput from "../../functions/textBox";
+import Botao from "../../functions/botoes";
+import { navigate } from "expo-router/build/global-state/routing";
 
-function Login() {
+
+
+export default function Login() {
   const [Email, setEmail] = useState(""); 
   const [Senha, setSenha] = useState(""); 
 
+function GoToPrincpal() {
+    navigate('/pages/principal/principal');
+  }
 
   function Alerta() {
-    Alert.alert("Login", `Email: ${Email}\nSenha: ${Senha}`); 
+    console.log("funcionou"); 
+    //"Login", `Email: ${Email}\nSenha: ${Senha}`
     
 
   }
@@ -47,20 +55,14 @@ function Login() {
         onChange={setSenha}
         />
         
-      <TouchableOpacity
-        onPress={Alerta}
-        style={{
-
-    
-        }}
-
-      >
-        <Text
-          style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>Mostar</Text>
-      </TouchableOpacity>
+      <Botao
+       aoApertar={GoToPrincpal}
+       texto={"Entrar"}
+      />
+       
+      
 
     </View>
   );
 }
 
-export default Login;

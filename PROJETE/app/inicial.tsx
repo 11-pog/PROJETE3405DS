@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity } from "react-native";
 import { navigate } from "expo-router/build/global-state/routing";
 
 export default function Inicial() {
+
   function GoToLogin() {
     navigate('/pages/login/Login');
   }
