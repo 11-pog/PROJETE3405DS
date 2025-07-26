@@ -34,6 +34,7 @@ function Login() {
         Página de login
       </Text>
 
+<<<<<<< HEAD
       <MeuInput
         label={"Email:"}
         valor={Email}
@@ -46,16 +47,64 @@ function Login() {
         valor={Senha}
         onChange={setSenha}
         
+=======
+
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "bold",
+          color: "#333",
+        }}
+      >
+        E-mail:
+      </Text>
+
+
+      <TextInput
+        value={Email}
+        onChangeText={setEmail}
+        placeholder="Escreva aqui..."
+        style={{
+          padding: 10,
+          borderRadius: 30,
+          borderWidth: 0,
+          marginTop: 10,
+          marginBottom: 20,
+          backgroundColor: "#fff",
+        }}
+      />
+
+
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "bold",
+          color: "#333",
+        }}
+      >
+        Senha:
+      </Text>
+
+      <TextInput
+        value={Senha}
+        onChangeText={setSenha}
+        placeholder="Escreva aqui..."
+        style={{
+          padding: 10,
+          borderRadius: 30,
+          borderWidth: 0,
+          marginTop: 10,
+          marginBottom: 20,
+          backgroundColor: "#fff",
+        }}
+>>>>>>> 31e69c2ab3f0c595b32282876c8b42ca39cfc86d
       />
 
       <TouchableOpacity
         onPress={Alerta}
         style={{
 
-          backgroundColor: "#335C67",
-          borderRadius: 100,
-          paddingVertical: 10,
-          paddingHorizontal: 30,
+    
         }}
 
       >
