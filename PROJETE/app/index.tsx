@@ -1,11 +1,28 @@
 import React from "react";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { navigate } from "expo-router/build/global-state/routing";
-const logo = require('./img/logo.png');
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 200,
+  },
+});
 
+const DisplayAnImage = () => (
+  <Image
+    style={styles.logo}
+    source={require('./img/logo.png')}
+  />
+);
+
+// Mantém export default apenas em Inicial
 export default function Inicial() {
-
   function GoToLogin() {
     navigate('/pages/login/Login');
   }
@@ -15,7 +32,7 @@ export default function Inicial() {
   }
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: "flex-start",
@@ -24,11 +41,14 @@ export default function Inicial() {
         backgroundColor: "#F5F5F5",
       }}
     >
+      <DisplayAnImage />
+
       <Text
         style={{
           fontSize: 32,
           fontWeight: "bold",
           color: "#E09F3E",
+          marginTop: 20,
         }}
       >
         Read-Cycle
@@ -78,6 +98,6 @@ export default function Inicial() {
       >
         Troque livros,{"\n"}troque ideias,{"\n"}toque o mundo.
       </Text>
-    </View>
+    </SafeAreaView>
   );
 }
