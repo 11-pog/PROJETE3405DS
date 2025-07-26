@@ -1,6 +1,8 @@
 import React from "react";
 import { Text, View, TouchableOpacity } from "react-native";
 import { navigate } from "expo-router/build/global-state/routing";
+const logo = require('./img/logo.png');
+
 
 export default function Inicial() {
 
@@ -74,7 +76,7 @@ export default function Inicial() {
           textAlign: "center",
         }}
       >
-        Troque livros.{"\n"}Troque ideias.{"\n"}Toque o mundo.
+        Troque livros,{"\n"}troque ideias,{"\n"}toque o mundo.
       </Text>
     </View>
   );
