@@ -4,7 +4,7 @@ import { navigate } from "expo-router/build/global-state/routing";
 
 export default function Inicial() {
   function GoToLogin() {
-    navigate('/pages/login/login');
+    navigate('/pages/login/Login');
   }
 
   function GoToCadastrar() {

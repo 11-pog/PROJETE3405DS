@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
+import MeuInput from "../../functions/textBox";
 
 function Login() {
   const [Nome, setNome] = useState("");
@@ -39,105 +40,35 @@ function Login() {
         Cadastrar novo usuário
       </Text>
 
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        Nome de usuário:
-      </Text>
+      <MeuInput
+       label = {"Nome do usuário: "}
+       valor={Nome}
+       onChange={setNome}       
+        
+      />
 
+      <MeuInput
+        label={"Email: "}
+        valor={Email}
+        onChange={setEmail}
+        
+      />
 
-      <TextInput
-        value={Nome}
-        onChangeText={setNome}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 0,
-          marginTop: 10,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
+      <MeuInput
+        label={"Senha: "}
+        valor={Senha}
+        onChange={setSenha}
+        
+        
       />
 
 
-      <Text // EMAIL
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        E-mail:
-      </Text>
+  
 
-
-      <TextInput
-        value={Email}
-        onChangeText={setEmail}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 0,
-          marginTop: 10,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
-      />
-
-
-      <Text // SENHA
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        Senha:
-      </Text>
-
-      <TextInput
-        value={Senha}
-        onChangeText={setSenha}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 0,
-          marginTop: 10,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
-      />
-
-
-      <Text CIDADE
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        Cidade:
-      </Text>
-
-      <TextInput
-        value={Cidade}
-        onChangeText={setCidade}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 0,
-          marginTop: 5,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
+      <MeuInput
+        label={"Cidade: "}
+        valor={Cidade}
+        onChange={setCidade}       
       />
 
 
@@ -145,7 +76,6 @@ function Login() {
       <TouchableOpacity
         onPress={Alerta}
         style={{
-
           backgroundColor: "#335C67",
           borderRadius: 100,
           paddingVertical: 10,

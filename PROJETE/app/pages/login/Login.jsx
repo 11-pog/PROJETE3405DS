@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
+import MeuInput from "../../functions/textBox";
 
 function Login() {
-  const [Email, setEmail] = useState(""); // controla o campo de texto
-  const [Senha, setSenha] = useState(""); // controla o campo de texto
+  const [Email, setEmail] = useState(""); 
+  const [Senha, setSenha] = useState(""); 
 
 
   function Alerta() {
-    Alert.alert("Email digitado:", Email); // alerta do React Native
-    Alert.alert("Senha digitada:", Senha); // alerta do React Native
+    Alert.alert("Login", `Email: ${Email}\nSenha: ${Senha}`); 
+    
 
   }
 
@@ -33,57 +34,18 @@ function Login() {
         Página de login
       </Text>
 
-
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        E-mail:
-      </Text>
-
-
-      <TextInput
-        value={Email}
-        onChangeText={setEmail}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
-          marginTop: 10,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
+      <MeuInput
+        label={"Email:"}
+        valor={Email}
+        onChange={setEmail}
       />
 
 
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#333",
-        }}
-      >
-        Senha:
-      </Text>
-
-      <TextInput
-        value={Senha}
-        onChangeText={setSenha}
-        placeholder="Escreva aqui..."
-        style={{
-          padding: 10,
-          borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "#ccc",
-          marginTop: 10,
-          marginBottom: 20,
-          backgroundColor: "#fff",
-        }}
+      <MeuInput
+        label={"Senha: "}
+        valor={Senha}
+        onChange={setSenha}
+        
       />
 
       <TouchableOpacity
