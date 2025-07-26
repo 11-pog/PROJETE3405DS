@@ -45,6 +45,7 @@ function Login() {
         label={"Senha: "}
         valor={Senha}
         onChange={setSenha}
+        />
         
       <TouchableOpacity
         onPress={Alerta}
