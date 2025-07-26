@@ -5,12 +5,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1,
+    justifyContent: "center", //essa linha e a de baixo é pra deixar no meio 
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
   },
   logo: {
     width: 200,
     height: 200,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#335C67",
+    borderRadius: 100,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: "#F5F5F5",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  slogan: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#9E2A2B",
+    textAlign: "center",
+    marginTop: 30,
   },
 });
 
@@ -21,7 +43,6 @@ const DisplayAnImage = () => (
   />
 );
 
-// Mantém export default apenas em Inicial
 export default function Inicial() {
   function GoToLogin() {
     navigate('/pages/login/Login');
@@ -32,70 +53,22 @@ export default function Inicial() {
   }
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: "flex-start",
-        alignItems: "center",
-        paddingTop: 50,
-        backgroundColor: "#F5F5F5",
-      }}
-    >
+    <SafeAreaView style={styles.container}>
       <DisplayAnImage />
 
-      <Text
-        style={{
-          fontSize: 32,
-          fontWeight: "bold",
-          color: "#E09F3E",
-          marginTop: 20,
-        }}
-      >
-        Read-Cycle
-      </Text>
+      {/* Botões*/}
+      <View style={{ alignItems: "center" }}>
+        <TouchableOpacity onPress={GoToLogin} style={styles.button}>
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
 
-      {/* Botão Entrar */}
-      <TouchableOpacity
-        onPress={GoToLogin}
-        style={{
-          backgroundColor: "#335C67",
-          borderRadius: 100,
-          paddingVertical: 10,
-          paddingHorizontal: 30,
-          marginTop: 105,
-        }}
-      >
-        <Text style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>
-          Entrar
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={GoToCadastrar} style={styles.button}>
+          <Text style={styles.buttonText}>Cadastrar</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Botão Cadastrar */}
-      <TouchableOpacity
-        onPress={GoToCadastrar}
-        style={{
-          backgroundColor: "#335C67",
-          borderRadius: 100,
-          paddingVertical: 10,
-          paddingHorizontal: 30,
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: "#F5F5F5", fontSize: 16, textAlign: "center" }}>
-          Cadastrar
-        </Text>
-      </TouchableOpacity>
-
-      {/* Texto final */}
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: "bold",
-          color: "#9E2A2B",
-          marginTop: 20,
-          textAlign: "center",
-        }}
-      >
+      {/* Slogan */}
+      <Text style={styles.slogan}>
         Troque livros,{"\n"}troque ideias,{"\n"}toque o mundo.
       </Text>
     </SafeAreaView>
