@@ -7,17 +7,17 @@ import { navigate } from "expo-router/build/global-state/routing";
 
 
 export default function Login() {
-  const [Email, setEmail] = useState(""); 
-  const [Senha, setSenha] = useState(""); 
+  const [Email, setEmail] = useState("");
+  const [Senha, setSenha] = useState("");
 
-function GoToPrincpal() {
+  function GoToPrincpal() {
     navigate('/pages/principal/principal');
   }
 
   function Alerta() {
-    console.log("funcionou"); 
+    console.log("funcionou");
     //"Login", `Email: ${Email}\nSenha: ${Senha}`
-    
+
 
   }
 
@@ -39,7 +39,7 @@ function GoToPrincpal() {
           marginBottom: 20,
         }}
       >
-        Página de login
+        Faça login na sua conta
       </Text>
 
       <MeuInput
@@ -53,14 +53,24 @@ function GoToPrincpal() {
         label={"Senha: "}
         valor={Senha}
         onChange={setSenha}
-        />
-        
-      <Botao
-       aoApertar={GoToPrincpal}
-       texto={"Entrar"}
       />
-       
-      
+
+      <Botao
+        aoApertar={GoToPrincpal}
+        texto={"Entrar"}
+      />
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: "black",
+          color: "#a86e17ff",
+          marginBottom: 20,
+          textAlign: 'center',
+        }}
+      >
+        Ainda não tem uma conta? Clique aqui.
+      </Text>
+
 
     </View>
   );
