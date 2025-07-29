@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image } from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { fetchLivrosMock } from '../../mocks/mockBooks';
+import { Ionicons } from '@expo/vector-icons';
 
 const PAGE_SIZE = 10;
 
@@ -10,41 +11,52 @@ export default function FeedLivros() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const generateFakeBooks = (pageNumber) => {
-    const startId = (pageNumber - 1) * PAGE_SIZE + 1;
-    return Array.from({ length: PAGE_SIZE }, (_, i) => ({
-      id: startId + i,
-      title: `Livro ${startId + i}`,
-      author: `Autor ${startId + i}`,
-    }));
-  };
-
-  const fetchBooks = () => {
+  const fetchBooks = async () => {
     if (loading || !hasMore) return;
-    setLoading(true);
 
-    setTimeout(() => {
-      const newBooks = generateFakeBooks(page);
-      if (newBooks.length > 0) {
-        setBooks(prev => [...prev, ...newBooks]);
-        setPage(prev => prev + 1);
-      } else {
-        setHasMore(false);
-      }
-      setLoading(false);
-    }, 1000);
+    setLoading(true);
+    const newBooks = await fetchLivrosMock(page, PAGE_SIZE);
+
+    if (newBooks.length > 0) {
+      setBooks((prev) => [...prev, ...newBooks]);
+      setPage((prev) => prev + 1);
+    } else {
+      setHasMore(false);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchBooks();
   }, []);
 
+
+
   const renderBook = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.author}>{item.author}</Text>
+      <Image source={{ uri: item.cover }} style={styles.image} />
+
+      <View style={styles.content}>
+        <Text style={styles.title}>{item.title} - {item.author}</Text>
+        <Text style={styles.tipoAcao}>Empréstimo/ Troca</Text>
+      </View>
+
+      <View style={styles.actions}>
+        <TouchableOpacity>
+          <Ionicons name="heart-outline" size={22} color="#9e2a2b" />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.commentBtn}>
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color="#E09F3E" />
+        </TouchableOpacity>
+      </View>
+
+
     </View>
   );
+
+
 
   return (
     <FlatList
@@ -60,19 +72,54 @@ export default function FeedLivros() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f8f8f8',
-    margin: 10,
-    padding: 15,
-    borderRadius: 30,
-    elevation: 2, // sombra no Android
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    marginVertical: 8,
+    marginHorizontal: 16,
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#e7dedeff',
+    shadowOffset: {
+      width: 2,
+      height: 4,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+  },
+  image: {
+    width: 55,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 10,
+    backgroundColor: '#ddd',
+
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#9e2a2b',
+    color: '#1c1c1c',
   },
-  author: {
-    marginTop: 5,
-    color: '#666',
+  tipoAcao: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
   },
+  actions: {
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  commentBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+
+  },
+
 });

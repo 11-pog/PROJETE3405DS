@@ -21,6 +21,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 30,
     marginVertical: 10,
+    shadowColor: '#1c292cff',
+    shadowOffset: {
+      width: 1,
+      height: 4,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 3,
   },
   buttonText: {
     color: "#F5F5F5",
