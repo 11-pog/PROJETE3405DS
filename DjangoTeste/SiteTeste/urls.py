@@ -16,13 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from Aplicativo.views import RegistrarUsuario
+from Aplicativo.views import CadastrarUsuario
 from Aplicativo.views import LoginUsuario
+from Aplicativo.views import Buscadelivro
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginUsuario.as_view()),
-    path('api/registrar/', RegistrarUsuario.as_view()),
+    path('api/cadastrar/', CadastrarUsuario.as_view()),
+    path('api/cadastrarlivro/', Buscadelivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
 ]
 

@@ -1,12 +1,13 @@
+import requests #baixar pip install requests
 from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
-
 from Aplicativo.models import Usuario
 
-class RegistrarUsuario(APIView):
+
+class CadastrarUsuario(APIView):
     def get(self, request):
         return Response({"message": "Use POST to register a user."})
     
@@ -39,3 +40,31 @@ class LoginUsuario(APIView):
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({'mensagem': 'Login bem-sucedido'}, status=status.HTTP_200_OK)
+            
+class Buscadelivro(APIView):
+    def get(self, request):
+        isbn = request.query_params.get('isbn')
+        if not isbn:
+            return Response({"erro": "ISBN não fornecido"}, status=400)
+    
+        url = f"https://openlibrary.org/isbn/{isbn}.json" #vou trocar provavelmente(certeza)
+        resposta = requests.get(url)
+        
+        if resposta.status_code != 200:
+            return Response({"erro": "Erro ao consultar a API externa"}, status=500)
+        
+        dados = resposta.json()
+        if not dados["docs"]:
+            return Response({"erro": "Livro não encontrado"}, status=404)
+
+        livro = dados["docs"][0]
+
+        resultado = {
+            "titulo": livro.get("title", "Título não encontrado"),
+            "autor(a)": livro.get("author_name", ["Autor desconhecido"])[0], #nao tem nesse url json
+            "editor(a)": livro.get("publishers", ["Editora desconhecida"])[0],
+            "ano_publicacao": livro.get("publish_date", "Ano desconhecido"),
+            "Descricao": livro.get("description", "Descrição não disponível"), #nao tem nesse url json
+        }
+
+        return Response(resultado, status=200)
