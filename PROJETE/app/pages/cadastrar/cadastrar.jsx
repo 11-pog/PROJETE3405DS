@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
 import MeuInput from "../../functions/textBox";
 import Botao from "../../functions/botoes";
+import { navigate } from "expo-router/build/global-state/routing";
 
 function Login() {
   const [Nome, setNome] = useState("");
@@ -15,6 +16,9 @@ function Login() {
     Alert.alert("Email digitado:", Email); // alerta do React Native
     Alert.alert("Senha digitada:", Senha); // alerta do React Native
 
+  }
+  function GoToPrincpal() {
+    navigate('/pages/principal/principal');
   }
 
   return (
@@ -42,40 +46,41 @@ function Login() {
       </Text>
 
       <MeuInput
-       label = {"Nome do usuário: "}
-       valor={Nome}
-       onChange={setNome}       
-        
+        label={"Nome de usuário: "}
+        valor={Nome}
+        onChange={setNome}
+
       />
 
       <MeuInput
         label={"Email: "}
         valor={Email}
         onChange={setEmail}
-        
+
       />
 
       <MeuInput
         label={"Senha: "}
         valor={Senha}
         onChange={setSenha}
-        
-        
+
+
       />
 
 
-  
+
 
       <MeuInput
         label={"Cidade: "}
         valor={Cidade}
-        onChange={setCidade}       
+        onChange={setCidade}
       />
 
 
 
       <Botao
-      texto={"Cadastrar"}
+        aoApertar={GoToPrincpal}
+        texto={"Cadastrar"}
       />
 
     </View>

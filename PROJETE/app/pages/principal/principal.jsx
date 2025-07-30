@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#ddd',
 
+
   },
   content: {
     flex: 1,
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
-  commentBtn: {
+  chatBtn: {
     padding: 6,
     borderRadius: 8,
     backgroundColor: 'transparent',
