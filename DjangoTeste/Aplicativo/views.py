@@ -1,7 +1,7 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.views import APIView     #baixar pip install djangorestframework
+from rest_framework.response import Response    
 from rest_framework import status
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
@@ -12,16 +12,16 @@ class CadastrarUsuario(APIView):
         return Response({"message": "Use POST to register a user."})
     
     def post(self, request):
-        usuario = request.data.get('usuario')
-        senha = request.data.get('senha')
-        email = request.data.get('email')
+        Usuario = request.data.get('usuario')
+        Senha = request.data.get('senha')
+        Email = request.data.get('email')
         telefone = request.data.get('telefone') 
         
-        if Usuario.objects.filter(username=usuario).exists():
+        if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = Usuario.objects.create_user(username=usuario, password=senha, email=email, phone_number=telefone)
+            user = Usuario.objects.create_user(username=Usuario, password=Senha, email=Email, phone_number=telefone)
             return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Telefone já registrado'}, status=status.HTTP_400_BAD_REQUEST)
@@ -32,10 +32,10 @@ class LoginUsuario(APIView):
         return Response({"message": "Use POST to login."})
     
     def post(self, request):
-        usuario = request.data.get('usuario')
-        senha = request.data.get('senha')
+        Usuario = request.data.get('usuario')
+        Senha = request.data.get('senha')
         
-        user = authenticate(username=usuario, password=senha)
+        user = authenticate(username=Usuario, password=Senha)
         if user is None:
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -47,7 +47,7 @@ class Buscadelivro(APIView):
         if not isbn:
             return Response({"erro": "ISBN não fornecido"}, status=400)
     
-        url = f"https://openlibrary.org/isbn/{isbn}.json" #vou trocar provavelmente(certeza)
+        url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
         if resposta.status_code != 200:
@@ -80,3 +80,6 @@ class Buscadelivro(APIView):
         }
             
         return Response(resultado, status=200)
+    
+
+    #erro provavel em algo da biblioteca rest
