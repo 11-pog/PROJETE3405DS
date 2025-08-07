@@ -4,19 +4,34 @@ import MeuInput from "../../functions/textBox";
 import Botao from "../../functions/botoes";
 import { navigate } from "expo-router/build/global-state/routing";
 
-function Login() {
+function Cadastrar() {
   const [Nome, setNome] = useState("");
   const [Email, setEmail] = useState("");
   const [Senha, setSenha] = useState("");
   const [Cidade, setCidade] = useState("");
 
+const enviarUsuario = async () => {
+  const response = await fetch ('http://localhost:8000/api/cadastrar/',{
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nome }),
 
+  });
+  const data = await response.json();
+  console.log(data);
+
+
+}
 
   function Alerta() {
     Alert.alert("Email digitado:", Email); // alerta do React Native
     Alert.alert("Senha digitada:", Senha); // alerta do React Native
 
   }
+
+  //tirar depois
   function GoToPrincpal() {
     navigate('/pages/principal/principal');
   }
@@ -48,7 +63,8 @@ function Login() {
       <MeuInput
         label={"Nome de usuário: "}
         valor={Nome}
-        onChange={setNome}
+        onChange={(e) => setNome(e.target.value)}
+
 
       />
 
@@ -79,7 +95,7 @@ function Login() {
 
 
       <Botao
-        aoApertar={GoToPrincpal}
+        aoApertar={enviarUsuario}
         texto={"Cadastrar"}
       />
 
@@ -87,4 +103,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Cadastrar;
