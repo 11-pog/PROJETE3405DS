@@ -16,7 +16,7 @@ const enviarUsuario = async () => {
     headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nome }),
+      body: JSON.stringify({ usuario: Nome, senha: Senha, email: Email}),
 
   });
   const data = await response.json();
@@ -60,10 +60,10 @@ const enviarUsuario = async () => {
         Cadastrar novo usuário
       </Text>
 
-      <MeuInput
+      <MeuInput 
         label={"Nome de usuário: "}
         valor={Nome}
-        onChange={(e) => setNome(e.target.value)}
+        onChange={setNome}
 
 
       />
