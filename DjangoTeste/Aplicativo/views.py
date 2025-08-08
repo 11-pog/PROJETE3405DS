@@ -59,6 +59,7 @@ class Buscadelivro(APIView):
         livro = dados["docs"][0]
 
         authors = livro.get("authors", [])
+        autor = "Desconhecido" 
         if authors:
            autorkey = authors[0].get("key", None)
 

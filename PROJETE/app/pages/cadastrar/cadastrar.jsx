@@ -5,9 +5,9 @@ import Botao from "../../functions/botoes";
 import { navigate } from "expo-router/build/global-state/routing";
 
 function Cadastrar() {
-  const [Nome, setNome] = useState("");
-  const [Email, setEmail] = useState("");
-  const [Senha, setSenha] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [Cidade, setCidade] = useState("");
 
 const enviarUsuario = async () => {
@@ -16,7 +16,7 @@ const enviarUsuario = async () => {
     headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ usuario: Nome, senha: Senha, email: Email}),
+      body: JSON.stringify({ usuario: usuario, senha: senha, email: email}),
 
   });
   const data = await response.json();
@@ -26,8 +26,8 @@ const enviarUsuario = async () => {
 }
 
   function Alerta() {
-    Alert.alert("Email digitado:", Email); // alerta do React Native
-    Alert.alert("Senha digitada:", Senha); // alerta do React Native
+    Alert.alert("Email digitado:", email); // alerta do React Native
+    Alert.alert("Senha digitada:", senha); // alerta do React Native
 
   }
 
@@ -62,22 +62,22 @@ const enviarUsuario = async () => {
 
       <MeuInput 
         label={"Nome de usuário: "}
-        valor={Nome}
-        onChange={setNome}
+        valor={usuario}
+        onChange={setUsuario}
 
 
       />
 
       <MeuInput
         label={"Email: "}
-        valor={Email}
+        valor={email}
         onChange={setEmail}
 
       />
 
       <MeuInput
         label={"Senha: "}
-        valor={Senha}
+        valor={senha}
         onChange={setSenha}
 
 
