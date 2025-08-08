@@ -45,17 +45,17 @@ class Buscadelivro(APIView):
     def get(self, request):
         isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
         if not isbn:
-            return Response({"erro": "ISBN não fornecido"}, status=400)
+            return Response({"error": "ISBN não fornecido"}, status=400)
     
         url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
         if resposta.status_code != 200:
-            return Response({"erro": "Erro ao consultar a API externa"}, status=500)
+            return Response({"error": "Erro ao consultar a API externa"}, status=500)
         
         dados = resposta.json()
         if not dados:
-            return Response({"erro": "Livro não encontrado"}, status=404)
+            return Response({"error": "Livro não encontrado"}, status=404)
 
         livro = dados["docs"][0]
 
