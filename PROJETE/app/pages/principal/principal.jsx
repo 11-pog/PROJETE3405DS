@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
 import { Ionicons } from '@expo/vector-icons';
+import BarraInicial from '../../functions/barra_inicial';
+
 
 const PAGE_SIZE = 10;
 
 export default function FeedLivros() {
+
+  
   const [books, setBooks] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -55,10 +59,9 @@ export default function FeedLivros() {
 
     </View>
   );
-
-
-
-  return (
+  
+ return (
+    <View style ={styles.container}>
     <FlatList
       data={books}
       renderItem={renderBook}
@@ -66,11 +69,20 @@ export default function FeedLivros() {
       onEndReached={fetchBooks}
       onEndReachedThreshold={0.5}
       ListFooterComponent={loading && <ActivityIndicator size="large" />}
+      
     />
-  );
+    <BarraInicial/>
+    </View>
+
+ );
 }
 
 const styles = StyleSheet.create({
+container: {
+  flex: 1,
+  paddingBottom: 60,
+},
+
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -124,3 +136,4 @@ const styles = StyleSheet.create({
   },
 
 });
+
