@@ -5,7 +5,7 @@ export const livrosMock = Array.from({ length: TOTAL_LIVROS }, (_, i) => ({
   title: `Livro ${i + 1}`,
   author: `Autor ${i + 1}`,
   cover: `https://picsum.photos/seed/livro${i + 1}/200/300`, // imagem aleatória
-  description: `Este é um resumo fictício do Livro ${i + 1}. Uma leitura envolvente sobre temas imaginários.`,
+  description: `Este é um resumo do livro ${i + 1}.`,
 }));
 
 export const fetchLivrosMock = (page, pageSize) => {

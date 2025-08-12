@@ -10,19 +10,20 @@ import HomeScreen from '../pages/principal/principal';
 
 export default function BarraInicial(){
   return(
- <View style={styles.barra }>
-      <TouchableOpacity>🏠</TouchableOpacity>
-      <TouchableOpacity>🔍</TouchableOpacity>
-      <TouchableOpacity>➕</TouchableOpacity>
-      <TouchableOpacity>💬</TouchableOpacity>
-      <TouchableOpacity>👤</TouchableOpacity>
-
-      
+    <View style={styles.barra}>
+      <TouchableOpacity><Text>🏠</Text></TouchableOpacity>
+      <TouchableOpacity><Text>🔍</Text></TouchableOpacity>
+      <TouchableOpacity><Text>➕</Text></TouchableOpacity>
+      <TouchableOpacity><Text>💬</Text></TouchableOpacity>
+      <TouchableOpacity><Text>👤</Text></TouchableOpacity>
     </View>
+
   );
 }
 const styles = StyleSheet.create({
-   barra: {
+  
+  barra: {
+
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -34,6 +35,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-   }
+    zIndex: 10,
+    
+
+  },
+
 });
 

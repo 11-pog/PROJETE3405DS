@@ -61,7 +61,7 @@ export default function FeedLivros() {
   );
   
  return (
-    <View style ={styles.container}>
+    <SafeAreaView style ={styles.container}>
     <FlatList
       data={books}
       renderItem={renderBook}
@@ -72,7 +72,7 @@ export default function FeedLivros() {
       
     />
     <BarraInicial/>
-    </View>
+    </SafeAreaView>
 
  );
 }
