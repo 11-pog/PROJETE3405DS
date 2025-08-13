@@ -10,6 +10,11 @@ export default function Botao({ aoApertar, texto }) {
 
       >
         <Text style={styles.text}>{texto}</Text>
+        <TouchableOpacity><Text>🏠</Text></TouchableOpacity>
+        <TouchableOpacity><Text>🔍</Text></TouchableOpacity>
+        <TouchableOpacity><Text>➕</Text></TouchableOpacity>
+        <TouchableOpacity><Text>💬</Text></TouchableOpacity>
+        <TouchableOpacity><Text>👤</Text></TouchableOpacity>
 
       </TouchableOpacity>
     </View>
