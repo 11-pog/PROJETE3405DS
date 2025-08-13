@@ -11,11 +11,11 @@ import HomeScreen from '../pages/principal/principal';
 export default function BarraInicial(){
   return(
  <View style={styles.barra }>
-      <TouchableOpacity>🏠</TouchableOpacity>
-      <TouchableOpacity>🔍</TouchableOpacity>
-      <TouchableOpacity>➕</TouchableOpacity>
-      <TouchableOpacity>💬</TouchableOpacity>
-      <TouchableOpacity>👤</TouchableOpacity>
+      <TouchableOpacity><Text>🏠</Text></TouchableOpacity>
+      <TouchableOpacity><Text>🔍</Text></TouchableOpacity>
+      <TouchableOpacity><Text>➕</Text></TouchableOpacity>
+      <TouchableOpacity><Text>💬</Text></TouchableOpacity>
+      <TouchableOpacity><Text>👤</Text></TouchableOpacity>
 
       
     </View>

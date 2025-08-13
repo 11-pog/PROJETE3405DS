@@ -7,14 +7,10 @@ export default function Botao({ aoApertar, texto }) {
       <TouchableOpacity
         onPress={aoApertar}
         style={styles.button}
-
+        activeOpacity={0.8}
       >
         <Text style={styles.text}>{texto}</Text>
-        <TouchableOpacity><Text>🏠</Text></TouchableOpacity>
-        <TouchableOpacity><Text>🔍</Text></TouchableOpacity>
-        <TouchableOpacity><Text>➕</Text></TouchableOpacity>
-        <TouchableOpacity><Text>💬</Text></TouchableOpacity>
-        <TouchableOpacity><Text>👤</Text></TouchableOpacity>
+
 
       </TouchableOpacity>
     </View>
@@ -24,7 +20,7 @@ export default function Botao({ aoApertar, texto }) {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: "#335C67",
-    borderRadius: 100,
+    borderRadius: 50,
     paddingVertical: 10,
     paddingHorizontal: 30,
     marginVertical: 10,
@@ -33,14 +29,14 @@ const styles = StyleSheet.create({
     // Sombra no iOS
     shadowColor: '#1c292cff',
     shadowOffset: {
-      width: 1,
-      height: 4,
+      width: 0,
+      height: 3,
     },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.2,
     shadowRadius: 3,
 
     // Sombra no Android
-    elevation: 5,
+    elevation: 10,
   },
 
   text: {
