@@ -5,7 +5,6 @@ import { navigate } from 'expo-router/build/global-state/routing';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MeuInput from '../../functions/textBox';
 
-
 export default function Editar() {
     return(
 
@@ -29,13 +28,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
-    alignItems: "center",
     paddingTop: 40,
+    paddingHorizontal: 20,
+
   },
-  avatarContainer: {
-    position: "relative",
-    marginBottom: 20,
-  },
+
   
 
   
