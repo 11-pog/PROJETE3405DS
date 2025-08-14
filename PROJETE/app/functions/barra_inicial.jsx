@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from "expo-router";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,21 +10,24 @@ import HomeScreen from '../pages/principal/principal';
 
 
 export default function BarraInicial() {
-const router = useRouter();
-//ver o que deu errado
+  const router = useRouter();
+  //ver o que deu errado
   function GoToPerfil() {
     router.push("/pages/perfil/perfil");
   }
   function GoToHome() {
     router.push("/pages/principal/principal");
   }
-function GoToAdd(){
-  router.push("/pages/infoLivro/infoLivro");
-}
+  function GoToAdd() {
+    router.push("/pages/infoLivro/infoLivro");
+  }
+  function GoToFavs() {
+    router.push("/pages/favoritos/favoritos");
+  }
   return (
     <View style={styles.barra}>
       <TouchableOpacity onPress={GoToHome}><Ionicons name="home" size={24} color="white" /></TouchableOpacity>
-      <TouchableOpacity ><Ionicons name="library" size={24} color="white" /></TouchableOpacity>
+      <TouchableOpacity onPress={GoToFavs}><Ionicons name="library" size={24} color="white" /></TouchableOpacity>
       <TouchableOpacity onPress={GoToAdd}> <Ionicons name="add" size={24} color="white" /></TouchableOpacity>
       <TouchableOpacity><Ionicons name="chatbox-ellipses" size={24} color="white" /></TouchableOpacity>
       <TouchableOpacity onPress={GoToPerfil}><Ionicons name="person" size={24} color="white" /></TouchableOpacity>
@@ -34,7 +37,7 @@ function GoToAdd(){
     </View>
   );
 
-  
+
 }
 const styles = StyleSheet.create({
   barra: {
@@ -49,5 +52,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   }
 });
- 
+
 
