@@ -8,8 +8,8 @@ import BarraInicial from '../../functions/barra_inicial';
 
 
 export default function Perfil() {
-    return(
-  <View style={styles.container}>
+  return (
+    <View style={styles.container}>
       {/* Foto de perfil */}
       <View style={styles.avatarContainer}>
         <Image
@@ -22,14 +22,14 @@ export default function Perfil() {
       </View>
 
       {/* Inputs */}
-      
 
-     <Botao texto="Editar" aoApertar={() => navigate("/pages/perfil/editar")} />
-     <Botao texto="Sair" />
-     <BarraInicial/> 
+
+      <Botao texto="Editar" aoApertar={() => navigate("/pages/perfil/editar")} />
+      <Botao texto="Sair" aoApertar={() => navigate("/pages/login/Login")} />
+      <BarraInicial />
 
     </View>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -58,6 +58,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: "#fff",
- 
-}
+
+  }
 });   

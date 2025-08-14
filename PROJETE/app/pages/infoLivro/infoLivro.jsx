@@ -42,7 +42,7 @@ export default function CadastroLivro() {
       <Text style={styles.ouTexto}>ou</Text>
 
       <Botao texto="Ler ISBN" />
-      <BarraInicial/>
+      <BarraInicial />
     </View>
   );
 }
@@ -87,5 +87,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 5,
   },
-  
+
 });
