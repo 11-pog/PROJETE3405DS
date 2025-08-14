@@ -9,7 +9,7 @@ const PAGE_SIZE = 10;
 
 export default function FeedLivros() {
 
-  
+
   const [books, setBooks] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -52,36 +52,36 @@ export default function FeedLivros() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.commentBtn}>
-          <Ionicons name="chatbubble-ellipses-outline" size={22} color="#E09F3E" />
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color='#E09F3E' />
         </TouchableOpacity>
       </View>
 
 
     </View>
   );
-  
- return (
-    <View style ={styles.container}>
-    <FlatList
-      data={books}
-      renderItem={renderBook}
-      keyExtractor={(item) => item.id.toString()}
-      onEndReached={fetchBooks}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={loading && <ActivityIndicator size="large" />}
-      
-    />
-    <BarraInicial/>
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={books}
+        renderItem={renderBook}
+        keyExtractor={(item) => item.id.toString()}
+        onEndReached={fetchBooks}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loading && <ActivityIndicator size="large" />}
+
+      />
+      <BarraInicial />
     </View>
 
- );
+  );
 }
 
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  paddingBottom: 60,
-},
+  container: {
+    flex: 1,
+    paddingBottom: 60,
+  },
 
   card: {
     flexDirection: 'row',
