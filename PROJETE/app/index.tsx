@@ -51,6 +51,7 @@ const DisplayAnImage = () => (
 );
 
 export default function Inicial() {
+  
   function GoToLogin() {
     navigate('/pages/login/Login');
   }
