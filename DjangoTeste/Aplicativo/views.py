@@ -42,41 +42,21 @@ class LoginUsuario(APIView):
             
 class Buscadelivro(APIView):
     def get(self, request):
-        isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
-        if not isbn:
-            return Response({"erro": "ISBN não fornecido"}, status=400)
-    
-        url = f"https://openlibrary.org/isbn/{isbn}.json" #vou trocar provavelmente(certeza)
+        isbn = 9788598078441 #mudar para entrada
+        url = f"https://openlibrary.org/isbn/{isbn}.json"
+
         resposta = requests.get(url)
         
-        if resposta.status_code != 200:
-            return Response({"erro": "Erro ao consultar a API externa"}, status=500)
-        
-        dados = resposta.json()
-        if not dados:
-            return Response({"erro": "Livro não encontrado"}, status=404)
-
-        livro = dados["docs"][0]
-
-        authors = livro.get("authors", [])
-        autor = "Desconhecido" 
-        if authors:
-           autorkey = authors[0].get("key", None)
-
-           if autorkey:
-             url_autor = f"https://openlibrary.org{autorkey}.json"
-             resposta_autor = requests.get(url_autor)
-
-             if resposta_autor.status_code == 200:
-                 autor = resposta_autor.json().get("name", "Desconhecido")
-
-
-        resultado = {
-            "titulo": livro.get("title", "Título não encontrado"),
-            "autor(a)": autor, #outro URL
-            "editor(a)": livro.get("publishers", ["Editora desconhecida"])[0],
-            "ano_publicacao": livro.get("publish_date", "Ano desconhecido"),
-            "Descricao": livro.get("value", "Descrição não disponível"), 
-        }
-            
+        if resposta.status_code != 200 or not resposta.json():
+            return Response({"erro": "Erro ao consultar a API externa"}, status=500)  
+        else: 
+         url_autor = resposta.json().get("authors", [{}])[0].get("key")
+         if url_autor:
+            resposta_autor = requests.get(f"https://openlibrary.org{url_autor}.json")
+         resultado ={
+            "Autor": resposta_autor.json().get("name") if url_autor else None,
+            "titulo": resposta.json().get("title"),
+            "editor": resposta.json().get("publishers", [None])[0],
+            "Descrição": resposta.json().get("description", {}).get("value") if isinstance(resposta.json().get("description"), dict) else resposta.json().get("description"),
+            }
         return Response(resultado, status=200)

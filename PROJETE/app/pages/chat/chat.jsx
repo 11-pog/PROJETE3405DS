@@ -3,8 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from "react
 import { useRouter } from "expo-router";
 
 const users = [
-  { id: "1", name: "Fulano da Silva", avatar: "https://cdn-icons-png.flaticon.com/512/1999/1999625.png" },
-  { id: "2", name: "Maria Souza", avatar: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png" },
+  { id: "1", name: "Bot da troca", avatar: "https://cdn-icons-png.flaticon.com/512/1999/1999625.png" },
+  { id: "2", name: "Giovanna", avatar: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png" },
 ];
 
 export default function UsersList() {
