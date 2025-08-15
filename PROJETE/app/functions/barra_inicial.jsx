@@ -24,13 +24,16 @@ export default function BarraInicial() {
   function GoToFavs() {
     router.push("/pages/favoritos/favoritos");
   }
+  function GoToChat() {
+    router.push("/pages/chat/chat");
+  }
   return (
     <View style={styles.barra}>
-      <TouchableOpacity onPress={GoToHome}><Ionicons name="home" size={24} color="white" /></TouchableOpacity>
-      <TouchableOpacity onPress={GoToFavs}><Ionicons name="library" size={24} color="white" /></TouchableOpacity>
-      <TouchableOpacity onPress={GoToAdd}> <Ionicons name="add" size={24} color="white" /></TouchableOpacity>
-      <TouchableOpacity><Ionicons name="chatbox-ellipses" size={24} color="white" /></TouchableOpacity>
-      <TouchableOpacity onPress={GoToPerfil}><Ionicons name="person" size={24} color="white" /></TouchableOpacity>
+      <TouchableOpacity onPress={GoToHome}><Ionicons name="home" size={24} color="white"/></TouchableOpacity>
+      <TouchableOpacity onPress={GoToFavs}><Ionicons name="library" size={24} color="white"/></TouchableOpacity>
+      <TouchableOpacity onPress={GoToAdd}><Ionicons name="add" size={24} color="white"/></TouchableOpacity>
+      <TouchableOpacity onPress={GoToChat}><Ionicons name="chatbox-ellipses" size={24} color="white"/></TouchableOpacity>
+      <TouchableOpacity onPress={GoToPerfil}><Ionicons name="person" size={24} color="white"/></TouchableOpacity>
 
 
 
