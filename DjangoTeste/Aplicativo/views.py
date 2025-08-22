@@ -1,7 +1,7 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.views import APIView     #baixar pip install djangorestframework
+from rest_framework.response import Response    
 from rest_framework import status
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
@@ -16,7 +16,7 @@ class CadastrarUsuario(APIView):
         senha = request.data.get('senha')
         email = request.data.get('email')
         
-        if Usuario.objects.filter(username=usuario).exists():
+        if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
@@ -31,10 +31,10 @@ class LoginUsuario(APIView):
         return Response({"message": "Use POST to login."})
     
     def post(self, request):
-        usuario = request.data.get('usuario')
-        senha = request.data.get('senha')
+        Usuario = request.data.get('usuario')
+        Senha = request.data.get('senha')
         
-        user = authenticate(username=usuario, password=senha)
+        user = authenticate(username=Usuario, password=Senha)
         if user is None:
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -44,22 +44,21 @@ class Buscadelivro(APIView):
     def get(self, request):
         isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
         if not isbn:
-            return Response({"erro": "ISBN não fornecido"}, status=400)
+            return Response({"error": "ISBN não fornecido"}, status=400)
     
-        url = f"https://openlibrary.org/isbn/{isbn}.json" #vou trocar provavelmente(certeza)
+        url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
         if resposta.status_code != 200:
-            return Response({"erro": "Erro ao consultar a API externa"}, status=500)
+            return Response({"error": "Erro ao consultar a API externa"}, status=500)
         
         dados = resposta.json()
         if not dados:
-            return Response({"erro": "Livro não encontrado"}, status=404)
+            return Response({"error": "Livro não encontrado"}, status=404)
 
         livro = dados["docs"][0]
 
         authors = livro.get("authors", [])
-        autor = "Desconhecido" 
         if authors:
            autorkey = authors[0].get("key", None)
 
@@ -80,3 +79,6 @@ class Buscadelivro(APIView):
         }
             
         return Response(resultado, status=200)
+    
+
+    #erro provavel em algo da biblioteca rest

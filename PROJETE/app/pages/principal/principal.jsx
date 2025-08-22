@@ -1,88 +1,96 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { fetchLivrosMock } from '../../mocks/mockBooks';
 import { Ionicons } from '@expo/vector-icons';
+import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
 
-
+// quantidade de livros por pagina 
 const PAGE_SIZE = 10;
 
 export default function FeedLivros() {
-
-  
+  // livros carregados até o momento
   const [books, setBooks] = useState([]);
+  // pagina atual (para saber qual lote de livros buscar)
   const [page, setPage] = useState(1);
+  // controle de carregamento pra evitar bug
   const [loading, setLoading] = useState(false);
+  // verifica se ainda tem mais livros para carregar
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchBooks = async () => {
+  // função que busca mais livros e atualiza a lista
+  async function fetchBooks() {
+    // nao busca novamente caso já esteja carregando ou nao tenha mais livros
     if (loading || !hasMore) return;
 
     setLoading(true);
+
+    // isso aqui simula uma API
     const newBooks = await fetchLivrosMock(page, PAGE_SIZE);
 
     if (newBooks.length > 0) {
-      setBooks((prev) => [...prev, ...newBooks]);
-      setPage((prev) => prev + 1);
+      // adiciona os novos livros à lista existente
+      setBooks((prevBooks) => [...prevBooks, ...newBooks]);
+      setPage((prevPage) => prevPage + 1);
     } else {
+      // se não existir livros novos, marca que chegou ao fim
       setHasMore(false);
     }
 
     setLoading(false);
-  };
+  }
 
+  // carrega a primeira página ao montar o componente
   useEffect(() => {
     fetchBooks();
   }, []);
 
+  // renderiza cada livro
+  function renderBook({ item }) {
+    return (
+      <View style={styles.card}>
+        {/* imagem de capa */}
+        <Image source={{ uri: item.cover }} style={styles.image} />
 
+        {/* título, autor e tipo */}
+        <View style={styles.content}>
+          <Text style={styles.title}>{item.title} - {item.author}</Text>
+          <Text style={styles.tipoAcao}>Empréstimo / Troca</Text>
+        </View>
 
-  const renderBook = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.cover }} style={styles.image} />
+        {/* botões de interação */}
+        <View style={styles.actions}>
+          <TouchableOpacity>
+            <Ionicons name="heart-outline" size={22} color="#9e2a2b" />
+          </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>{item.title} - {item.author}</Text>
-        <Text style={styles.tipoAcao}>Empréstimo/ Troca</Text>
+          <TouchableOpacity style={styles.commentBtn}>
+            <Ionicons name="chatbubble-ellipses-outline" size={22} color='#E09F3E' />
+          </TouchableOpacity>
+        </View>
       </View>
+    );
+  }
 
-      <View style={styles.actions}>
-        <TouchableOpacity>
-          <Ionicons name="heart-outline" size={22} color="#9e2a2b" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.commentBtn}>
-          <Ionicons name="chatbubble-ellipses-outline" size={22} color="#E09F3E" />
-        </TouchableOpacity>
-      </View>
-
-
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={books}
+        renderItem={renderBook}
+        keyExtractor={(item) => item.id.toString()}
+        onEndReached={fetchBooks} // carrega mais livros ao chegar no final
+        onEndReachedThreshold={0.5} // define quando carregar (0.5 = metade da tela antes do fim)
+        ListFooterComponent={loading && <ActivityIndicator size="large" />} // mostra indicador de carregamento
+      />
+      <BarraInicial />
     </View>
   );
-  
- return (
-    <SafeAreaView style ={styles.container}>
-    <FlatList
-      data={books}
-      renderItem={renderBook}
-      keyExtractor={(item) => item.id.toString()}
-      onEndReached={fetchBooks}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={loading && <ActivityIndicator size="large" />}
-      
-    />
-    <BarraInicial/>
-    </SafeAreaView>
-
- );
 }
 
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  paddingBottom: 60,
-},
-
+  container: {
+    flex: 1,
+    paddingBottom: 60,
+  },
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -93,10 +101,7 @@ container: {
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#e7dedeff',
-    shadowOffset: {
-      width: 2,
-      height: 4,
-    },
+    shadowOffset: { width: 2, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 3,
   },
@@ -106,8 +111,6 @@ container: {
     borderRadius: 8,
     marginRight: 10,
     backgroundColor: '#ddd',
-
-
   },
   content: {
     flex: 1,
@@ -132,8 +135,5 @@ container: {
     padding: 6,
     borderRadius: 8,
     backgroundColor: 'transparent',
-
   },
-
 });
-
