@@ -60,14 +60,14 @@ class Buscadelivro(APIView):
 
         authors = livro.get("authors", [])
         if authors:
-           autorkey = authors[0].get("key", None)
+            autorkey = authors[0].get("key", None)
 
-           if autorkey:
-             url_autor = f"https://openlibrary.org{autorkey}.json"
-             resposta_autor = requests.get(url_autor)
+            if autorkey:
+                url_autor = f"https://openlibrary.org{autorkey}.json"
+                resposta_autor = requests.get(url_autor)
 
-             if resposta_autor.status_code == 200:
-                 autor = resposta_autor.json().get("name", "Desconhecido")
+                if resposta_autor.status_code == 200:
+                        autor = resposta_autor.json().get("name", "Desconhecido")
 
 
         resultado = {
