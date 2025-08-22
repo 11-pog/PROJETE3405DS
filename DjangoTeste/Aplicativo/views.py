@@ -12,16 +12,15 @@ class CadastrarUsuario(APIView):
         return Response({"message": "Use POST to register a user."})
     
     def post(self, request):
-        Usuario = request.data.get('usuario')
-        Senha = request.data.get('senha')
-        Email = request.data.get('email')
-        telefone = request.data.get('telefone') 
+        usuario = request.data.get('usuario')
+        senha = request.data.get('senha')
+        email = request.data.get('email')
         
         if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = Usuario.objects.create_user(username=Usuario, password=Senha, email=Email, phone_number=telefone)
+            user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
             return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Telefone já registrado'}, status=status.HTTP_400_BAD_REQUEST)
