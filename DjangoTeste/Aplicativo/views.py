@@ -1,7 +1,7 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.views import APIView     #baixar pip install djangorestframework
+from rest_framework.response import Response    
 from rest_framework import status
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
@@ -16,7 +16,7 @@ class CadastrarUsuario(APIView):
         senha = request.data.get('senha')
         email = request.data.get('email')
         
-        if Usuario.objects.filter(username=usuario).exists():
+        if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
@@ -31,10 +31,10 @@ class LoginUsuario(APIView):
         return Response({"message": "Use POST to login."})
     
     def post(self, request):
-        usuario = request.data.get('usuario')
-        senha = request.data.get('senha')
+        Usuario = request.data.get('usuario')
+        Senha = request.data.get('senha')
         
-        user = authenticate(username=usuario, password=senha)
+        user = authenticate(username=Usuario, password=Senha)
         if user is None:
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -42,21 +42,43 @@ class LoginUsuario(APIView):
             
 class Buscadelivro(APIView):
     def get(self, request):
-        isbn = 9788598078441 #mudar para entrada
-        url = f"https://openlibrary.org/isbn/{isbn}.json"
-
+        isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
+        if not isbn:
+            return Response({"error": "ISBN não fornecido"}, status=400)
+    
+        url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
-        if resposta.status_code != 200 or not resposta.json():
-            return Response({"erro": "Erro ao consultar a API externa"}, status=500)  
-        else: 
-         url_autor = resposta.json().get("authors", [{}])[0].get("key")
-         if url_autor:
-            resposta_autor = requests.get(f"https://openlibrary.org{url_autor}.json")
-         resultado ={
-            "Autor": resposta_autor.json().get("name") if url_autor else None,
-            "titulo": resposta.json().get("title"),
-            "editor": resposta.json().get("publishers", [None])[0],
-            "Descrição": resposta.json().get("description", {}).get("value") if isinstance(resposta.json().get("description"), dict) else resposta.json().get("description"),
-            }
+        if resposta.status_code != 200:
+            return Response({"error": "Erro ao consultar a API externa"}, status=500)
+        
+        dados = resposta.json()
+        if not dados:
+            return Response({"error": "Livro não encontrado"}, status=404)
+
+        livro = dados["docs"][0]
+
+        authors = livro.get("authors", [])
+        if authors:
+           autorkey = authors[0].get("key", None)
+
+           if autorkey:
+             url_autor = f"https://openlibrary.org{autorkey}.json"
+             resposta_autor = requests.get(url_autor)
+
+             if resposta_autor.status_code == 200:
+                 autor = resposta_autor.json().get("name", "Desconhecido")
+
+
+        resultado = {
+            "titulo": livro.get("title", "Título não encontrado"),
+            "autor(a)": autor, #outro URL
+            "editor(a)": livro.get("publishers", ["Editora desconhecida"])[0],
+            "ano_publicacao": livro.get("publish_date", "Ano desconhecido"),
+            "Descricao": livro.get("value", "Descrição não disponível"), 
+        }
+            
         return Response(resultado, status=200)
+    
+
+    #erro provavel em algo da biblioteca rest
