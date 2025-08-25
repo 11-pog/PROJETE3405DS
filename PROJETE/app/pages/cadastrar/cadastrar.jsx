@@ -10,22 +10,21 @@ function Cadastrar () {
   const [senha, setSenha] = useState('')
   const [Cidade, setCidade] = useState('')
 
-  const enviarUsuario = async () => {
-      const response = await fetch('http://localhost:8000/api/cadastrar/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ usuario: usuario, senha: senha, email: email })
-      })
-      const data = await response.json()
-      console.log(data)
-  }
+  const cadastrar = async () => {
+    try{
+      const response = await axios.post('http://localhost:8000/api/cadastrar/', {
+       usuario: usuario,
+       email: email,
+       senha: senha,
+      
+  });
+alert(response.data.mensagem);
+    } catch (error) {
+      SpeechRecognitionAlternative(error.response.data.error || "Erro ao cadastrar");
+    }
+  };
 
-  function Alerta () {
-    Alert.alert('Email digitado:', email) // alerta do React Native
-    Alert.alert('Senha digitada:', senha) // alerta do React Native
-  }
+  
 
   //tirar depois
   function GoToPrincpal () {
@@ -53,11 +52,7 @@ function Cadastrar () {
         Cadastrar novo usuário
       </Text>
 
-      <MeuInput
-        label={'Nome de usuário: '}
-        valor={usuario}
-        onChange={setUsuario}
-      />
+      <MeuInput label={'Nome de usuário: '} valor={usuario} onChange={setUsuario}/>
 
       <MeuInput label={'Email: '} valor={email} onChange={setEmail} />
 
@@ -65,7 +60,7 @@ function Cadastrar () {
 
       <MeuInput label={'Cidade: '} valor={Cidade} onChange={setCidade} />
 
-      <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
+      <Botao aoApertar={cadastrar} texto={'Cadastrar'} />
     </View>
   )
 }

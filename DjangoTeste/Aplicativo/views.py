@@ -72,7 +72,7 @@ class Buscadelivro(APIView):
 
         resultado = {
             "titulo": livro.get("title", "Título não encontrado"),
-            "autor(a)": autor, #outro URL
+            "autor(a)": livro.get("authors []"), #outro URL
             "editor(a)": livro.get("publishers", ["Editora desconhecida"])[0],
             "ano_publicacao": livro.get("publish_date", "Ano desconhecido"),
             "Descricao": livro.get("value", "Descrição não disponível"), 

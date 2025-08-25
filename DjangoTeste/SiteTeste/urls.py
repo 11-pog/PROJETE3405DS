@@ -19,7 +19,6 @@ from django.urls import path, include
 from Aplicativo.views import CadastrarUsuario
 from Aplicativo.views import LoginUsuario
 from Aplicativo.views import Buscadelivro
-from Aplicativo.viewsChat import ChatGPTView
 
 
 
@@ -28,6 +27,5 @@ urlpatterns = [
     path('api/login/', LoginUsuario.as_view()),
     path('api/cadastrar/', CadastrarUsuario.as_view()),
     path('api/cadastrarlivro/', Buscadelivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
-    path('api/chat/', ChatGPTView.as_view()),
 ]
 
