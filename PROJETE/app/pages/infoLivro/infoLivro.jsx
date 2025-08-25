@@ -52,23 +52,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
     paddingTop: 20,
+    alignItems: "center", // centraliza tudo horizontalmente
   },
   header: {
-    fontSize: 16,
+    fontSize: 24, // aumenta para título
     fontWeight: "bold",
     color: "#E09F3E",
     marginBottom: 20,
+    textAlign: "center", // centraliza o texto
   },
   label: {
-    alignSelf: "flex-start",
-    marginLeft: "10%",
-    fontSize: 14,
+    fontSize: 16,
     color: "#333",
-    marginTop: 1,
+    marginTop: 10,
+    textAlign: "center", // centraliza o texto
   },
   starsContainer: {
     flexDirection: "row",
     marginVertical: 10,
+    justifyContent: "center", // centraliza as estrelas
   },
   fotoContainer: {
     width: 100,
@@ -85,6 +87,7 @@ const styles = StyleSheet.create({
     color: "#E09F3E",
     fontWeight: "bold",
     marginVertical: 5,
+    textAlign: "center", // centraliza o texto
   },
-
 });
+
