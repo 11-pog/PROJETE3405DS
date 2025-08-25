@@ -1,10 +1,11 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import BarraInicial from '../../functions/barra_inicial'; 
 
 const users = [
   { id: "1", name: "Bot da troca", avatar: "https://cdn-icons-png.flaticon.com/512/1999/1999625.png" },
-  { id: "2", name: "Giovanna", avatar: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png" },
+  { id: "2", name: "Giovana", avatar: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png" },
 ];
 
 export default function UsersList() {
@@ -25,6 +26,9 @@ export default function UsersList() {
           </TouchableOpacity>
         )}
       />
+    <View style={styles.bottomBar}>
+        <BarraInicial />
+      </View>
     </View>
   );
 }

@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
 
     // Sombra no Android
-    elevation: 10,
+    elevation: 30,
   },
 
   text: {

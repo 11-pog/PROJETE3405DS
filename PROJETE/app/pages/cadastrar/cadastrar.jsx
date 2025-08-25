@@ -10,7 +10,7 @@ function Cadastrar () {
   const [senha, setSenha] = useState('')
   const [Cidade, setCidade] = useState('')
 
-  const router = useRouter() // Hook para navegação
+  const router = useRouter() // Hook para navegação (função especial que dá acesso a recursos do framework sem precisar criar classes)
 
   const enviarUsuario = async () => {
     try {
