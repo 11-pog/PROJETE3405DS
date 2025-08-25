@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     marginVertical: 10,
 
-    //tentativa de fazer a sombra funcionar no mobile, ai tem uma versao pra android e uma pra ios. nao sei se ta funcionando, no meu aparelho telemovel nao abre
+    
     // Sombra no iOS
     shadowColor: '#1c292cff',
     shadowOffset: {
