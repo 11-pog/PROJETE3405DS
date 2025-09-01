@@ -1,19 +1,66 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 export default function CadastroLivro() {
   const [rating, setRating] = useState(0);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [showCamera, setShowCamera] = useState(false);
+  const [photoUri, setPhotoUri] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const cameraRef = useRef(null);
 
-  const handleStarPress = (value) => {
-    setRating(value);
+  const handleStarPress = (value) => setRating(value);
+
+  const handleOpenCamera = async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+    }
+    setShowCamera(true);
   };
+
+  const handleTakePicture = async () => {
+    if (cameraRef.current && cameraReady) {
+      const photo = await cameraRef.current.takePictureAsync();
+      setPhotoUri(photo.uri);
+      setShowCamera(false);
+      setCameraReady(false); // reset para próxima abertura
+    } else {
+      alert("A câmera ainda não está pronta!");
+    }
+  };
+
+  // Tela da câmera
+  if (showCamera) {
+    return (
+      <View style={{ flex: 1 }}>
+        <CameraView
+          style={{ flex: 1 }}
+          ref={cameraRef}
+          facing="back"
+          onCameraReady={() => setCameraReady(true)}
+        />
+        <TouchableOpacity
+          style={[
+            styles.captureButton,
+            { backgroundColor: cameraReady ? "#E09F3E" : "#ccc" }
+          ]}
+          onPress={handleTakePicture}
+          disabled={!cameraReady}
+        >
+          <Text style={styles.captureText}>Tirar Foto</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden />
       <Text style={styles.header}>Digite as informações do livro</Text>
 
       <MeuInput width={80} label="Título do Livro:" />
@@ -35,8 +82,12 @@ export default function CadastroLivro() {
 
       {/* Foto do livro */}
       <Text style={styles.label}>Foto do Livro:</Text>
-      <TouchableOpacity style={styles.fotoContainer}>
-        <Ionicons name="camera" size={30} color="#888" />
+      <TouchableOpacity style={styles.fotoContainer} onPress={handleOpenCamera}>
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={{ width: "100%", height: "100%", borderRadius: 8 }} />
+        ) : (
+          <Ionicons name="camera" size={30} color="#888" />
+        )}
       </TouchableOpacity>
 
       <Text style={styles.ouTexto}>ou</Text>
@@ -52,25 +103,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
     paddingTop: 20,
-    alignItems: "center", // centraliza tudo horizontalmente
+    alignItems: "center",
   },
   header: {
-    fontSize: 24, // aumenta para título
+    fontSize: 24,
     fontWeight: "bold",
     color: "#E09F3E",
     marginBottom: 20,
-    textAlign: "center", // centraliza o texto
+    textAlign: "center",
   },
   label: {
     fontSize: 16,
     color: "#333",
     marginTop: 10,
-    textAlign: "center", // centraliza o texto
+    textAlign: "center",
   },
   starsContainer: {
     flexDirection: "row",
     marginVertical: 10,
-    justifyContent: "center", // centraliza as estrelas
+    justifyContent: "center",
   },
   fotoContainer: {
     width: 100,
@@ -87,7 +138,18 @@ const styles = StyleSheet.create({
     color: "#E09F3E",
     fontWeight: "bold",
     marginVertical: 5,
-    textAlign: "center", // centraliza o texto
+    textAlign: "center",
+  },
+  captureButton: {
+    position: "absolute",
+    bottom: 40,
+    alignSelf: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  captureText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
-
