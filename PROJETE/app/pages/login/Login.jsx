@@ -3,14 +3,39 @@ import { Text, View, Pressable } from "react-native";
 import MeuInput from "../../functions/textBox";
 import Botao from "../../functions/botoes";
 import { router } from "expo-router";
+import axios from 'axios';
+import { useRouter } from "expo-router";
+
 
 export default function Login() {
-  const [Email, setEmail] = useState("");
-  const [Senha, setSenha] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
-  function GoToPrincipal() {
-    router.push("/pages/principal/principal");
+  const router = useRouter()
+
+
+   const fazerLogin = async () => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/login/', {
+
+        email: email,
+        senha: senha,
+        
+      });
+
+     if (response.status === 200){
+        router.push("/pages/principal/principal");
+    }
+
+    } catch (error) {
+  if (error.response) {
+    console.log("Erro no login:", error.response.data);
+  } else {
+    console.log("Erro no login:", error.message);
   }
+}
+   }
+
 
   return (
     <View
@@ -33,10 +58,10 @@ export default function Login() {
         Faça login na sua conta
       </Text>
 
-      <MeuInput label="Email:" valor={Email} onChange={setEmail} />
-      <MeuInput label="Senha:" valor={Senha} onChange={setSenha} />
+      <MeuInput label="Email:" valor={email} onChange={setEmail} />
+      <MeuInput label="Senha:" valor={senha} onChange={setSenha} />
 
-      <Botao aoApertar={GoToPrincipal} texto="Entrar" />
+      <Botao aoApertar={fazerLogin} texto="Entrar" />
 
       <Pressable onPress={() => router.push("/pages/cadastrar/cadastrar")}>
         <Text

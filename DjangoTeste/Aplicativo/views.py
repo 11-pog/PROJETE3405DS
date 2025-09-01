@@ -19,12 +19,9 @@ class CadastrarUsuario(APIView):
 
         if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
-            return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
-        except IntegrityError:
-            return Response({'error': 'Telefone já registrado'}, status=status.HTTP_400_BAD_REQUEST)
+    
+        user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
+        return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
 
 
 class LoginUsuario(APIView):
@@ -32,10 +29,10 @@ class LoginUsuario(APIView):
         return Response({"message": "Use POST to login."})
     
     def post(self, request):
-        Usuario = request.data.get('usuario')
-        Senha = request.data.get('senha')
+        email= request.data.get('email')
+        senha = request.data.get('senha')
         
-        user = authenticate(username=Usuario, password=Senha)
+        user = authenticate(username=email, password=senha)
         if user is None:
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
