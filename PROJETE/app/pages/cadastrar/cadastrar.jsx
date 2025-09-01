@@ -3,38 +3,48 @@ import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
 import { useRouter } from 'expo-router'
+import axios from 'axios';
+
 
 function Cadastrar () {
   const [usuario, setUsuario] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
-  const [Cidade, setCidade] = useState('')
+  const [cidade, setCidade] = useState('')
 
   const router = useRouter() // Hook para navegação (função especial que dá acesso a recursos do framework sem precisar criar classes)
 
   const enviarUsuario = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/cadastrar/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ usuario, senha, email })
-      })
+      const response = await axios.post('http://localhost:8000/api/cadastrar/', {
 
-      const data = await response.json()
-      console.log(data)
+        usuario: usuario,
+        email: email,
+        senha: senha,
+        cidade: cidade
+      });
 
-      // Se cadastro for sucesso, vai para a página principal
-      if (response.ok) {
-        router.push('/pages/principal/principal')
-      } else {
-        Alert.alert('Erro', data.message || 'Erro ao cadastrar usuário')
-      }
+      Alert.alert("Sucesso", response.data.mensagem);
+      
     } catch (error) {
-      router.push('/pages/principal/principal') // aqui é pra colocar uma mensagem de erro caso de errado o cadastro, deixei assim so pra ver se deu certo 
+      if (error.response) {
+  console.log(error.response.data);
+
+  if (error.response.data && error.response.data.error) {
+    Alert.alert("Erro", error.response.data.error);
+  } else {
+    Alert.alert("Erro", "Erro ao cadastrar");
+  }
+
+  } else {
+    console.log(error.message);
+    Alert.alert("Erro", "Erro ao cadastrar");
+  }
+
     }
   }
+
+
 
   return (
     <View
@@ -60,9 +70,9 @@ function Cadastrar () {
       <MeuInput label={'Nome de usuário: '} valor={usuario} onChange={setUsuario} />
       <MeuInput label={'Email: '} valor={email} onChange={setEmail} />
       <MeuInput label={'Senha: '} valor={senha} onChange={setSenha} />
-      <MeuInput label={'Cidade: '} valor={Cidade} onChange={setCidade} />
+      <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
 
-      <Botao aoApertar={cadastrar} texto={'Cadastrar'} />
+      <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
     </View>
   )
 }

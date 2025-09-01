@@ -15,7 +15,8 @@ class CadastrarUsuario(APIView):
         usuario = request.data.get('usuario')
         senha = request.data.get('senha')
         email = request.data.get('email')
-        
+        cidade = request.data.get('cidade')
+
         if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         

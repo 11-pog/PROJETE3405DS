@@ -41,6 +41,8 @@ class Usuario(AbstractUser):
         validators=[phone_validator], # Coiso engraçado q o chat pediu pra fazer
         max_length= 20, # Tamanho maximo
         unique=True, # Faz com que todo numero no banco de dados seja único
+        null=True,
+        blank=True, 
         )
     
     def __str__(self):
