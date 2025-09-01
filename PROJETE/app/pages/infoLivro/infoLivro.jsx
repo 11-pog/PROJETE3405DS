@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -12,6 +12,7 @@ export default function CadastroLivro() {
   const [showCamera, setShowCamera] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const cameraRef = useRef(null);
 
   const handleStarPress = (value) => setRating(value);
@@ -20,17 +21,22 @@ export default function CadastroLivro() {
     if (!permission?.granted) {
       await requestPermission();
     }
+    setCameraError(false);
     setShowCamera(true);
   };
 
   const handleTakePicture = async () => {
     if (cameraRef.current && cameraReady) {
-      const photo = await cameraRef.current.takePictureAsync();
-      setPhotoUri(photo.uri);
-      setShowCamera(false);
-      setCameraReady(false); // reset para próxima abertura
+      try {
+        const photo = await cameraRef.current.takePictureAsync();
+        setPhotoUri(photo.uri);
+        setShowCamera(false);
+        setCameraReady(false);
+      } catch (e) {
+        Alert.alert("Erro", "Não foi possível tirar a foto.");
+      }
     } else {
-      alert("A câmera ainda não está pronta!");
+      Alert.alert("Atenção", "A câmera ainda não está pronta ou não disponível.");
     }
   };
 
@@ -38,26 +44,71 @@ export default function CadastroLivro() {
   if (showCamera) {
     return (
       <View style={{ flex: 1 }}>
-        <CameraView
-          style={{ flex: 1 }}
-          ref={cameraRef}
-          facing="back"
-          onCameraReady={() => setCameraReady(true)}
-        />
-        <TouchableOpacity
-          style={[
-            styles.captureButton,
-            { backgroundColor: cameraReady ? "#E09F3E" : "#ccc" }
-          ]}
-          onPress={handleTakePicture}
-          disabled={!cameraReady}
-        >
-          <Text style={styles.captureText}>Tirar Foto</Text>
-        </TouchableOpacity>
+        {!cameraError ? (
+          <>
+            <CameraView
+              style={{ flex: 1, width: "100%" }}
+              ref={cameraRef}
+              facing="back"
+              onCameraReady={() => setCameraReady(true)}
+              onMountError={() => setCameraError(true)}
+            />
+
+            {/* Indicador de carregamento */}
+            {!cameraReady && (
+              <ActivityIndicator
+                size="large"
+                color="#E09F3E"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  alignSelf: "center",
+                }}
+              />
+            )}
+
+            
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                bottom: 40,
+                alignSelf: "center",
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                borderWidth: 4,
+                backgroundColor: "#fff",
+                justifyContent: "center",
+                alignItems: "center",
+                opacity: cameraReady ? 1 : 0.5,
+              }}
+              onPress={handleTakePicture}
+              disabled={!cameraReady}
+            >
+              <Ionicons name="camera" size={30} color="#9e2a2b" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#E09F3E",
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 8,
+              }}
+              onPress={() => setShowCamera(false)}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   }
 
+  // Tela de cadastro de livro
   return (
     <View style={styles.container}>
       <StatusBar hidden />
@@ -84,7 +135,10 @@ export default function CadastroLivro() {
       <Text style={styles.label}>Foto do Livro:</Text>
       <TouchableOpacity style={styles.fotoContainer} onPress={handleOpenCamera}>
         {photoUri ? (
-          <Image source={{ uri: photoUri }} style={{ width: "100%", height: "100%", borderRadius: 8 }} />
+          <Image
+            source={{ uri: photoUri }}
+            style={{ width: "100%", height: "100%", borderRadius: 8 }}
+          />
         ) : (
           <Ionicons name="camera" size={30} color="#888" />
         )}
@@ -139,17 +193,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 5,
     textAlign: "center",
-  },
-  captureButton: {
-    position: "absolute",
-    bottom: 40,
-    alignSelf: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  captureText: {
-    color: "#fff",
-    fontWeight: "bold",
   },
 });
