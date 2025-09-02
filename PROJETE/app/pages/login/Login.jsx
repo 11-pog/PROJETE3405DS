@@ -5,7 +5,9 @@ import Botao from "../../functions/botoes";
 import { router } from "expo-router";
 import axios from 'axios';
 import { useRouter } from "expo-router";
+import Constants from 'expo-constants';
 
+const BACKEND_URL = Constants.expoConfig.extra.BACKEND_URL;
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,7 +18,8 @@ export default function Login() {
 
    const fazerLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', {
+      console.log(BACKEND_URL)
+      const response = await axios.post(`${BACKEND_URL}/api/login/`, { // Entendes a ideia? (consertar)
 
         email: email,
         senha: senha,
