@@ -93,7 +93,7 @@ export default function CadastroLivro() {
             <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
             <TouchableOpacity
               style={{
-                backgroundColor: "#E09F3E",
+                backgroundColor: "#9e2a2b",
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 8,
