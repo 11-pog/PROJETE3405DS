@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
-import { useRouter } from 'expo-router'
+import { router } from 'expo-router'
 import axios from 'axios';
 
 
@@ -12,7 +12,7 @@ function Cadastrar () {
   const [senha, setSenha] = useState('')
   const [cidade, setCidade] = useState('')
 
-  const router = useRouter() // Hook para navegação (função especial que dá acesso a recursos do framework sem precisar criar classes)
+  
 
   const enviarUsuario = async () => {
     try {
@@ -25,6 +25,10 @@ function Cadastrar () {
       });
 
       Alert.alert("Sucesso", response.data.mensagem);
+      
+       router.push(`/pages/perfil/Perfil?usuario=${usuario}`);
+      console.log(usuario);
+    
       
     } catch (error) {
       if (error.response) {

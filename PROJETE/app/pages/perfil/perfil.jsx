@@ -5,9 +5,10 @@ import { navigate } from 'expo-router/build/global-state/routing';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MeuInput from '../../functions/textBox';
 import BarraInicial from '../../functions/barra_inicial';
-
+import {useLocalSearchParams} from "expo-router";
 
 export default function Perfil() {
+  const {usuario} = useLocalSearchParams();
   return (
     <View style={styles.container}>
       {/* Foto de perfil */}
@@ -16,12 +17,15 @@ export default function Perfil() {
           source={{ uri: "https://cdn-icons-png.flaticon.com/512/1999/1999625.png" }}
           style={styles.avatar}
         />
+
+
         <TouchableOpacity style={styles.editIcon}>
           <Ionicons name="pencil" size={16} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* Inputs */}
+        <Text style={styles.label}>{usuario}</Text>
+
 
 
       <Botao texto="Editar" aoApertar={() => navigate("/pages/perfil/editar")} />
@@ -58,6 +62,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: "#fff",
-
+  },
+  label: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 10,
+    textAlign: "center",
   }
 });   

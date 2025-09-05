@@ -1,10 +1,33 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
 from rest_framework.views import APIView     #baixar pip install djangorestframework
-from rest_framework.response import Response    
+from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
+from rest_framework.permissions import IsAuthenticated
+
+class EditarUsuario(APIView):
+    permission_classes = [IsAuthenticated]  # garante que só usuário logado pode editar
+
+    def patch(self, request):
+
+        user = request.user
+        username = request.data.get('usuario')
+        email = request.data.get('email')
+        cidade = request.data.get('cidade')
+        if username:
+            user.username = username
+        if email:
+            user.email = email
+        if cidade:
+            user.cidade = cidade  
+
+        user.save()
+        return Response({"mensagem": "Dados atualizados com sucesso!"}, status=200)
+
+
+
 
 
 class CadastrarUsuario(APIView):
@@ -37,6 +60,8 @@ class LoginUsuario(APIView):
             return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({'mensagem': 'Login bem-sucedido'}, status=status.HTTP_200_OK)
+        
+   
             
 class Buscadelivro(APIView):
     def get(self, request):

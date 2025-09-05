@@ -19,6 +19,7 @@ from django.urls import path, include
 from Aplicativo.views import CadastrarUsuario
 from Aplicativo.views import LoginUsuario
 from Aplicativo.views import Buscadelivro
+from Aplicativo.views import EditarUsuario
 
 
 
@@ -27,5 +28,7 @@ urlpatterns = [
     path('api/login/', LoginUsuario.as_view()),
     path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/cadastrarlivro/', Buscadelivro.as_view(), name="cadastrar_livro"),
+    path('api/editar/', EditarUsuario.as_view(), name="editar_usuario")
+
 ]
 

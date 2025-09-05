@@ -4,15 +4,13 @@ import MeuInput from "../../functions/textBox";
 import Botao from "../../functions/botoes";
 import { router } from "expo-router";
 import axios from 'axios';
-import { useRouter } from "expo-router";
 
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const router = useRouter()
-
+  
 
    const fazerLogin = async () => {
     try {
