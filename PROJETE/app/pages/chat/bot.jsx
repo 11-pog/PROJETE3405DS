@@ -76,4 +76,5 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#ddd" },
   input: { flex: 1, backgroundColor: "#fff", borderRadius: 20, paddingHorizontal: 15 },
   sendButton: { backgroundColor: "#335C67", borderRadius: 20, padding: 10, marginLeft: 5, justifyContent: "center", alignItems: "center" },
+
 });
