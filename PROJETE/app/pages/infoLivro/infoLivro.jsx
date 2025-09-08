@@ -50,7 +50,7 @@ export default function CadastroLivro() {
     setLoadingLivro(true);
     try {
       const response = await fetch(
-        "https://openlibrary.org/isbn/{isbn}.json"
+        `https://openlibrary.org/isbn/${isbn}.json`
       );
       const data = await response.json();
       const bookData = data[`ISBN:${isbn}`];
