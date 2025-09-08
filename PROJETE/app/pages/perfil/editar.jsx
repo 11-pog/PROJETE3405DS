@@ -5,9 +5,13 @@ import { navigate } from 'expo-router/build/global-state/routing';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MeuInput from '../../functions/textBox';
 import axios from 'axios';
+import { useRouter } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 
 export default function Editar() {
+  const router = useRouter();
+
   const [usuario, setUsuario] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -16,16 +20,25 @@ export default function Editar() {
 
     const Editar = async () => {
     try {
+
+      const token = await AsyncStorage.getItem("token");
+      console.log(token);
+
       const response = await axios.patch('http://127.0.0.1:8000/api/editar/', {
 
         usuario:usuario,
         email:email,
         senha:senha,
         cidade:cidade
-        
-      });
+      },{
+          headers: {
+          Authorization: `Bearer ${token}` 
+          }
+        }
+      );
 
      if (response.status === 200){
+        console.log("Editado com sucesso");
         router.push("/pages/perfil/Perfil");
     }
 
