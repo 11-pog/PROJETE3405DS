@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
+from Aplicativo.models import Publication
 
 
 class CadastrarUsuario(APIView):
@@ -42,10 +43,9 @@ class LoginUsuario(APIView):
             
 class Buscadelivro(APIView):
     def get(self, request):
-        isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
-        if not isbn:
             return Response({"error": "ISBN não fornecido"}, status=400)
-    
+    def post(self, request):
+        isbn = request.data.get('isbn')
         url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
@@ -67,7 +67,7 @@ class Buscadelivro(APIView):
                 resposta_autor = requests.get(url_autor)
 
                 if resposta_autor.status_code == 200:
-                        autor = resposta_autor.json().get("name", "Desconhecido")
+                        autor = resposta_autor.json().get("name", "Não encontrado")
 
 
         resultado = {
@@ -80,5 +80,28 @@ class Buscadelivro(APIView):
             
         return Response(resultado, status=200)
     
+class CadastrarLivro(APIView):
+    def get(self, request):
+        return Response({"message": "Use POST to register a book."})
+    
+    def post(self, request):
+        book_title = request.data.get('book_title')
+        book_author = request.data.get('book_author')
+        book_publisher = request.data.get('book_publisher')
+        book_publication_date = request.data.get('book_publication_date')
+        book_description = request.data.get('book_description')
 
-    #erro provavel em algo da biblioteca rest
+        if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
+            return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
+
+        try:
+            livro = Publication.objects.create(
+                book_title=book_title,
+                book_author=book_author,
+                book_publisher=book_publisher,
+                book_publication_date=book_publication_date,
+                book_description=book_description
+            )
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+        except Exception as e:
+            return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)

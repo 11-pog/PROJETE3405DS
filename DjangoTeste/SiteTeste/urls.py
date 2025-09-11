@@ -20,6 +20,7 @@ from Aplicativo.views import CadastrarUsuario
 from Aplicativo.views import LoginUsuario
 from Aplicativo.views import Buscadelivro
 from Aplicativo.viewsChat import ChatGPTView
+from Aplicativo.views import CadastrarLivro
 
 
 
@@ -27,7 +28,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginUsuario.as_view()),
     path('api/cadastrar/', CadastrarUsuario.as_view()),
-    path('api/cadastrarlivro/', Buscadelivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
+    path('api/buscalivro/', Buscadelivro.as_view()),
+    path('api/cadastrarlivro/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
     path('api/chat/', ChatGPTView.as_view()),
 ]
 
