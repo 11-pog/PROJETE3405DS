@@ -54,13 +54,13 @@ user = get_test_user()
 
 # ---------- payload do livro (inclui post_location_city obrigatório) ----------
 payload = {
-    "book_title": "tentando fazer um sonho",
-    "book_author": "luis",
-    "book_publisher": "uno",
-    "book_publication_date": "2026-12-22",
-    "book_description": "um menino fazendo projete",
+    "book_title": "a face do mal",
+    "book_author": "lili spector",
+    "book_publisher": "viva",
+    "book_publication_date": "2007-12-17",
+    "book_description": "face do medo sobre uma realidade oculta em que todos vivemos, a solidao e nesse livro entevemos a visaod e ana como ocultar crimes atraves da etica e moral",
     "post_location_city": "São Paulo",
-    "post_description": "Post de teste via script"
+    "post_description": "gabriel é uma pessoa foda que viveu em sao paulo, se formou na pscilogia na usp"
 }
 
 # ---------- detecta campos do modelo Publication ----------

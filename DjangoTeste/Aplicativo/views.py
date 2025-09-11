@@ -119,4 +119,29 @@ class CadastrarLivro(APIView):
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
+        
+class pesquisadelivro(APIView):
+    def get(self, request):
+        return Response({"message": "Use POST to search for a book."})
+    
+    def post(self, request):
+        book_title = request.data.get('book_title')
+        if not book_title:
+            return Response({'error': 'O título do livro é obrigatório'}, status=400)
+
+        livros = Publication.objects.filter(book_title__icontains=book_title)
+        if not livros.exists():
+            return Response({'message': 'Nenhum livro encontrado com esse título'}, status=404)
+
+        resultados = []
+        for livro in livros:
+            resultados.append({
+                'book_title': livro.book_title,
+                'book_author': livro.book_author,
+                'book_publisher': livro.book_publisher,
+                'book_publication_date': livro.book_publication_date,
+                'book_description': livro.book_description
+            })
+
+        return Response({'results': resultados}, status=200)      
 
