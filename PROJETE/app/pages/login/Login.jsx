@@ -3,14 +3,51 @@ import { Text, View, Pressable } from "react-native";
 import MeuInput from "../../functions/textBox";
 import Botao from "../../functions/botoes";
 import { router } from "expo-router";
+import axios from 'axios';
+import { useRouter } from "expo-router";
+import Constants from "expo-constants";
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+
+const BACKEND_URL = Constants.expoConfig.extra.BACKEND_URL;
 
 export default function Login() {
-  const [Email, setEmail] = useState("");
-  const [Senha, setSenha] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
-  function GoToPrincipal() {
-    router.push("/pages/principal/principal");
-  }
+  
+
+   const fazerLogin = async () => {
+    try {
+      console.log(BACKEND_URL)
+      const response = await axios.post(`http://127.0.0.1:8000/api/login/`, {
+        email: email,
+        password: senha,
+      });
+
+        console.log("Response do login:", response.data);
+
+      // Ajuste conforme o nome do token que o backend retorna
+      const token = response.data.token || response.data.access; 
+      console.log("Token recebido:", token);
+
+      // Salva o token no AsyncStorage
+      await AsyncStorage.setItem("token", token);
+
+      // Confirma se foi salvo
+      const tokenTeste = await AsyncStorage.getItem("token");
+      console.log("Token salvo no AsyncStorage:", tokenTeste);
+
+      router.push("/pages/principal/principal");
+    } catch (error) {
+      if (error.response) {
+        console.log("Erro no login:", error.response.data);
+      } else {
+        console.log("Erro no login:", error.message);
+      }
+    }
+  };
+
 
   return (
     <View
@@ -33,10 +70,10 @@ export default function Login() {
         Faça login na sua conta
       </Text>
 
-      <MeuInput label="Email:" valor={Email} onChange={setEmail} />
-      <MeuInput label="Senha:" valor={Senha} onChange={setSenha} />
+      <MeuInput label="Email:" valor={email} onChange={setEmail} />
+      <MeuInput label="Senha:" valor={senha} onChange={setSenha} />
 
-      <Botao aoApertar={GoToPrincipal} texto="Entrar" />
+      <Botao aoApertar={fazerLogin} texto="Entrar" />
 
       <Pressable onPress={() => router.push("/pages/cadastrar/cadastrar")}>
         <Text

@@ -1,11 +1,42 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
 from rest_framework.views import APIView     #baixar pip install djangorestframework
-from rest_framework.response import Response    
+from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
+<<<<<<< HEAD
 from Aplicativo.models import Publication
+=======
+from rest_framework.permissions import IsAuthenticated
+from django.views.generic.edit import UpdateView
+from django.http import HttpRequest
+from .serializers import LoginEmailTokenSerializer
+
+class EditarUsuario(APIView):
+    
+    permission_classes = [IsAuthenticated]  # garante que só usuário logado pode editar
+
+    def patch(self, request):
+
+        user = request.user
+        username = request.data.get('usuario')
+        email = request.data.get('email')
+        cidade = request.data.get('cidade')
+        if username:
+            user.username = username
+        if email:
+            user.email = email
+        if cidade:
+            user.cidade = cidade  
+    
+        user.save()
+        return Response({"mensagem": "Dados atualizados com sucesso!"}, status=200)
+
+
+
+>>>>>>> ba20f3e9fbc55b66c23be1e89d5237c735a43914
 
 
 class CadastrarUsuario(APIView):
@@ -16,30 +47,18 @@ class CadastrarUsuario(APIView):
         usuario = request.data.get('usuario')
         senha = request.data.get('senha')
         email = request.data.get('email')
-        
+        cidade = request.data.get('cidade')
+
         if Usuario.objects.filter(username=Usuario).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
-            return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
-        except IntegrityError:
-            return Response({'error': 'Telefone já registrado'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class LoginUsuario(APIView):
-    def get(self, request):
-        return Response({"message": "Use POST to login."})
     
-    def post(self, request):
-        Usuario = request.data.get('usuario')
-        Senha = request.data.get('senha')
-        
-        user = authenticate(username=Usuario, password=Senha)
-        if user is None:
-            return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return Response({'mensagem': 'Login bem-sucedido'}, status=status.HTTP_200_OK)
+        user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
+        return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
+
+
+class LoginUsuario(TokenObtainPairView):
+    serializer_class = LoginEmailTokenSerializer
+   
             
 class Buscadelivro(APIView):
     def get(self, request):
@@ -72,7 +91,7 @@ class Buscadelivro(APIView):
 
         resultado = {
             "titulo": livro.get("title", "Título não encontrado"),
-            "autor(a)": autor, #outro URL
+            "autor(a)": livro.get("authors []"), #outro URL
             "editor(a)": livro.get("publishers", ["Editora desconhecida"])[0],
             "ano_publicacao": livro.get("publish_date", "Ano desconhecido"),
             "Descricao": livro.get("value", "Descrição não disponível"), 
@@ -91,6 +110,7 @@ class CadastrarLivro(APIView):
         book_publication_date = request.data.get('book_publication_date')
         book_description = request.data.get('book_description')
 
+<<<<<<< HEAD
         if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
             return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
 
@@ -105,3 +125,8 @@ class CadastrarLivro(APIView):
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
+=======
+    #erro provavel em algo da biblioteca rest
+
+    
+>>>>>>> ba20f3e9fbc55b66c23be1e89d5237c735a43914

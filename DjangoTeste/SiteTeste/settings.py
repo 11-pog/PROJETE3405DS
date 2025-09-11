@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-m3n3k*&9v1i9+&z7uwx-!ks#ql-89+g@##1!s3rdc&91m4(^b@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
-    'Aplicativo'
+    'Aplicativo',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SiteTeste.wsgi.application'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+}
 
 
 # Database

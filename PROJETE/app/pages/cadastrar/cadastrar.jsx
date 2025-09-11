@@ -1,36 +1,54 @@
 import React, { useState } from 'react'
-import { Text, View, TouchableOpacity, TextInput, Alert } from 'react-native'
+import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
-import { navigate } from 'expo-router/build/global-state/routing'
+import { router } from 'expo-router'
+import axios from 'axios';
+
 
 function Cadastrar () {
   const [usuario, setUsuario] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
-  const [Cidade, setCidade] = useState('')
+  const [cidade, setCidade] = useState('')
+
+  
 
   const enviarUsuario = async () => {
-      const response = await fetch('http://localhost:8000/api/cadastrar/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ usuario: usuario, senha: senha, email: email })
-      })
-      const data = await response.json()
-      console.log(data)
+    try {
+      const response = await axios.post('http://localhost:8000/api/cadastrar/', {
+
+        usuario: usuario,
+        email: email,
+        senha: senha,
+        cidade: cidade
+      });
+
+      Alert.alert("Sucesso", response.data.mensagem);
+      
+       router.push(`/pages/perfil/Perfil?usuario=${usuario}`);
+      console.log(usuario);
+    
+      
+    } catch (error) {
+      if (error.response) {
+  console.log(error.response.data);
+
+  if (error.response.data && error.response.data.error) {
+    Alert.alert("Erro", error.response.data.error);
+  } else {
+    Alert.alert("Erro", "Erro ao cadastrar");
   }
 
-  function Alerta () {
-    Alert.alert('Email digitado:', email) // alerta do React Native
-    Alert.alert('Senha digitada:', senha) // alerta do React Native
+  } else {
+    console.log(error.message);
+    Alert.alert("Erro", "Erro ao cadastrar");
   }
 
-  //tirar depois
-  function GoToPrincpal () {
-    navigate('/pages/principal/principal')
+    }
   }
+
+
 
   return (
     <View
@@ -53,17 +71,10 @@ function Cadastrar () {
         Cadastrar novo usuário
       </Text>
 
-      <MeuInput
-        label={'Nome de usuário: '}
-        valor={usuario}
-        onChange={setUsuario}
-      />
-
+      <MeuInput label={'Nome de usuário: '} valor={usuario} onChange={setUsuario} />
       <MeuInput label={'Email: '} valor={email} onChange={setEmail} />
-
       <MeuInput label={'Senha: '} valor={senha} onChange={setSenha} />
-
-      <MeuInput label={'Cidade: '} valor={Cidade} onChange={setCidade} />
+      <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
 
       <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
     </View>
