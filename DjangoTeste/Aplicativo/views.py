@@ -6,9 +6,7 @@ from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
-<<<<<<< HEAD
 from Aplicativo.models import Publication
-=======
 from rest_framework.permissions import IsAuthenticated
 from django.views.generic.edit import UpdateView
 from django.http import HttpRequest
@@ -33,10 +31,6 @@ class EditarUsuario(APIView):
     
         user.save()
         return Response({"mensagem": "Dados atualizados com sucesso!"}, status=200)
-
-
-
->>>>>>> ba20f3e9fbc55b66c23be1e89d5237c735a43914
 
 
 class CadastrarUsuario(APIView):
@@ -110,7 +104,7 @@ class CadastrarLivro(APIView):
         book_publication_date = request.data.get('book_publication_date')
         book_description = request.data.get('book_description')
 
-<<<<<<< HEAD
+
         if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
             return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
 
@@ -125,8 +119,4 @@ class CadastrarLivro(APIView):
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
-=======
-    #erro provavel em algo da biblioteca rest
 
-    
->>>>>>> ba20f3e9fbc55b66c23be1e89d5237c735a43914
