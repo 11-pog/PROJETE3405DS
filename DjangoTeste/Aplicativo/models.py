@@ -45,6 +45,11 @@ class Usuario(AbstractUser):
         blank=True, 
         )
     
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True) # Fotinha de perfil
+    age = models.PositiveIntegerField(blank=True, null=True)
+    favorite_genres = models.JSONField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    
     def __str__(self):
         return self.username
 
@@ -55,7 +60,8 @@ class Publication(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='publications',
-        verbose_name= "Post Author"
+        verbose_name= "Post Author",
+        blank=True, null=True
     )
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
@@ -70,9 +76,34 @@ class Publication(models.Model):
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
     
     # Post Stuff
+    post_thumbnail = models.ImageField(upload_to='thumbnails/')
     post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
+    
+    tags = models.JSONField(blank=True, null=True)  # Store genre tags, themes
+    isbn = models.CharField(max_length=20, blank=True, null=True)
+    language = models.CharField(max_length=30, blank=True, null=True)
+    full_text_excerpt = models.TextField(blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
     def __str__(self):
         return self.book_title
+
+
+class Interaction(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    
+    book_rating = models.IntegerField(blank=True, null=True)  # optional
+    
+    is_liked = models.BooleanField(default=False)
+    view_count = models.PositiveIntegerField(default=0)
+    
+    messaged_author = models.BooleanField(default=False)
+    verified_trade = models.BooleanField(default=False)
+    
+    last_viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'publication')
