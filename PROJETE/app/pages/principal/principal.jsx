@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
