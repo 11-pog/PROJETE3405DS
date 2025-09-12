@@ -48,6 +48,7 @@ export default function Login() {
         console.log("Erro no login:", error.message);
       }
     }
+     
   };
 
 
@@ -71,9 +72,10 @@ export default function Login() {
       >
         Faça login na sua conta
       </Text>
+        
 
       <MeuInput label="Email:" valor={email} onChange={setEmail} />
-      <MeuInput label="Senha:" valor={senha} onChange={setSenha} />
+      <MeuInput label="Senha:" valor={senha} onChange={setSenha}/>
 
       <Botao aoApertar={fazerLogin} texto="Entrar" />
 

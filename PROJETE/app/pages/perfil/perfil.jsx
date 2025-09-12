@@ -5,10 +5,15 @@ import { navigate } from 'expo-router/build/global-state/routing';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MeuInput from '../../functions/textBox';
 import BarraInicial from '../../functions/barra_inicial';
-import {useLocalSearchParams} from "expo-router";
+import {useLocalSearchParams, useRouter} from "expo-router";
+
+
 
 export default function Perfil() {
-  const {usuario} = useLocalSearchParams();
+  const router = useRouter();
+ const { usuario, email, cidade } = useLocalSearchParams();
+  
+
   return (
     <View style={styles.container}>
       {/* Foto de perfil */}
@@ -24,8 +29,11 @@ export default function Perfil() {
         </TouchableOpacity>
       </View>
 
-        <Text style={styles.label}>{usuario}</Text>
+      
 
+    <Text>{usuario}</Text>
+    <Text>{email}</Text>
+    <Text>{cidade}</Text>
 
 
       <Botao texto="Editar" aoApertar={() => navigate("/pages/perfil/editar")} />

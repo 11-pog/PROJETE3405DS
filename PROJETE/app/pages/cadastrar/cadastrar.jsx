@@ -46,6 +46,11 @@ function Cadastrar () {
   }
 
     }
+    router.push({
+  pathname: "/pages/perfil/Perfil",
+  params: { usuario, email, cidade }
+});
+
   }
 
 
