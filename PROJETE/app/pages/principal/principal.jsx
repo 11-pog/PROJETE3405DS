@@ -64,11 +64,10 @@ export default function FeedLivros() {
       <View style={styles.pesquisarBtn}>
         <TouchableOpacity onPress={() => console.log('Pesquisar clicado')}>
           <Ionicons name="search" size={28} color="#9e2a2b" />
-          <Text style={styles.textBusca}>Buscar livro</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.content}>
-          
+          <Text style={styles.textBusca}>Buscar livro</Text>
         </View>
 
       {/* Lista de livros */}
