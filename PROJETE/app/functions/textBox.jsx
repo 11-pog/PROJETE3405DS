@@ -7,12 +7,15 @@ export default function MeuInput({ label, valor, onChange, placeholder, senha = 
     <View style={{ marginBottom: 5 }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        list="opcoes"
         value={valor}
         onChangeText={onChange}
         placeholder={"Escreva aqui..."}
         secureTextEntry={senha}
         style={styles.input}
       />
+     
+
     </View>
   );
 }
