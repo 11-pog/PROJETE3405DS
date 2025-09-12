@@ -1,10 +1,36 @@
 import requests #baixar pip install requests
 from django.db import IntegrityError
 from rest_framework.views import APIView     #baixar pip install djangorestframework
-from rest_framework.response import Response    
+from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
 from Aplicativo.models import Usuario
+from Aplicativo.models import Publication
+from rest_framework.permissions import IsAuthenticated
+from django.views.generic.edit import UpdateView
+from django.http import HttpRequest
+from .serializers import LoginEmailTokenSerializer
+
+class EditarUsuario(APIView):
+    
+    permission_classes = [IsAuthenticated]  # garante que só usuário logado pode editar
+
+    def patch(self, request):
+
+        user = request.user
+        username = request.data.get('usuario')
+        email = request.data.get('email')
+        cidade = request.data.get('cidade')
+        if username:
+            user.username = username
+        if email:
+            user.email = email
+        if cidade:
+            user.cidade = cidade  
+    
+        user.save()
+        return Response({"mensagem": "Dados atualizados com sucesso!"}, status=200)
 
 
 class CadastrarUsuario(APIView):
@@ -24,26 +50,15 @@ class CadastrarUsuario(APIView):
         return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
 
 
-class LoginUsuario(APIView):
-    def get(self, request):
-        return Response({"message": "Use POST to login."})
-    
-    def post(self, request):
-        email= request.data.get('email')
-        senha = request.data.get('senha')
-        
-        user = authenticate(username=email, password=senha)
-        if user is None:
-            return Response({'error': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return Response({'mensagem': 'Login bem-sucedido'}, status=status.HTTP_200_OK)
+class LoginUsuario(TokenObtainPairView):
+    serializer_class = LoginEmailTokenSerializer
+   
             
 class Buscadelivro(APIView):
     def get(self, request):
-        isbn = 9780545069670 #colocar isbn manual(codigo anterior), request.query_params.get('isbn')
-        if not isbn:
             return Response({"error": "ISBN não fornecido"}, status=400)
-    
+    def post(self, request):
+        isbn = request.data.get('isbn')
         url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
         resposta = requests.get(url)
         
@@ -65,7 +80,7 @@ class Buscadelivro(APIView):
                 resposta_autor = requests.get(url_autor)
 
                 if resposta_autor.status_code == 200:
-                        autor = resposta_autor.json().get("name", "Desconhecido")
+                        autor = resposta_autor.json().get("name", "Não encontrado")
 
 
         resultado = {
@@ -78,5 +93,55 @@ class Buscadelivro(APIView):
             
         return Response(resultado, status=200)
     
+class CadastrarLivro(APIView):
+    def get(self, request):
+        return Response({"message": "Use POST to register a book."})
+    
+    def post(self, request):
+        book_title = request.data.get('book_title')
+        book_author = request.data.get('book_author')
+        book_publisher = request.data.get('book_publisher')
+        book_publication_date = request.data.get('book_publication_date')
+        book_description = request.data.get('book_description')
 
-    #erro provavel em algo da biblioteca rest
+
+        if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
+            return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
+
+        try:
+            livro = Publication.objects.create(
+                book_title=book_title,
+                book_author=book_author,
+                book_publisher=book_publisher,
+                book_publication_date=book_publication_date,
+                book_description=book_description
+            )
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+        except Exception as e:
+            return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
+        
+class pesquisadelivro(APIView):
+    def get(self, request):
+        return Response({"message": "Use POST to search for a book."})
+    
+    def post(self, request):
+        book_title = request.data.get('book_title')
+        if not book_title:
+            return Response({'error': 'O título do livro é obrigatório'}, status=400)
+
+        livros = Publication.objects.filter(book_title__icontains=book_title)
+        if not livros.exists():
+            return Response({'message': 'Nenhum livro encontrado com esse título'}, status=404)
+
+        resultados = []
+        for livro in livros:
+            resultados.append({
+                'book_title': livro.book_title,
+                'book_author': livro.book_author,
+                'book_publisher': livro.book_publisher,
+                'book_publication_date': livro.book_publication_date,
+                'book_description': livro.book_description
+            })
+
+        return Response({'results': resultados}, status=200)      
+

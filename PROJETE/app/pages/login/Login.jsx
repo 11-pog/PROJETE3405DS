@@ -5,7 +5,9 @@ import Botao from "../../functions/botoes";
 import { router } from "expo-router";
 import axios from 'axios';
 import { useRouter } from "expo-router";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 const BACKEND_URL = Constants.expoConfig.extra.BACKEND_URL;
 
@@ -13,31 +15,38 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const router = useRouter()
-
+  
 
    const fazerLogin = async () => {
     try {
       console.log(BACKEND_URL)
-      const response = await axios.post(`${BACKEND_URL}/api/login/`, { // Entendes a ideia? (consertar)
-
+      const response = await axios.post(`http://127.0.0.1:8000/api/login/`, {
         email: email,
-        senha: senha,
-        
+        password: senha,
       });
 
-     if (response.status === 200){
-        router.push("/pages/principal/principal");
-    }
+        console.log("Response do login:", response.data);
 
+      // Ajuste conforme o nome do token que o backend retorna
+      const token = response.data.token || response.data.access; 
+      console.log("Token recebido:", token);
+
+      // Salva o token no AsyncStorage
+      await AsyncStorage.setItem("token", token);
+
+      // Confirma se foi salvo
+      const tokenTeste = await AsyncStorage.getItem("token");
+      console.log("Token salvo no AsyncStorage:", tokenTeste);
+
+      router.push("/pages/principal/principal");
     } catch (error) {
-  if (error.response) {
-    console.log("Erro no login:", error.response.data);
-  } else {
-    console.log("Erro no login:", error.message);
-  }
-}
-   }
+      if (error.response) {
+        console.log("Erro no login:", error.response.data);
+      } else {
+        console.log("Erro no login:", error.message);
+      }
+    }
+  };
 
 
   return (
