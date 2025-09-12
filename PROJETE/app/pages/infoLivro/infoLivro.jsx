@@ -9,13 +9,50 @@ import {
   ActivityIndicator, 
   Alert 
 } from "react-native";
+import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRoute } from "@react-navigation/native";
+
 
 export default function CadastroLivro() {
+  //iniciando o post para pegar informações do livro
+  const [titulo, setTitulo] = useState('')
+  const [autor, setAutor] = useState('')
+  const [editora, setEditora] = useState('')
+  const [data, setData] = useState('')
+  const [descricao, setDescricao] = useState('')
+  
+  const SalvarLivro = async () => {
+    console.log("botão apertado");
+    try{
+      const response = await axios.post('http://127.0.0.1:8000/api/cadastrarlivro/',{
+          book_title: titulo,
+          book_author: autor,
+          book_publisher: editora,
+          book_publication_date: data,
+          book_description: descricao,
+      });
+       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
+      console.log("salvo");
+    
+  }   catch (error) {
+      if (error.response) {
+        console.log(error.response.data);
+        Alert.alert("Erro", error.response.data.error || "Erro ao cadastrar livro");
+      } else {
+        console.log(error.message);
+        Alert.alert("Erro", "Não foi possível conectar ao servidor");
+      }
+    }
+    }// fim da const 
+  
+
+
+
   const [rating, setRating] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
@@ -65,10 +102,56 @@ export default function CadastroLivro() {
       }
     } catch (error) {
       Alert.alert("Erro", "Falha ao buscar dados do livro.");
-    } finally {
-      setLoadingLivro(false);
-    }
+    } 
   };
+
+   // Tela de cadastro de livro
+  return (
+    <View style={styles.container}>
+      <StatusBar hidden />
+      <Text style={styles.header}>Digite as informações do livro</Text>
+
+      <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo}/>
+      <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
+      <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
+      <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
+      <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+
+      {/* Estrelas de avaliação */}
+      <View style={styles.starsContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+            <Ionicons
+              name={star <= rating ? "star" : "star-outline"}
+              size={28}
+              color="#E09F3E"
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Dados do livro carregado */}
+      {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
+      {livro && (
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          {livro.capa && (
+            <Image
+              source={{ uri: livro.capa }}
+              style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
+            />
+          )}
+          <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
+          <Text>{livro.autor}</Text>
+        </View>
+      )}
+    <Botao texto="Salvar informações" aoApertar={SalvarLivro}/>
+      <Text style={styles.ouTexto}>ou</Text>
+
+      <Botao texto="Ler ISBN" aoApertar={handleOpenCamera} />
+      
+      <BarraInicial />
+    </View>
+  );
 
   // Tela da câmera
   if (showCamera) {
@@ -115,52 +198,9 @@ export default function CadastroLivro() {
         )}
       </View>
     );
+  
   }
 
-  // Tela de cadastro de livro
-  return (
-    <View style={styles.container}>
-      <StatusBar hidden />
-      <Text style={styles.header}>Digite as informações do livro</Text>
-
-      <MeuInput width={80} label="Título do Livro:" value={livro?.titulo || ""} />
-      <MeuInput width={80} label="Autor(a):" value={livro?.autor || ""} />
-      <MeuInput width={80} label="Troca/Empréstimo:" />
-
-      {/* Estrelas de avaliação */}
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
-            <Ionicons
-              name={star <= rating ? "star" : "star-outline"}
-              size={28}
-              color="#E09F3E"
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Dados do livro carregado */}
-      {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
-      {livro && (
-        <View style={{ marginTop: 20, alignItems: "center" }}>
-          {livro.capa && (
-            <Image
-              source={{ uri: livro.capa }}
-              style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
-            />
-          )}
-          <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
-          <Text>{livro.autor}</Text>
-        </View>
-      )}
-
-      <Text style={styles.ouTexto}>ou</Text>
-
-      <Botao texto="Ler ISBN" onPress={handleOpenCamera} />
-      <BarraInicial />
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
