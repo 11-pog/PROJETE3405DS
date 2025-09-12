@@ -1,10 +1,35 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
-
+from django.contrib.auth.models import User
 from django.conf import settings
 
 # Create your models here.
+
+class UserManager(models.Manager):
+    def create_user(self, username, email, password=None):
+        if not email:
+            raise ValueError("Users must have an email address")
+        
+        user = self.model(
+            username=username,
+            email=self.normalize_email(email),
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password):
+        user = self.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user 
 
 phone_regex_pattern = r'^\+?1?\d{9,15}$'
 phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inválido.") # negocio do chat sla
@@ -55,7 +80,8 @@ class Publication(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='publications',
-        verbose_name= "Post Author"
+        verbose_name= "Post Author",
+        blank=True, null=True
     )
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
@@ -76,3 +102,25 @@ class Publication(models.Model):
     
     def __str__(self):
         return self.book_title
+    
+class ChatGroup(models.Model):
+    group_name = models.CharField(max_length=128,unique=True)
+
+    def __str__(self):
+        return self.group_name
+    
+class ChatMessage(models.Model):
+    group = models.ForeignKey(ChatGroup, related_name='chat_messages', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.CharField(max_length=300)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} : {self.body}'
+    
+    class Meta:
+        ordering = ('created',)
+
+
+
+    

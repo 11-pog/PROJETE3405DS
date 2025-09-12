@@ -13,6 +13,8 @@ export default function MeuInput({ label, valor, onChange, placeholder, senha = 
         secureTextEntry={senha}
         style={styles.input}
       />
+     
+
     </View>
   );
 }

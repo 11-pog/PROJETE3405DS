@@ -23,7 +23,6 @@ export default function Login() {
       const response = await axios.post(`http://127.0.0.1:8000/api/login/`, {
         email: email,
         password: senha,
-        
       });
 
         console.log("Response do login:", response.data);
@@ -47,6 +46,7 @@ export default function Login() {
         console.log("Erro no login:", error.message);
       }
     }
+     
   };
 
 
@@ -70,9 +70,10 @@ export default function Login() {
       >
         Faça login na sua conta
       </Text>
+        
 
       <MeuInput label="Email:" valor={email} onChange={setEmail} />
-      <MeuInput label="Senha:" valor={senha} onChange={setSenha} />
+      <MeuInput label="Senha:" valor={senha} onChange={setSenha}/>
 
       <Botao aoApertar={fazerLogin} texto="Entrar" />
 
