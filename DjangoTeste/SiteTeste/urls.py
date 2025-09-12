@@ -23,6 +23,7 @@ from Aplicativo.views import CadastrarLivro
 from Aplicativo.views import EditarUsuario
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
+from Aplicativo.views import pesquisadelivro
 
 
 
@@ -36,6 +37,8 @@ urlpatterns = [
     path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/cadastrarlivro/', Buscadelivro.as_view(), name="cadastrar_livro"),
     path('api/editar/', EditarUsuario.as_view(), name="editar_usuario"),
+    path('api/pesaquisa/', pesquisadelivro.as_view()),
+
 
 ]
 

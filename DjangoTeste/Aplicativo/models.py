@@ -1,10 +1,35 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
-
+from django.contrib.auth.models import User
 from django.conf import settings
 
 # Create your models here.
+
+class UserManager(models.Manager):
+    def create_user(self, username, email, password=None):
+        if not email:
+            raise ValueError("Users must have an email address")
+        
+        user = self.model(
+            username=username,
+            email=self.normalize_email(email),
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password):
+        user = self.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user 
 
 phone_regex_pattern = r'^\+?1?\d{9,15}$'
 phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inválido.") # negocio do chat sla
@@ -45,11 +70,6 @@ class Usuario(AbstractUser):
         blank=True, 
         )
     
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True) # Fotinha de perfil
-    age = models.PositiveIntegerField(blank=True, null=True)
-    favorite_genres = models.JSONField(blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    
     def __str__(self):
         return self.username
 
@@ -76,34 +96,31 @@ class Publication(models.Model):
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
     
     # Post Stuff
-    post_thumbnail = models.ImageField(upload_to='thumbnails/')
     post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
-    
-    tags = models.JSONField(blank=True, null=True)  # Store genre tags, themes
-    isbn = models.CharField(max_length=20, blank=True, null=True)
-    language = models.CharField(max_length=30, blank=True, null=True)
-    full_text_excerpt = models.TextField(blank=True, null=True)
-    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
     def __str__(self):
         return self.book_title
+    
+class ChatGroup(models.Model):
+    group_name = models.CharField(max_length=128,unique=True)
 
+    def __str__(self):
+        return self.group_name
+    
+class ChatMessage(models.Model):
+    group = models.ForeignKey(ChatGroup, related_name='chat_messages', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.CharField(max_length=300)
+    created = models.DateTimeField(auto_now_add=True)
 
-class Interaction(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.user.username} : {self.body}'
     
-    book_rating = models.IntegerField(blank=True, null=True)  # optional
-    
-    is_liked = models.BooleanField(default=False)
-    view_count = models.PositiveIntegerField(default=0)
-    
-    messaged_author = models.BooleanField(default=False)
-    verified_trade = models.BooleanField(default=False)
-    
-    last_viewed_at = models.DateTimeField(auto_now=True)
-
     class Meta:
-        unique_together = ('user', 'publication')
+        ordering = ('created',)
+
+
+
+    

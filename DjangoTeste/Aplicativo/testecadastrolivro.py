@@ -190,10 +190,10 @@ else:
     else:
         # modelo não possui campo FK; não conseguimos mostrar FK via ORM
         print("Observação: o modelo Publication não define um campo FK para User — o DB pode ter a coluna author_id, mas o modelo atual não expõe ela.")
-    print("book_title:", safe_get("book_title"))
-    print("book_publisher:", safe_get("book_publisher"))
-    print("book_description:", safe_get("book_description"))
-    print("book_publication_date:", safe_get("book_publication_date"))
-    print("post_location_city:", safe_get("post_location_city"))
-    print("post_description:", safe_get("post_description"))
+    print("titulo:", safe_get("book_title"))
+    print("editor(a):", safe_get("book_publisher"))
+    print("descrição do livro:", safe_get("book_description"))
+    print("dat de publicação:", safe_get("book_publication_date"))
+    print("local de postagem:", safe_get("post_location_city"))
+    print("descrição da postagem:", safe_get("post_description"))
     print("created_at:", safe_get("created_at"))
