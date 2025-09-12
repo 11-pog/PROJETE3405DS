@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Botao from '../../functions/botoes';
-import { navigate } from 'expo-router/build/global-state/routing';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MeuInput from '../../functions/textBox';
 import BarraInicial from '../../functions/barra_inicial';
-import {useLocalSearchParams} from "expo-router";
+import { useRouter } from 'expo-router';
 
 export default function Perfil() {
-  const {usuario} = useLocalSearchParams();
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       {/* Foto de perfil */}
@@ -18,20 +17,15 @@ export default function Perfil() {
           style={styles.avatar}
         />
 
-
         <TouchableOpacity style={styles.editIcon}>
           <Ionicons name="pencil" size={16} color="#fff" />
         </TouchableOpacity>
       </View>
 
-        <Text style={styles.label}>{usuario}</Text>
-
-
-
-      <Botao texto="Editar" aoApertar={() => navigate("/pages/perfil/editar")} />
-      <Botao texto="Sair" aoApertar={() => navigate("/pages/login/Login")} />
+   
+      <Botao texto="Editar" aoApertar={() => router.push("/pages/perfil/editar")} />
+      <Botao texto="Sair" aoApertar={() => router.push("/pages/login/Login")} />
       <BarraInicial />
-
     </View>
   );
 }
@@ -69,4 +63,4 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   }
-});   
+});

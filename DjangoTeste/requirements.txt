@@ -1,4 +1,4 @@
-Django>=5.2.5
-djangorestframework>=3.16.0
-Requests>=2.32.4
-django-cors-headers>=4.7.0
+pip install Django>=5.2.5
+pip install djangorestframework>=3.16.0
+pip install Requests>=2.32.4
+pip install django-cors-headers>=4.7.0

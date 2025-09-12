@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
+import React, { use, useState } from 'react'
 import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
-import { router } from 'expo-router'
+import { useRouter } from 'expo-router'
 import axios from 'axios';
-
 
 function Cadastrar () {
   const [usuario, setUsuario] = useState('')
@@ -12,24 +11,22 @@ function Cadastrar () {
   const [senha, setSenha] = useState('')
   const [cidade, setCidade] = useState('')
 
-  
+  const router = useRouter();
 
   const enviarUsuario = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/cadastrar/', {
+      const response = await axios.post('http://127.0.0.1:8000/api/cadastrar/', {
 
         usuario: usuario,
         email: email,
         senha: senha,
         cidade: cidade
+        
       });
 
       Alert.alert("Sucesso", response.data.mensagem);
-      
-       router.push(`/pages/perfil/Perfil?usuario=${usuario}`);
-      console.log(usuario);
-    
-      
+
+
     } catch (error) {
       if (error.response) {
   console.log(error.response.data);

@@ -14,8 +14,45 @@ import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import axios from "axios";
+import { useRoute } from "@react-navigation/native";
+
 
 export default function CadastroLivro() {
+
+//iniciando o post para pegar informações do livro
+  const [titulo, setTitulo] = useState('')
+  const [autor, setAutor] = useState('')
+  const [editora, setEditora] = useState('')
+  const [data, setData] = useState('')
+  const [descricao, setDescricao] = useState('')
+  
+  const SalvarLivro = async () => {
+    console.log("botão apertado");
+    try{
+      const response = await axios.post('http://127.0.0.1:8000/api/cadastrarlivro/',{
+          book_title: titulo,
+          book_author: autor,
+          book_publisher: editora,
+          book_publication_date: data,
+          book_description: descricao,
+      });
+       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
+      console.log("salvo");
+    
+  }   catch (error) {
+      if (error.response) {
+        console.log(error.response.data);
+        Alert.alert("Erro", error.response.data.error || "Erro ao cadastrar livro");
+      } else {
+        console.log(error.message);
+        Alert.alert("Erro", "Não foi possível conectar ao servidor");
+      }
+    }
+    }// fim da const 
+  
+
+
   const [rating, setRating] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
@@ -123,9 +160,11 @@ export default function CadastroLivro() {
       <StatusBar hidden />
       <Text style={styles.header}>Digite as informações do livro</Text>
 
-      <MeuInput width={80} label="Título do Livro:" value={livro?.titulo || ""} />
-      <MeuInput width={80} label="Autor(a):" value={livro?.autor || ""} />
-      <MeuInput width={80} label="Troca/Empréstimo:" />
+     <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo}/>
+      <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
+      <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
+      <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
+      <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
 
       {/* Estrelas de avaliação */}
       <View style={styles.starsContainer}>
@@ -154,7 +193,8 @@ export default function CadastroLivro() {
           <Text>{livro.autor}</Text>
         </View>
       )}
-
+      <Botao texto="Salvar Livro" onPress={SalvarLivro} />  
+      
       <Text style={styles.ouTexto}>ou</Text>
 
       <Botao texto="Ler ISBN" onPress={handleOpenCamera} />

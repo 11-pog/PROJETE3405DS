@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.generic.edit import UpdateView
 from django.http import HttpRequest
 from .serializers import LoginEmailTokenSerializer
+from django.shortcuts import render
+
 
 class EditarUsuario(APIView):
     
@@ -18,7 +20,7 @@ class EditarUsuario(APIView):
     def patch(self, request):
 
         user = request.user
-        username = request.data.get('usuario')
+        username = request.data.get('username')
         email = request.data.get('email')
         cidade = request.data.get('cidade')
         if username:
