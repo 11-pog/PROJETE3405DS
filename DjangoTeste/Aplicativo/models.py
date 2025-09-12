@@ -76,7 +76,7 @@ class Publication(models.Model):
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
     
     # Post Stuff
-    post_thumbnail = models.ImageField(upload_to='thumbnails/')
+    post_thumbnail = models.ImageField(upload_to='thumbnails/', null=True, verbose_name= "Post Thumbnail")
     post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
     

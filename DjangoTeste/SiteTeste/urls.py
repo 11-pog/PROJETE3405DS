@@ -19,7 +19,6 @@ from django.urls import path, include
 from Aplicativo.views import CadastrarUsuario
 from Aplicativo.views import LoginUsuario
 from Aplicativo.views import Buscadelivro
-from Aplicativo.viewsChat import ChatGPTView
 from Aplicativo.views import CadastrarLivro
 from Aplicativo.views import EditarUsuario
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -33,7 +32,6 @@ urlpatterns = [
     path('api/cadastrar/', CadastrarUsuario.as_view()),
     path('api/buscalivro/', Buscadelivro.as_view()),
     path('api/cadastrarlivro/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
-    path('api/chat/', ChatGPTView.as_view()),
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
     path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/cadastrarlivro/', Buscadelivro.as_view(), name="cadastrar_livro"),
