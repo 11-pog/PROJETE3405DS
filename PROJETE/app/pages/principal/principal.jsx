@@ -4,67 +4,54 @@ import { Ionicons } from '@expo/vector-icons';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
 
-// quantidade de livros por pagina 
 const PAGE_SIZE = 10;
 
 export default function FeedLivros() {
-  // livros carregados até o momento
   const [books, setBooks] = useState([]);
-  // pagina atual (para saber qual lote de livros buscar)
   const [page, setPage] = useState(1);
-  // controle de carregamento pra evitar bug
   const [loading, setLoading] = useState(false);
-  // verifica se ainda tem mais livros para carregar
   const [hasMore, setHasMore] = useState(true);
 
-  // função que busca mais livros e atualiza a lista
   async function fetchBooks() {
-    // nao busca novamente caso já esteja carregando ou nao tenha mais livros
     if (loading || !hasMore) return;
 
     setLoading(true);
-
-    // isso aqui simula uma API
     const newBooks = await fetchLivrosMock(page, PAGE_SIZE);
 
     if (newBooks.length > 0) {
-      // adiciona os novos livros à lista existente
       setBooks((prevBooks) => [...prevBooks, ...newBooks]);
       setPage((prevPage) => prevPage + 1);
     } else {
-      // se não existir livros novos, marca que chegou ao fim
       setHasMore(false);
     }
 
     setLoading(false);
   }
 
-  // carrega a primeira página ao montar o componente
   useEffect(() => {
     fetchBooks();
   }, []);
 
-  // renderiza cada livro
   function renderBook({ item }) {
     return (
       <View style={styles.card}>
-        {/* imagem de capa */}
+        {/* Imagem do livro */}
         <Image source={{ uri: item.cover }} style={styles.image} />
 
-        {/* título, autor e tipo */}
+        {/* Título e tipo */}
         <View style={styles.content}>
           <Text style={styles.title}>{item.title} - {item.author}</Text>
           <Text style={styles.tipoAcao}>Empréstimo / Troca</Text>
         </View>
 
-        {/* botões de interação */}
+        {/* Botões de interação */}
         <View style={styles.actions}>
           <TouchableOpacity>
             <Ionicons name="heart-outline" size={22} color="#9e2a2b" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.commentBtn}>
-            <Ionicons name="chatbubble-ellipses-outline" size={22} color='#E09F3E' />
+            <Ionicons name="chatbubble-ellipses-outline" size={22} color="#E09F3E" />
           </TouchableOpacity>
         </View>
       </View>
@@ -73,14 +60,29 @@ export default function FeedLivros() {
 
   return (
     <View style={styles.container}>
+      {/* Ícone de pesquisa no topo */}
+      <View style={styles.pesquisarBtn}>
+        <TouchableOpacity onPress={() => console.log('Pesquisar clicado')}>
+          <Ionicons name="search" size={28} color="#9e2a2b" />
+          <Text style={styles.textBusca}>Buscar livro</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.content}>
+          
+        </View>
+
+      {/* Lista de livros */}
       <FlatList
         data={books}
         renderItem={renderBook}
         keyExtractor={(item) => item.id.toString()}
-        onEndReached={fetchBooks} // carrega mais livros ao chegar no final
-        onEndReachedThreshold={0.5} // define quando carregar (0.5 = metade da tela antes do fim)
-        ListFooterComponent={loading && <ActivityIndicator size="large" />} // mostra indicador de carregamento
+        onEndReached={fetchBooks}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loading && <ActivityIndicator size="large" />}
+        contentContainerStyle={styles.listContent}
       />
+
+      {/* Barra inferior */}
       <BarraInicial />
     </View>
   );
@@ -89,7 +91,25 @@ export default function FeedLivros() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 60,
+    backgroundColor: '#fff',
+    paddingBottom: 60, // espaço para a barra inferior
+  },
+  pesquisarBtn: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    marginBottom: 5,
+    marginVertical: 8,
+    marginHorizontal: 35,
+    borderRadius: 30,
+    elevation: 2,
+    shadowColor: '#e7dedeff',
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+  },
+  listContent: {
+    paddingBottom: 80, // evita sobreposição com a barra inferior
   },
   card: {
     flexDirection: 'row',
@@ -134,6 +154,12 @@ const styles = StyleSheet.create({
   chatBtn: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: 'transparent',
+  },
+  textBusca: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginTop: 4,
+    fontSize: 15,
+    color: '#888',
   },
 });
