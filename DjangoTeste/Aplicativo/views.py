@@ -12,6 +12,10 @@ from django.views.generic.edit import UpdateView
 from django.http import HttpRequest
 from .serializers import LoginEmailTokenSerializer
 from django.shortcuts import render
+from .models import Publication
+
+
+
 
 
 class EditarUsuario(APIView):

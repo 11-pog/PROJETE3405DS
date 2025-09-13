@@ -1,22 +1,46 @@
 import React, { useState, useRef } from "react";
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  StatusBar, 
-  ActivityIndicator, 
-  Alert 
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRoute } from "@react-navigation/native";
+
 
 export default function CadastroLivro() {
+
+//iniciando o post para pegar informações do livro
+  const [titulo, setTitulo] = useState('')
+  const [autor, setAutor] = useState('')
+  const [editora, setEditora] = useState('')
+  const [data, setData] = useState('')
+  const [descricao, setDescricao] = useState('')
+  
+  const SalvarLivro = async () => {
+    console.log("botão apertado");
+    try{
+      const response = await axios.post('http://127.0.0.1:8000/api/cadastrarlivro/',{
+          book_title: titulo,
+          book_author: autor,
+          book_publisher: editora,
+          book_publication_date: data,
+          book_description: descricao,
+      });
+       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
+      console.log("salvo");
+    
+  }  catch (error) {
+  if (error.response) {
+    console.log("Erro no cadastro:", error.response.data);
+  } else {
+    console.log("Erro inesperado:", error.message);
+  }
+}
+}//fim da const
+
+
   const [rating, setRating] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
@@ -81,6 +105,8 @@ export default function CadastroLivro() {
       <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
       <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
 
+
+
       {/* Estrelas de avaliação */}
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -92,7 +118,17 @@ export default function CadastroLivro() {
             />
           </TouchableOpacity>
         ))}
+
+        
       </View>
+
+      <Botao texto="Salvar informações" aoApertar={SalvarLivro}/>
+       
+      <Text style={styles.ouTexto}>ou</Text>
+
+      <Botao texto="Ler ISBN" aoApertar={handleOpenCamera} />
+
+
 
       {/* Dados do livro carregado */}
       {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
@@ -108,11 +144,7 @@ export default function CadastroLivro() {
           <Text>{livro.autor}</Text>
         </View>
       )}
-    <Botao texto="Salvar informações" aoApertar={SalvarLivro}/>
-      <Text style={styles.ouTexto}>ou</Text>
 
-      <Botao texto="Ler ISBN" aoApertar={handleOpenCamera} />
-      
       <BarraInicial />
     </View>
   );
@@ -170,9 +202,11 @@ export default function CadastroLivro() {
       <StatusBar hidden />
       <Text style={styles.header}>Digite as informações do livro</Text>
 
-      <MeuInput width={80} label="Título do Livro:" value={livro?.titulo || ""} />
-      <MeuInput width={80} label="Autor(a):" value={livro?.autor || ""} />
-      <MeuInput width={80} label="Troca/Empréstimo:" />
+     <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo}/>
+      <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
+      <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
+      <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
+      <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
 
       {/* Estrelas de avaliação */}
       <View style={styles.starsContainer}>
@@ -201,7 +235,8 @@ export default function CadastroLivro() {
           <Text>{livro.autor}</Text>
         </View>
       )}
-
+      <Botao texto="Salvar Livro" onPress={SalvarLivro} />  
+      
       <Text style={styles.ouTexto}>ou</Text>
 
       <Botao texto="Ler ISBN" onPress={handleOpenCamera} />

@@ -111,7 +111,7 @@ class ChatGroup(models.Model):
     
 class ChatMessage(models.Model):
     group = models.ForeignKey(ChatGroup, related_name='chat_messages', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # mudei aqui pq tava dando erro no user
     body = models.CharField(max_length=300)
     created = models.DateTimeField(auto_now_add=True)
 
