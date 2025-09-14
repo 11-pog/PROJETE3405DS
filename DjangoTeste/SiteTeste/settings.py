@@ -143,5 +143,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# Media
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MEDIA_URL = '/media/'              # The URL that serves media
+MEDIA_ROOT = BASE_DIR / 'media'    # The filesystem path
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+
+# Static
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
 # COISAS ADICIONADAS DEPOIS BEM BIZARRO
 AUTH_USER_MODEL = 'Aplicativo.Usuario'
