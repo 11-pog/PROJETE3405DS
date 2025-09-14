@@ -14,13 +14,13 @@ export default function FeedLivros() {
   const [hasMore, setHasMore] = useState(true);
 
   async function fetchBooks() {
-      try {
-    const response = await axios.get('http://127.0.0.1:8000/api/livros/');
-    setBooks(response.data); // lista de livros
-  } catch (error) {
-    console.error("Erro ao buscar livros:", error);
-    return [];
-  }
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/livros/');
+      setBooks(response.data); // lista de livros
+    } catch (error) {
+      console.error("Erro ao buscar livros:", error);
+      return [];
+    }
     /*if (loading || !hasMore) return;
 
     setLoading(true);
@@ -70,14 +70,14 @@ export default function FeedLivros() {
   return (
     <View style={styles.container}>
       {/* Ícone de pesquisa no topo */}
-      <View style={styles.pesquisarBtn}>
+      <SafeAreaView style={styles.pesquisarBtn}>
         <TouchableOpacity onPress={() => console.log('Pesquisar clicado')}>
           <Ionicons name="search" size={28} color="#9e2a2b" />
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
       <View style={styles.content}>
-          <Text style={styles.textBusca}>Buscar livro</Text>
-        </View>
+        <TextInput placeholder="Buscar um livro" />
+      </View>
 
       {/* Lista de livros */}
       <FlatList
