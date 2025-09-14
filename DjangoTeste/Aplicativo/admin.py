@@ -1,6 +1,6 @@
 from django.contrib import admin
-from Aplicativo.models.user import Usuario 
-from Aplicativo.models.chat import ChatGroup, ChatMessage    
+from Aplicativo.models.user_models import Usuario 
+from Aplicativo.models.chat_models import ChatGroup, ChatMessage    
 from django.contrib.auth.admin import UserAdmin
 
 admin.site.register(ChatGroup)

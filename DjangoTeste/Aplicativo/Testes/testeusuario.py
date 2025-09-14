@@ -11,7 +11,7 @@ django.setup()
 # 3) Imports do DRF e da sua app
 from rest_framework.test import APIRequestFactory
 from Aplicativo.views.usuario_views import CadastrarUsuario   # ou RegistrarUsuario
-from Aplicativo.models.user import Usuario           # se for User padrão: from django.contrib.auth.models import User
+from Aplicativo.models.user_models import Usuario           # se for User padrão: from django.contrib.auth.models import User
 
 # 4) Monta o POST (não use GET para criar!)
 factory = APIRequestFactory()

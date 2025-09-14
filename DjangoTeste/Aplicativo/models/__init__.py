@@ -1,3 +1,3 @@
 # Aplicativo/models/__init__.py
-from .user import Usuario
-from .publication import Publication
+from .user_models import Usuario
+from .publication_models import Publication

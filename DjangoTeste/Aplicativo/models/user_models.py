@@ -69,5 +69,11 @@ class Usuario(AbstractUser):
         blank=True, 
         )
     
+    
+    profile_picture = models.ImageField(
+        upload_to='profiles/',
+        default='defaults/default_user.png',  # default inside media
+    )
+    
     def __str__(self):
         return self.username

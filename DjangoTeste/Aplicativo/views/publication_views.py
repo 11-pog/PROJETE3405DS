@@ -1,7 +1,7 @@
 from rest_framework.views import APIView     #baixar pip install djangorestframework
 from rest_framework.response import Response
 from rest_framework import status
-from Aplicativo.models.publication import Publication
+from Aplicativo.models.publication_models import Publication
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 
