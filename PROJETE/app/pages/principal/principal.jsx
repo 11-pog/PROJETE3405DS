@@ -69,17 +69,23 @@ export default function FeedLivros() {
 
   return (
     <View style={styles.container}>
-      {/* Ícone de pesquisa no topo */}
-      <SafeAreaView style={styles.pesquisarBtn}>
-        <TouchableOpacity onPress={() => console.log('Pesquisar clicado')}>
-          <Ionicons name="search" size={28} color="#9e2a2b" />
+      {/* Campo de pesquisa no topo */}
+      <View style={styles.pesquisarArea}>
+        <TextInput
+          placeholder="Buscar um livro"
+          placeholderTextColor="#333"
+          style={styles.input}
+        />
+        <TouchableOpacity
+          style={styles.iconePesquisa}
+          onPress={() => console.log('Pesquisar clicado')}
+        >
+          <Ionicons name="search" size={22} color="#9e2a2b" />
         </TouchableOpacity>
-      </SafeAreaView>
-      <View style={styles.content}>
-        <TextInput placeholder="Buscar um livro" />
       </View>
 
-      {/* Lista de livros */}
+
+      {/* lista de livros */}
       <FlatList
         data={books}
         renderItem={renderBook}
@@ -101,20 +107,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingBottom: 60, // espaço para a barra inferior
-  },
-  pesquisarBtn: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    marginBottom: 5,
-    marginVertical: 8,
-    marginHorizontal: 35,
-    borderRadius: 30,
-    elevation: 2,
-    shadowColor: '#e7dedeff',
-    shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 3,
   },
   listContent: {
     paddingBottom: 80, // evita sobreposição com a barra inferior
@@ -163,11 +155,29 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 8,
   },
-  textBusca: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginTop: 4,
-    fontSize: 15,
-    color: '#888',
+  pesquisarArea: {
+    position: 'relative',
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 10,
+  },
+
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 40, // espaço para o ícone
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  iconePesquisa: {
+    position: 'absolute',
+    right: 15,
+    top: '50%',
+    transform: [{ translateY: -11 }], // centraliza o ícone verticalmente
   },
 });
