@@ -12,11 +12,21 @@ from django.views.generic.edit import UpdateView
 from django.http import HttpRequest
 from .serializers import LoginEmailTokenSerializer
 from django.shortcuts import render
-from .models import Publication
+from rest_framework import serializers
+from .models import Publication  # livros cadastrados manualmente
+from rest_framework.decorators import api_view
 
 
+class PublicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Publication
+        fields = '__all__'
 
-
+@api_view(['GET'])
+def listar_livros(request):
+    livros = Publication.objects.all()
+    serializer = PublicationSerializer(livros, many=True)
+    return Response(serializer.data)
 
 class EditarUsuario(APIView):
     
@@ -99,10 +109,15 @@ class Buscadelivro(APIView):
             
         return Response(resultado, status=200)
     
+
 class CadastrarLivro(APIView):
     def get(self, request):
-        return Response({"message": "Use POST to register a book."})
-    
+        serializer = PublicationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     def post(self, request):
         book_title = request.data.get('book_title')
         book_author = request.data.get('book_author')

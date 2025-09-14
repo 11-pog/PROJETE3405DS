@@ -3,6 +3,7 @@ import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOp
 import { Ionicons } from '@expo/vector-icons';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
+import axios from 'axios';
 
 const PAGE_SIZE = 10;
 
@@ -13,7 +14,14 @@ export default function FeedLivros() {
   const [hasMore, setHasMore] = useState(true);
 
   async function fetchBooks() {
-    if (loading || !hasMore) return;
+      try {
+    const response = await axios.get('http://127.0.0.1:8000/api/livros/');
+    setBooks(response.data); // lista de livros
+  } catch (error) {
+    console.error("Erro ao buscar livros:", error);
+    return [];
+  }
+    /*if (loading || !hasMore) return;
 
     setLoading(true);
     const newBooks = await fetchLivrosMock(page, PAGE_SIZE);
@@ -25,10 +33,11 @@ export default function FeedLivros() {
       setHasMore(false);
     }
 
-    setLoading(false);
+    setLoading(false);*/
   }
 
   useEffect(() => {
+
     fetchBooks();
   }, []);
 
@@ -40,7 +49,7 @@ export default function FeedLivros() {
 
         {/* Título e tipo */}
         <View style={styles.content}>
-          <Text style={styles.title}>{item.title} - {item.author}</Text>
+          <Text style={styles.title}>{item.book_title} - {item.book_author}</Text>
           <Text style={styles.tipoAcao}>Empréstimo / Troca</Text>
         </View>
 
