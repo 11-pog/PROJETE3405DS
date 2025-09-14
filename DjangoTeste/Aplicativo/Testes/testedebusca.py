@@ -9,7 +9,7 @@ django.setup()
 
 # Imports
 from rest_framework.test import APIRequestFactory
-from Aplicativo.views import pesquisadelivro
+from Aplicativo.views.publication_views import pesquisadelivro
 
 # Cria requisição de pesquisa (simula o front enviando o título)
 factory = APIRequestFactory()

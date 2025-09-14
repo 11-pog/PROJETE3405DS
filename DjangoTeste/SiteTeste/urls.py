@@ -16,15 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from Aplicativo.views import CadastrarUsuario
-from Aplicativo.views import LoginUsuario
-from Aplicativo.views import Buscadelivro
-from Aplicativo.views import CadastrarLivro
-from Aplicativo.views import EditarUsuario
-from rest_framework_simplejwt.views import TokenObtainPairView
+
+from Aplicativo.views.auth_views import LoginUsuario
+from Aplicativo.views.external_api_views import Buscadelivro
+from Aplicativo.views.usuario_views import CadastrarUsuario, EditarUsuario
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, listar_livros
 from rest_framework_simplejwt.views import TokenRefreshView
-from Aplicativo.views import pesquisadelivro
-from Aplicativo.views import listar_livros
 
 
 urlpatterns = [
