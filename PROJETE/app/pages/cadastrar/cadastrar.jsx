@@ -2,6 +2,7 @@ import React, { use, useState } from 'react'
 import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
+import {BASE_API_URL} from '../../functions/api'
 import { useRouter } from 'expo-router'
 import axios from 'axios';
 
@@ -15,13 +16,11 @@ function Cadastrar () {
 
   const enviarUsuario = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/cadastrar/', {
-
+      const response = await axios.post(BASE_API_URL + 'cadastrar/', {
         usuario: usuario,
         email: email,
         senha: senha,
         cidade: cidade
-        
       });
 
       Alert.alert("Sucesso", response.data.mensagem);
@@ -44,7 +43,7 @@ function Cadastrar () {
 
     }
     router.push({
-  pathname: "/pages/perfil/Perfil",
+  pathname: "/pages/perfil/perfil",
   params: { usuario, email, cidade }
 });
 
