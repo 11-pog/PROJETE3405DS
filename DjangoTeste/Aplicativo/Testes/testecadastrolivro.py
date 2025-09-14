@@ -15,7 +15,7 @@ django.setup()
 # 3) Imports do DRF e da sua app
 from rest_framework.test import APIRequestFactory, force_authenticate
 from Aplicativo.views import CadastrarLivro
-from Aplicativo.models import Publication
+from DjangoTeste.Aplicativo.models.publication import Publication
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
