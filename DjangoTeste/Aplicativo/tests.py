@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Usuario, phone_regex_pattern
+from .models.user_models import phone_regex_pattern
 
 
 class TelefoneRegetTest(TestCase):

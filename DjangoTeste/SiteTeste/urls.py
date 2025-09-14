@@ -14,31 +14,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from Aplicativo.views import CadastrarUsuario
-from Aplicativo.views import LoginUsuario
-from Aplicativo.views import Buscadelivro
-from Aplicativo.views import CadastrarLivro
-from Aplicativo.views import EditarUsuario
-from rest_framework_simplejwt.views import TokenObtainPairView
+
+from Aplicativo.views.auth_views import LoginUsuario
+from Aplicativo.views.external_api_views import Buscadelivro
+from Aplicativo.views.usuario_views import CadastrarUsuario, EditarUsuario, GetUser, UploadUserImage
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, listar_livros
 from rest_framework_simplejwt.views import TokenRefreshView
-from Aplicativo.views import pesquisadelivro
-from Aplicativo.views import listar_livros
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginUsuario.as_view()),
     path('api/cadastrar/', CadastrarUsuario.as_view()),
+    path('api/editar/', EditarUsuario.as_view(), name="editar_usuario"),
+    path('api/usuario/', GetUser.as_view()),
+    path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
     path('api/buscalivro/', Buscadelivro.as_view()),
     path('api/cadastrarlivro/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
     path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/cadastrarlivro/', Buscadelivro.as_view(), name="cadastrar_livro"),
-    path('api/editar/', EditarUsuario.as_view(), name="editar_usuario"),
     path('api/pesaquisa/', pesquisadelivro.as_view()),
     path('api/livros/', listar_livros, name='listar_livros'),
-
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

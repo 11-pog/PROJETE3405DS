@@ -1,6 +1,11 @@
 from django.contrib import admin
-from .models import UserManager 
-from .models import ChatGroup, ChatMessage    
+from Aplicativo.models.user_models import Usuario 
+from Aplicativo.models.chat_models import ChatGroup, ChatMessage    
+from django.contrib.auth.admin import UserAdmin
 
 admin.site.register(ChatGroup)
 admin.site.register(ChatMessage)
+
+admin.register(Usuario)
+class CustomUserAdmin(UserAdmin):
+    pass

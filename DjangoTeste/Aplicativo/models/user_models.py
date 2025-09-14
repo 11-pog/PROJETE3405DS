@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
 from django.conf import settings
 
-# Create your models here.
 
 class UserManager(models.Manager):
     def create_user(self, username, email, password=None):
@@ -70,57 +69,11 @@ class Usuario(AbstractUser):
         blank=True, 
         )
     
+    
+    profile_picture = models.ImageField(
+        upload_to='profiles/',
+        default='defaults/default_user.png',  # default inside media
+    )
+    
     def __str__(self):
         return self.username
-
-
-# Modelo de banco de dados de Postagem/Publicação
-class Publication(models.Model):
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='publications',
-        verbose_name= "Post Author",
-        blank=True, null=True
-    )
-    # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
-    # [objeto do usuario].publications.all()
-    # Você consegue pegar todos post feito por esse usuário.
-    # Suponho q tenham mais funções alem de .all(), mais mesmo assim é legal isso e vai facilitar bastante
-    
-    # Book stuff
-    book_title = models.CharField(max_length=255, verbose_name= "Book Title")
-    book_author = models.CharField(max_length=255, verbose_name= "Book Author", blank=True, null=True)
-    book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank= True)
-    book_publication_date = models.DateField(blank=True, null=True, verbose_name="Book Publication Year")
-    book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
-    
-    # Post Stuff
-    post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
-    post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
-    
-    def __str__(self):
-        return self.book_title
-    
-class ChatGroup(models.Model):
-    group_name = models.CharField(max_length=128,unique=True)
-
-    def __str__(self):
-        return self.group_name
-    
-class ChatMessage(models.Model):
-    group = models.ForeignKey(ChatGroup, related_name='chat_messages', on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # mudei aqui pq tava dando erro no user
-    body = models.CharField(max_length=300)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user.username} : {self.body}'
-    
-    class Meta:
-        ordering = ('created',)
-
-
-
-    
