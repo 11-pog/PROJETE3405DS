@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import UserManager 
-from .models import ChatGroup, ChatMessage    
+from .models.user import UserManager 
+from .models.chat import ChatGroup, ChatMessage    
 
 admin.site.register(ChatGroup)
 admin.site.register(ChatMessage)

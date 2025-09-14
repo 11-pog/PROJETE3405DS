@@ -1,0 +1,36 @@
+from django.db import models
+from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
+from django.conf import settings
+
+# Modelo de banco de dados de Postagem/Publicação
+class Publication(models.Model):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='publications',
+        verbose_name= "Post Author",
+        blank=True, null=True
+    )
+    # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
+    # [objeto do usuario].publications.all()
+    # Você consegue pegar todos post feito por esse usuário.
+    # Suponho q tenham mais funções alem de .all(), mais mesmo assim é legal isso e vai facilitar bastante
+    
+    # Book stuff
+    book_title = models.CharField(max_length=255, verbose_name= "Book Title")
+    book_author = models.CharField(max_length=255, verbose_name= "Book Author", blank=True, null=True)
+    book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank= True)
+    book_publication_date = models.DateField(blank=True, null=True, verbose_name="Book Publication Year")
+    book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
+    
+    # Post Stuff
+    post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
+    post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
+    
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
+    
+    def __str__(self):
+        return self.book_title

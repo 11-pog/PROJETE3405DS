@@ -5,15 +5,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
-from Aplicativo.models import Usuario
-from Aplicativo.models import Publication
+from DjangoTeste.Aplicativo.models.user import Usuario
+from DjangoTeste.Aplicativo.models.publication import Publication
 from rest_framework.permissions import IsAuthenticated
 from django.views.generic.edit import UpdateView
 from django.http import HttpRequest
 from .serializers import LoginEmailTokenSerializer
 from django.shortcuts import render
 from rest_framework import serializers
-from .models import Publication  # livros cadastrados manualmente
 from rest_framework.decorators import api_view
 
 
@@ -68,8 +67,8 @@ class CadastrarUsuario(APIView):
 
 class LoginUsuario(TokenObtainPairView):
     serializer_class = LoginEmailTokenSerializer
-   
-            
+
+
 class Buscadelivro(APIView):
     def get(self, request):
             return Response({"error": "ISBN não fornecido"}, status=400)
@@ -165,4 +164,6 @@ class pesquisadelivro(APIView):
             })
 
         return Response({'results': resultados}, status=200)      
+
+
 
