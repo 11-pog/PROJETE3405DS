@@ -2,9 +2,8 @@ from rest_framework.views import APIView     #baixar pip install djangorestframe
 from rest_framework.response import Response
 from rest_framework import status
 from Aplicativo.models.publication_models import Publication
-from rest_framework import serializers
+from Aplicativo.serializers.publication_serializer import PublicationSerializer
 from rest_framework.decorators import api_view
-
 
 @api_view(['GET'])
 def listar_livros(request):
@@ -12,11 +11,6 @@ def listar_livros(request):
     serializer = PublicationSerializer(livros, many=True)
     return Response(serializer.data)
 
-
-class PublicationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Publication
-        fields = '__all__'
 
 class CadastrarLivro(APIView):
     def get(self, request):
