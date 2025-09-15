@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([
@@ -39,6 +40,12 @@ export default function ChatBot() {
         <Text style={styles.headerText}>Bot da Troca</Text>
       </View>
 
+<TouchableOpacity
+          style={styles.backButton}
+          onPress={() => console.log('Voltar clicado')}
+        >
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
 
       <FlatList
         data={messages}
@@ -76,5 +83,9 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#ddd" },
   input: { flex: 1, backgroundColor: "#fff", borderRadius: 20, paddingHorizontal: 15 },
   sendButton: { backgroundColor: "#335C67", borderRadius: 20, padding: 10, marginLeft: 5, justifyContent: "center", alignItems: "center" },
+  backButton: {position: 'absolute',
+    left: 15,
+    top:25,
+    transform: [{ translateY: -11 }],} 
 
 });

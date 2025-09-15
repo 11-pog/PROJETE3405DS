@@ -81,7 +81,7 @@ export default function Favoritos() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#faf7f2',
+    backgroundColor: '#F5F5F5',
   },
   header: {
     flexDirection: 'row',
