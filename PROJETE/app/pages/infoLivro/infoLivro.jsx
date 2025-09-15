@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Picker } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
@@ -7,7 +7,6 @@ import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
-
 
 export default function CadastroLivro() {
     const router = useRouter();
@@ -18,6 +17,7 @@ export default function CadastroLivro() {
   const [editora, setEditora] = useState("");
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [tipo, setTipo] = useState("")
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
@@ -39,6 +39,8 @@ export default function CadastroLivro() {
   // salva livro no backend
   const SalvarLivro = async () => {
     console.log("botão apertado");
+      console.log("Escolhido", tipo, tipo, tipo);
+
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/cadastrarlivro/", {
         book_title: titulo,
@@ -46,6 +48,8 @@ export default function CadastroLivro() {
         book_publisher: editora,
         book_publication_date: data,
         book_description: descricao,
+        post_type: tipo,
+
       });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
@@ -171,12 +175,20 @@ export default function CadastroLivro() {
       <ScrollView>
       <StatusBar hidden />
       <Text style={styles.header}>Digite as informações do livro</Text>
-
+      
       <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
       <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
       <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
       <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
       <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+      <Picker
+        selectedValue={tipo}
+        onValueChange={(value) => setTipo(value)}
+      >
+        <Picker.Item label="Troca" value="TROCA" />
+        <Picker.Item label="Empréstimo" value="EMPRESTIMO" />
+
+      </Picker>
 
       {/* estrelas de avaliação */}
       <View style={styles.starsContainer}>
