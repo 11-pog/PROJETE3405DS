@@ -2,11 +2,11 @@ import React, { use, useState } from 'react'
 import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
-import {BASE_API_URL} from '../../functions/api'
+import { BASE_API_URL } from '../../functions/api'
 import { useRouter } from 'expo-router'
 import axios from 'axios';
 
-function Cadastrar () {
+function Cadastrar() {
   const [usuario, setUsuario] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -16,36 +16,35 @@ function Cadastrar () {
 
   const enviarUsuario = async () => {
     try {
-      const response = await axios.post(BASE_API_URL + 'cadastrar/', {
+      const response = await axios.post('cadastrar/', {
         usuario: usuario,
         email: email,
         senha: senha,
         cidade: cidade
       });
 
-      Alert.alert("Sucesso", response.data.mensagem);
+      alert("Sucesso", response.data.mensagem);
 
 
     } catch (error) {
       if (error.response) {
-  console.log(error.response.data);
+        console.log(error.response.data);
 
-  if (error.response.data && error.response.data.error) {
-    Alert.alert("Erro", error.response.data.error);
-  } else {
-    Alert.alert("Erro", "Erro ao cadastrar");
-  }
+        if (error.response.data && error.response.data.error) {
+          Alert.alert("Erro", error.response.data.error);
+        } else {
+          Alert.alert("Erro", "Erro ao cadastrar");
+        }
 
-  } else {
-    console.log(error.message);
-    Alert.alert("Erro", "Erro ao cadastrar");
-  }
-
+      } else {
+        console.log(error.message);
+        Alert.alert("Erro", "Erro ao cadastrar");
+      }
     }
     router.push({
-  pathname: "/pages/perfil/perfil",
-  params: { usuario, email, cidade }
-});
+      pathname: "/pages/login/Login",
+      params: { usuario, email, cidade }
+    });
 
   }
 

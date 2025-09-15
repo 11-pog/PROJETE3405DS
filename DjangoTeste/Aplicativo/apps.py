@@ -12,11 +12,19 @@ class AplicativoConfig(AppConfig):
     def ready(self): # Automaticamente copia a imagem icone padrão de static para media/defaults
         media_defaults = os.path.join(settings.MEDIA_ROOT, 'defaults')
         os.makedirs(media_defaults, exist_ok=True)
-        default_media_image = os.path.join(media_defaults, 'default_user.png')
+
+        static_images_dir = os.path.join(settings.BASE_DIR, 'static', 'img')
         
-        if not os.path.exists(default_media_image):
-            static_image = os.path.join(settings.BASE_DIR, 'static', 'img', 'default_user.png')
-            if os.path.exists(static_image):
-                shutil.copy(static_image, default_media_image)
-            else:
-                print("⚠️ Warning: static default_user.png missing!")
+        if not os.path.exists(static_images_dir):
+            print("⚠️ Warning: static/img folder missing!")
+            return
+        
+        for image_file in os.listdir(static_images_dir):
+            if image_file.startswith('default_'):
+                source_path = os.path.join(static_images_dir, image_file)
+                dest_path = os.path.join(media_defaults, image_file)
+                
+                if os.path.exists(source_path):
+                    shutil.copy(source_path, dest_path)
+                else:
+                    print(f"⚠️ Warning: static {image_file} missing!")

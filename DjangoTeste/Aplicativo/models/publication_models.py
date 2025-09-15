@@ -3,6 +3,11 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class PostType(models.TextChoices):
+    LOAN = "LOAN", "Loan"
+    EXCHANGE = "EXCHANGE", "Exchange"
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
@@ -26,11 +31,45 @@ class Publication(models.Model):
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
     
     # Post Stuff
+    post_thumbnail = models.ImageField(
+        upload_to='thumbnails/',
+        default='defaults/default_thumbnail.png'
+        )
     post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
     
+    post_type = models.CharField(
+        max_length=10,
+        choices=PostType.choices,
+        default=PostType.LOAN
+        )
+    book_rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(5),],
+        default=3
+    )
+    
+    tags = models.JSONField(blank=True, null=True) # Store genre tags, themes
+    isbn = models.CharField(max_length=15, blank=True, null=True)
+    language = models.CharField(max_length=30, blank=True, null=True)
+    full_text_excerpt = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
     def __str__(self):
         return self.book_title
+
+
+class Interaction(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    
+    book_rating = models.IntegerField(blank=True, null=True) # optional
+    is_liked = models.BooleanField(default=False)
+    view_count = models.PositiveIntegerField(default=0)
+    
+    messaged_author = models.BooleanField(default=False)
+    verified_trade = models.BooleanField(default=False)
+    last_viewed_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'publication')

@@ -72,7 +72,7 @@ class UploadUserImage(APIView):
         new_image = request.FILES.get('profile_picture')
         if new_image:
             # Delete old image if exists and not the default
-            if user.profile_picture and user.profile_picture.url != "/media/profiles/default.png":
+            if user.profile_picture and user.profile_picture.url.startswith("defaults/"):
                 user.profile_picture.delete(save=False)
 
         serializer = UploadUserImageSerializer(user, data=request.data, partial=True)
