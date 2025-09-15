@@ -6,8 +6,8 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class PostType(models.TextChoices):
-    LOAN = "LOAN", "Loan"
-    EXCHANGE = "EXCHANGE", "Exchange"
+    EMPRESTIMO = "EMPRESTIMO", "Emprestimo"
+    TROCA = "TROCA", "Troca"
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
@@ -41,7 +41,7 @@ class Publication(models.Model):
     post_type = models.CharField(
         max_length=10,
         choices=PostType.choices,
-        default=PostType.LOAN
+        default=PostType.EMPRESTIMO
         )
     book_rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(5),],

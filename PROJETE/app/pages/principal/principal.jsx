@@ -50,7 +50,17 @@ export default function FeedLivros() {
         {/* Título e tipo */}
         <View style={styles.content}>
           <Text style={styles.title}>{item.book_title} - {item.book_author}</Text>
-          <Text style={styles.tipoAcao}>Empréstimo / Troca</Text>
+          <Text style={styles.tipoAcao}>
+  {
+    (() => {
+      if (item.post_type === "TROCA") {
+        return "Troca";
+      } else {
+        return "Empréstimo";
+      }
+    })()
+  }
+</Text>
         </View>
 
         {/* Botões de interação */}
