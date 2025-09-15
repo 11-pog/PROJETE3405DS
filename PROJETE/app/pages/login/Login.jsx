@@ -18,8 +18,8 @@ export default function Login () {
   const fazerLogin = async () => {
     setTentouLogin(true)
     try {
-      setErro('')
-      const response = await axios.post(`${BACKEND_URL}/api/login/`, {
+      console.log(BACKEND_URL)
+      const response = await axios.post(`login/`, {
         email: email,
         password: senha //é essa parte aqui que conecta com o backend
       })

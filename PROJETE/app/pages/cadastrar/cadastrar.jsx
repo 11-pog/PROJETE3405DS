@@ -5,6 +5,8 @@ import Botao from '../../functions/botoes'
 import { BASE_API_URL } from '../../functions/api'
 import { useRouter } from 'expo-router'
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 function Cadastrar() {
   const [usuario, setUsuario] = useState('')
@@ -25,7 +27,27 @@ function Cadastrar() {
 
       alert("Sucesso", response.data.mensagem);
 
+      const login_response = await axios.post(`login/`, {
+        email: email,
+        password: senha
+      })
 
+      console.log('Response do login:', login_response.data)
+
+      // Ajuste conforme o nome do token que o backend retorna
+      const token = login_response.data.token || login_response.data.access
+      const refresh = login_response.data.refresh;
+      console.log('Token recebido:', token)
+      console.log('Refresh: ', refresh)
+
+      // Salva o token no AsyncStorage
+      await AsyncStorage.setItem('access', token)
+      await AsyncStorage.setItem('refresh', refresh)
+      
+      router.push({
+        pathname: "/pages/principal/principal",
+        params: { usuario, email, cidade }
+      });
     } catch (error) {
       if (error.response) {
         console.log(error.response.data);
@@ -41,10 +63,6 @@ function Cadastrar() {
         Alert.alert("Erro", "Erro ao cadastrar");
       }
     }
-    router.push({
-      pathname: "/pages/login/Login",
-      params: { usuario, email, cidade }
-    });
 
   }
 
