@@ -1,15 +1,17 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { useRoute } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 
 export default function CadastroLivro() {
+    const router = useRouter();
+  
   // estados para os inputs
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
@@ -32,6 +34,8 @@ export default function CadastroLivro() {
   const [fotoLivro, setFotoLivro] = useState(null);
   const [rating, setRating] = useState(0);
 
+
+
   // salva livro no backend
   const SalvarLivro = async () => {
     console.log("botão apertado");
@@ -46,6 +50,7 @@ export default function CadastroLivro() {
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
       console.log("salvo");
+       router.push('/pages/principal/principal')
     } catch (error) {
       if (error.response) {
         console.log("Erro no cadastro:", error.response.data);
@@ -161,7 +166,9 @@ export default function CadastroLivro() {
 
   // Tela principal
   return (
+    
     <View style={styles.container}>
+      <ScrollView>
       <StatusBar hidden />
       <Text style={styles.header}>Digite as informações do livro</Text>
 
@@ -214,7 +221,7 @@ export default function CadastroLivro() {
       {/* botões para abrir câmera */}
       <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
       <Botao texto="Tirar Foto" aoApertar={() => handleOpenCamera("foto")} />
-
+      </ScrollView>
       <BarraInicial />
     </View>
   );
