@@ -21,12 +21,12 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-
+        
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser precisa ter is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser precisa ter is_superuser=True.")
-
+        
         return self.create_user(email, password, **extra_fields)
 
 
@@ -36,25 +36,25 @@ phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inv
 # Modelo de usuario pro banco de dados porque o padrão do django não tem numero de telefone
 # Os outro campos como nome, senha, email, etc, são derivados de AbstractUser, então não é necessário implementa-los denovo
 class Usuario(AbstractUser, PermissionsMixin): 
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, blank=True, null=True)  # opcional
-    nome = models.CharField(max_length=150, blank=True, null=True)
+    
+    # email = models.EmailField(unique=True)
+    # username = models.CharField(max_length=150, blank=True, null=True)  # opcional
+    # nome = models.CharField(max_length=150, blank=True, null=True)
+    
+    # gente pelo amor de deus leiam comentarios de vez em quando
+    
+    # email, username, password, is_active, is_staff, first_name, last_name
+    # todos esses já existem nesse modelo por causa da heranca de AbstractUser
+    # não tem porque adicionar denovo, muito pelo contrario, isso pode quebrar migrações
     
     objects = UserManager()
-
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
     email = models.EmailField(unique=True)
-    phone_number = models.CharField( # Adiciona o campo numero de telefone
-        verbose_name="Numero de Telefone", # O nome que o django vai usar pra mostrar pra nois (o nome legível)
-        validators=[phone_validator], # Coiso engraçado q o chat pediu pra fazer
-        max_length= 20, # Tamanho maximo
-        unique=True, # Faz com que todo numero no banco de dados seja único
-        null=True,
-        blank=True, 
-        )
     
+    # não precisa de numero de telefone por enquanto (o proprio aplicativo vai ter chat)
     
     profile_picture = models.ImageField(
         upload_to='profiles/',

@@ -16,6 +16,7 @@ class Publication(models.Model):
         on_delete=models.CASCADE,
         related_name='publications',
         verbose_name= "Post Author",
+        null=True
     )
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:

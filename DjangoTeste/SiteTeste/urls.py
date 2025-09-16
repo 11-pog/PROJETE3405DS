@@ -22,7 +22,7 @@ from django.urls import path, include
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import Buscadelivro
 from Aplicativo.views.usuario_views import CadastrarUsuario, EditarUsuario, GetUser, UploadUserImage
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, listar_livros
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
     path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/cadastrarlivro/', Buscadelivro.as_view(), name="cadastrar_livro"),
-    path('api/pesaquisa/', pesquisadelivro.as_view()),
-    path('api/livros/', listar_livros, name='listar_livros'),
+    path('api/pesquisa/', pesquisadelivro.as_view()),
+    path('api/livros/', GetBookList.as_view(), name='listar_livros'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
