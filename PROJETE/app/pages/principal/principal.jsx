@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
 import axios from 'axios';
 import { router } from 'expo-router'
 
 
-const PAGE_SIZE = 10;
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
   async function fetchBooks() {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/livros/');
+      const response = await axios.get('livros/');
       setBooks(response.data); // lista de livros
     } catch (error) {
       console.error("Erro ao buscar livros:", error);
       return [];
     }
-  
+
   }
 
   useEffect(() => {
@@ -39,34 +35,34 @@ export default function FeedLivros() {
 
         {/* Título e tipo */}
         <View style={styles.content}>
-<Pressable 
+          <Pressable
             onPress={() => router.push({
-            pathname: '/pages/infoIsolado/infoisolado',
-            params: {
-            id: item.id,
-            title: item.book_title,
-            author: item.book_author,
-            description: item.book_description, // só se tiver na API
-            cover: item.cover
-         }
-         })}
->
-  <Text style={styles.title}>
-    {item.book_title} - {item.book_author}
-  </Text>
-</Pressable>
-            
+              pathname: '/pages/infoIsolado/infoisolado',
+              params: {
+                id: item.id,
+                title: item.book_title,
+                author: item.book_author,
+                description: item.book_description, // só se tiver na API
+                cover: item.cover
+              }
+            })}
+          >
+            <Text style={styles.title}>
+              {item.book_title} - {item.book_author}
+            </Text>
+          </Pressable>
+
           <Text style={styles.tipoAcao}>
-  {
-    (() => {
-      if (item.post_type === "TROCA") {
-        return "Troca";
-      } else {
-        return "Empréstimo";
-      }
-    })()
-  }
-</Text>
+            {
+              (() => {
+                if (item.post_type === "TROCA") {
+                  return "Troca";
+                } else {
+                  return "Empréstimo";
+                }
+              })()
+            }
+          </Text>
         </View>
 
         {/* Botões de interação */}

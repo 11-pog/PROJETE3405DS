@@ -4,53 +4,32 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from Aplicativo.models.publication_models import Publication
-from Aplicativo.serializers.publication_serializer import PublicationSerializer
-
-
+from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 
 
 class GetBookList(ListAPIView):
-    serializer_class = PublicationSerializer
+    serializer_class = PublicationFeedSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return super().get_queryset()
+        return Publication.objects.all().order_by('-created_at')
 
 
-class CadastrarLivro(APIView):
-    def get(self, request):
-        serializer = PublicationSerializer(data=request.data)
+class CadastrarLivro(APIView): 
+    permission_classes = [IsAuthenticated] # meio que obrigatório isso aqui
+    
+    # Duas coisas:
+    #   GET não é pra criar objetos, ele só serve pro front ler informação, LER, não escrever
+    #   Uso de serializer é melhor (olhar em publication_serializer.py)
+    def post(self, request):
+        serializer = CreatePublicationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def post(self, request):
-        book_title = request.data.get('book_title')
-        book_author = request.data.get('book_author')
-        book_publisher = request.data.get('book_publisher')
-        book_publication_date = request.data.get('book_publication_date')
-        book_description = request.data.get('book_description')
-        post_location_city = request.data.get('post_location_city', 'Não informado')
-        
-        if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
-            return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
-        
-        try:
-            livro = Publication.objects.create(
-                author_name=request.user.username,
-                book_title=book_title,
-                book_author=book_author,
-                book_publisher=book_publisher,
-                book_publication_date=book_publication_date,
-                book_description=book_description,
-                post_location_city=post_location_city
-            )
-            return Response({"mensagem": "Livro cadastrado com sucesso!", "criado_por": request.user.username}, status=201)
-        except Exception as e:
-            return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
 
 
+# Esse provavelmente seria melhor botar em GET mesmo mais depois eu faço isso
 class pesquisadelivro(APIView):
     def get(self, request):
         return Response({"message": "Use POST to search for a book."})
