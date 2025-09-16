@@ -1,4 +1,4 @@
-import React, { use, useState } from 'react'
+import React, { useState } from 'react'
 import { Text, View, Alert } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
@@ -6,7 +6,7 @@ import { BASE_API_URL } from '../../functions/api'
 import { useRouter } from 'expo-router'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import { validatePassword, validateEmail } from './regex'
 
 function Cadastrar() {
   const [usuario, setUsuario] = useState('')
@@ -14,9 +14,33 @@ function Cadastrar() {
   const [senha, setSenha] = useState('')
   const [cidade, setCidade] = useState('')
 
+  const [emailErr, setEmailErr] = useState(false)
+  const [senhaErr, setSenhaErr] = useState(false)
+
+  const validate = () => {
+    if (!validateEmail.test(email)) {
+      setEmailErr(true)
+    } else {
+      setEmailErr(false)
+    }
+
+    if (!validatePassword.test(senha)) {
+      setSenhaErr(true)
+    } else {
+      setSenhaErr(false)
+    }
+  }
+
   const router = useRouter();
 
   const enviarUsuario = async () => {
+    validate(); // garante que valida antes de enviar
+
+    if (emailErr || senhaErr) {
+      Alert.alert("Erro", "Preencha os campos corretamente!");
+      return;
+    }
+
     try {
       const response = await axios.post('cadastrar/', {
         usuario: usuario,
@@ -34,13 +58,9 @@ function Cadastrar() {
 
       console.log('Response do login:', login_response.data)
 
-      // Ajuste conforme o nome do token que o backend retorna
       const token = login_response.data.token || login_response.data.access
       const refresh = login_response.data.refresh;
-      console.log('Token recebido:', token)
-      console.log('Refresh: ', refresh)
 
-      // Salva o token no AsyncStorage
       await AsyncStorage.setItem('access', token)
       await AsyncStorage.setItem('refresh', refresh)
       
@@ -51,22 +71,17 @@ function Cadastrar() {
     } catch (error) {
       if (error.response) {
         console.log(error.response.data);
-
         if (error.response.data && error.response.data.error) {
           Alert.alert("Erro", error.response.data.error);
         } else {
           Alert.alert("Erro", "Erro ao cadastrar");
         }
-
       } else {
         console.log(error.message);
         Alert.alert("Erro", "Erro ao cadastrar");
       }
     }
-
   }
-
-
 
   return (
     <View
@@ -90,10 +105,15 @@ function Cadastrar() {
       </Text>
 
       <MeuInput label={'Nome de usuário: '} valor={usuario} onChange={setUsuario} />
+      
       <MeuInput label={'Email: '} valor={email} onChange={setEmail} />
+      {emailErr && <Text style={{color: 'red'}}>Digite um email válido!</Text>}
+      
       <MeuInput label={'Senha: '} valor={senha} onChange={setSenha} />
+      {senhaErr && <Text style={{color: 'red'}}>Digite uma senha mais segura!</Text>}
+      
       <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
-
+      
       <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
     </View>
   )
