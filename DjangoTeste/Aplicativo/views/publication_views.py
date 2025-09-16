@@ -1,15 +1,20 @@
-from rest_framework.views import APIView     #baixar pip install djangorestframework
+from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView#baixar pip install djangorestframework
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from Aplicativo.models.publication_models import Publication
 from Aplicativo.serializers.publication_serializer import PublicationSerializer
-from rest_framework.decorators import api_view
 
-@api_view(['GET'])
-def listar_livros(request):
-    livros = Publication.objects.all()
-    serializer = PublicationSerializer(livros, many=True)
-    return Response(serializer.data)
+
+
+
+class GetBookList(ListAPIView):
+    serializer_class = PublicationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return super().get_queryset()
 
 
 class CadastrarLivro(APIView):
