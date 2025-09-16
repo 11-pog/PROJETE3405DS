@@ -8,8 +8,18 @@ from rest_framework.decorators import api_view
 @api_view(['GET'])
 def listar_livros(request):
     livros = Publication.objects.all()
-    serializer = PublicationSerializer(livros, many=True)
-    return Response(serializer.data)
+    resultados = []
+    for livro in livros:
+        resultados.append({
+            'id': livro.id,
+            'book_title': livro.book_title,
+            'book_author': livro.book_author,
+            'book_publisher': livro.book_publisher,
+            'book_publication_date': livro.book_publication_date,
+            'book_description': livro.book_description,
+            'criado_por': livro.author_name
+        })
+    return Response({'livros': resultados})
 
 
 class CadastrarLivro(APIView):
@@ -26,20 +36,22 @@ class CadastrarLivro(APIView):
         book_publisher = request.data.get('book_publisher')
         book_publication_date = request.data.get('book_publication_date')
         book_description = request.data.get('book_description')
-        
+        post_location_city = request.data.get('post_location_city', 'Não informado')
         
         if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
             return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
         
         try:
             livro = Publication.objects.create(
+                author_name=request.user.username,
                 book_title=book_title,
                 book_author=book_author,
                 book_publisher=book_publisher,
                 book_publication_date=book_publication_date,
-                book_description=book_description
+                book_description=book_description,
+                post_location_city=post_location_city
             )
-            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+            return Response({"mensagem": "Livro cadastrado com sucesso!", "criado_por": request.user.username}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
 
@@ -64,7 +76,8 @@ class pesquisadelivro(APIView):
                 'book_author': livro.book_author,
                 'book_publisher': livro.book_publisher,
                 'book_publication_date': livro.book_publication_date,
-                'book_description': livro.book_description
+                'book_description': livro.book_description,
+                'criado_por': livro.author_name
             })
         
         return Response({'results': resultados}, status=200)      
