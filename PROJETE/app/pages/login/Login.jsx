@@ -4,7 +4,6 @@ import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
 import { router } from 'expo-router'
 import axios from 'axios'
-import { useRouter } from 'expo-router'
 import Constants from 'expo-constants'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -13,40 +12,38 @@ const BACKEND_URL = Constants.expoConfig.extra.BACKEND_URL
 export default function Login () {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [erro, setErro] = useState('')
+  const [tentouLogin, setTentouLogin] = useState(false)
 
   const fazerLogin = async () => {
+    setTentouLogin(true)
     try {
       console.log(BACKEND_URL)
       const response = await axios.post(`login/`, {
         email: email,
-        password: senha
+        password: senha //é essa parte aqui que conecta com o backend
       })
 
-      console.log('Response do login:', response.data)
-
-      // Ajuste conforme o nome do token que o backend retorna
       const token = response.data.token || response.data.access
-      const refresh = response.data.refresh;
-      console.log('Token recebido:', token)
-      console.log('Refresh: ', refresh)
+      const refresh = response.data.refresh
 
-      // Salva o token no AsyncStorage
       await AsyncStorage.setItem('access', token)
       await AsyncStorage.setItem('refresh', refresh)
-
-      // Confirma se foi salvo
-      const tokenTeste = await AsyncStorage.getItem('token')
-      console.log('Token salvo no AsyncStorage:', tokenTeste)
 
       router.push('/pages/principal/principal')
     } catch (error) {
       if (error.response) {
         console.log('Erro no login:', error.response.data)
+        setErro(error.response.data.detail || 'E-mail ou senha inválidos.')
       } else {
         console.log('Erro no login:', error.message)
+        setErro('Erro de conexão. Verifique sua internet.')
       }
     }
   }
+
+  const temErroEmail = tentouLogin && erro.toLowerCase().includes('email')
+  const temErroSenha = tentouLogin && erro.toLowerCase().includes('senha')
 
   return (
     <View
@@ -69,8 +66,28 @@ export default function Login () {
         Faça login na sua conta
       </Text>
 
-      <MeuInput label='Email:' valor={email} onChange={setEmail} />
-      <MeuInput label='Senha:' valor={senha} onChange={setSenha} />
+{/* Campo de email */} 
+<MeuInput 
+label='Email:' 
+valor={email} 
+onChange={setEmail} 
+erro={temErroEmail} 
+mensagemErro={temErroEmail ? erro : ''} 
+/> 
+{/* Campo de senha */} 
+<MeuInput 
+label='Senha:'
+ valor={senha}
+  onChange={setSenha}
+   erro={temErroSenha}
+    mensagemErro={temErroSenha ? erro : ''} 
+    />
+
+
+      {/* Mensagem de erro genérica */}
+      {tentouLogin && erro && !temErroEmail && !temErroSenha && (
+        <Text style={{ color: 'red', marginBottom: 10, fontSize: 14 }}>{erro}</Text>
+      )}
 
       <Botao aoApertar={fazerLogin} texto='Entrar' />
 

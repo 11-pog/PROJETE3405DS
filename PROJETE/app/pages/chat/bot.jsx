@@ -43,6 +43,7 @@ export default function ChatBot() {
 <TouchableOpacity
           style={styles.backButton}
           onPress={() => console.log('Voltar clicado')}
+          
         >
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
