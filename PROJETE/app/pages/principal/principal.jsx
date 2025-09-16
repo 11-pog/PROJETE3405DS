@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
 import BarraInicial from '../../functions/barra_inicial';
 import axios from 'axios';
+import { router } from 'expo-router'
+
 
 const PAGE_SIZE = 10;
 
@@ -21,19 +23,7 @@ export default function FeedLivros() {
       console.error("Erro ao buscar livros:", error);
       return [];
     }
-    /*if (loading || !hasMore) return;
-
-    setLoading(true);
-    const newBooks = await fetchLivrosMock(page, PAGE_SIZE);
-
-    if (newBooks.length > 0) {
-      setBooks((prevBooks) => [...prevBooks, ...newBooks]);
-      setPage((prevPage) => prevPage + 1);
-    } else {
-      setHasMore(false);
-    }
-
-    setLoading(false);*/
+  
   }
 
   useEffect(() => {
@@ -49,7 +39,23 @@ export default function FeedLivros() {
 
         {/* Título e tipo */}
         <View style={styles.content}>
-          <Text style={styles.title}>{item.book_title} - {item.book_author}</Text>
+<Pressable 
+            onPress={() => router.push({
+            pathname: '/pages/infoIsolado/infoisolado',
+            params: {
+            id: item.id,
+            title: item.book_title,
+            author: item.book_author,
+            description: item.book_description, // só se tiver na API
+            cover: item.cover
+         }
+         })}
+>
+  <Text style={styles.title}>
+    {item.book_title} - {item.book_author}
+  </Text>
+</Pressable>
+            
           <Text style={styles.tipoAcao}>
   {
     (() => {

@@ -36,25 +36,6 @@ phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inv
 # Modelo de usuario pro banco de dados porque o padrão do django não tem numero de telefone
 # Os outro campos como nome, senha, email, etc, são derivados de AbstractUser, então não é necessário implementa-los denovo
 class Usuario(AbstractUser, PermissionsMixin): 
-    """
-    Modelo personalizado de usuário que estende o modelo padrão do Django (`AbstractUser`) para incluir um campo extra: número de telefone.
-    
-    O Django por padrão utiliza o modelo `AbstractUser`, que já inclui os campos `username`, `password`, `email`, `first_name`, `last_name`, etc.
-    Este modelo redefine e adiciona o campo `phone_number` como obrigatório e único, garantindo que cada usuário tenha um número de telefone válido e exclusivo.
-    
-    E sim esse docstring foi feito pelo chat, desculpa
-    
-    Campos:
-        phone_number (CharField):
-            - verbose_name="Numero de Telefone": nome legível exibido em formulários e interfaces administrativas.
-            - validators=[phone_validator]: validação customizada para o formato do número (ex: regex).
-            - max_length=20: tamanho máximo permitido para o número.
-            - unique=True: garante que o número não será duplicado entre usuários.
-            - blank=False, null=False: torna o campo obrigatório tanto em nível de formulário quanto de banco de dados.
-    
-    Métodos:
-        __str__(): Retorna o `username` como representação textual do objeto.
-    """
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, blank=True, null=True)  # opcional
     nome = models.CharField(max_length=150, blank=True, null=True)

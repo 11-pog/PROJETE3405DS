@@ -4,7 +4,7 @@ from datetime import date
 from django.db import IntegrityError, connection
 
 # 1) Deixa o Python enxergar a raiz (onde está manage.py)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 
 # 2) Sobe o Django
@@ -54,13 +54,13 @@ user = get_test_user()
 
 # ---------- payload do livro (inclui post_location_city obrigatório) ----------
 payload = {
-    "book_title": "a face do mal",
-    "book_author": "lili spector",
-    "book_publisher": "viva",
-    "book_publication_date": "2007-12-17",
-    "book_description": "face do medo sobre uma realidade oculta em que todos vivemos, a solidao e nesse livro entevemos a visaod e ana como ocultar crimes atraves da etica e moral",
-    "post_location_city": "São Paulo",
-    "post_description": "gabriel é uma pessoa foda que viveu em sao paulo, se formou na pscilogia na usp"
+    "book_title": "bililili",
+    "book_author": "seur pai",
+    "book_publisher": "oi",
+    "book_publication_date": "2009-12-17",
+    "book_description": "dei um mortal",
+    "post_location_city": "Rio baleiro",
+    "post_description": "o autor é..."
 }
 
 # ---------- detecta campos do modelo Publication ----------
