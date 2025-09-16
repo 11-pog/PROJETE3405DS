@@ -6,18 +6,12 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class PostType(models.TextChoices):
-    LOAN = "LOAN", "Loan"
-    EXCHANGE = "EXCHANGE", "Exchange"
+    EMPRESTIMO = "EMPRESTIMO", "Emprestimo"
+    TROCA = "TROCA", "Troca"
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='publications',
-        verbose_name= "Post Author",
-        blank=True, null=True
-    )
+    
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
     # Você consegue pegar todos post feito por esse usuário.
@@ -29,7 +23,7 @@ class Publication(models.Model):
     book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank= True)
     book_publication_date = models.DateField(blank=True, null=True, verbose_name="Book Publication Year")
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
-    
+    author_name = models.CharField(max_length=150, verbose_name="Post Author",blank=True, null=True)
     # Post Stuff
     post_thumbnail = models.ImageField(
         upload_to='thumbnails/',
@@ -41,7 +35,7 @@ class Publication(models.Model):
     post_type = models.CharField(
         max_length=10,
         choices=PostType.choices,
-        default=PostType.LOAN
+        default=PostType.EMPRESTIMO
         )
     book_rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(5),],
