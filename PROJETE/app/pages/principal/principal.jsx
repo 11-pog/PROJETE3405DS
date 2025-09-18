@@ -64,7 +64,7 @@ export default function FeedLivros() {
           <Text style={styles.tipoAcao}>
             {
               (() => {
-                if (item.post_type === "TROCA") {
+                if (item.post_type === "troca") {
                   return "Troca";
                 } else {
                   return "Empréstimo";

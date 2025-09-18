@@ -6,6 +6,8 @@ import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
+import api from '../../functions/api'
+
 
 export default function CadastroLivro() {
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function CadastroLivro() {
   const [editora, setEditora] = useState("");
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [tipo, setTipo] = useState("")
+  const [tipo, setTipo] = useState("troca")
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
@@ -47,6 +49,7 @@ export default function CadastroLivro() {
         book_publication_date: data,
         book_description: descricao,
         post_type: tipo,
+        post_location_city: "São Paulo",
       });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
@@ -184,15 +187,13 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
-        <Picker
-          selectedValue={tipo}
-          onValueChange={(value) => setTipo(value)}
-        >
-          <Picker.Item label="Troca" value="TROCA" />
-          <Picker.Item label="Empréstimo" value="EMPRESTIMO" />
-
-        </Picker>
-
+       <Picker
+  selectedValue={tipo}
+  onValueChange={(value) => setTipo(value)}
+>
+  <Picker.Item label="Troca" value="troca" />
+  <Picker.Item label="Empréstimo" value="emprestimo" />
+</Picker>
         {/* estrelas de avaliação */}
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
