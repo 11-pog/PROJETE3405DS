@@ -1,20 +1,28 @@
-from rest_framework.views import APIView     #baixar pip install djangorestframework
+from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView#baixar pip install djangorestframework
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from Aplicativo.models.publication_models import Publication
-from Aplicativo.serializers.publication_serializer import PublicationSerializer
-from rest_framework.decorators import api_view
-
-@api_view(['GET'])
-def listar_livros(request):
-    livros = Publication.objects.all()
-    serializer = PublicationSerializer(livros, many=True)
-    return Response(serializer.data)
+from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 
 
-class CadastrarLivro(APIView):
-    def get(self, request):
-        serializer = PublicationSerializer(data=request.data)
+class GetBookList(ListAPIView):
+    serializer_class = PublicationFeedSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return Publication.objects.all().order_by('-created_at')
+
+
+class CadastrarLivro(APIView): 
+    permission_classes = [IsAuthenticated] # meio que obrigatório isso aqui
+    
+    # Duas coisas:
+    #   GET não é pra criar objetos, ele só serve pro front ler informação, LER, não escrever
+    #   Uso de serializer é melhor (olhar em publication_serializer.py)
+    def post(self, request):
+        serializer = CreatePublicationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
@@ -39,7 +47,7 @@ class CadastrarLivro(APIView):
                 book_publication_date=book_publication_date,
                 book_description=book_description
             )
-            return Response({"mensagem": "Livro cadastrado com sucesso!","usuario": request.user.email}, status=201)
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
 
@@ -64,7 +72,8 @@ class pesquisadelivro(APIView):
                 'book_author': livro.book_author,
                 'book_publisher': livro.book_publisher,
                 'book_publication_date': livro.book_publication_date,
-                'book_description': livro.book_description
+                'book_description': livro.book_description,
+                'criado_por': livro.author_name
             })
         
         return Response({'results': resultados}, status=200)      
