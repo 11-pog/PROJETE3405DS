@@ -28,7 +28,7 @@ class CadastrarLivro(APIView):
     #   GET não é pra criar objetos, ele só serve pro front ler informação, LER, não escrever
     #   Uso de serializer é melhor (olhar em publication_serializer.py)
     def post(self, request):
-        serializer = CreatePublicationSerializer(data=request.data)
+        serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)

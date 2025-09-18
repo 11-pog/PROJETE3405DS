@@ -2,18 +2,29 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-class PostType(models.TextChoices):
-    EMPRESTIMO = "EMPRESTIMO", "Emprestimo"
-    TROCA = "TROCA", "Troca"
+
+
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
+
+    class PostType(models.TextChoices):
+        EMPRESTIMO = "emprestimo", "Empréstimo"
+        TROCA = "troca", "Troca"
+    post_type = models.CharField(
+        max_length=10,
+        choices=PostType.choices,
+        default=PostType.EMPRESTIMO
+        )
+
+
     post_creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='publications',
         verbose_name= "Post Author",
         null=True
+
     )
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
@@ -36,11 +47,7 @@ class Publication(models.Model):
     post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
     
-    post_type = models.CharField(
-        max_length=10,
-        choices=PostType.choices,
-        default=PostType.EMPRESTIMO
-        )
+    
     book_rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(5),],
         default=3

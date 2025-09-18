@@ -1,7 +1,6 @@
 from Aplicativo.models.publication_models import Publication
 from rest_framework import serializers
 
-
 """
 Os serializadores das publicações so sitezinho
 
