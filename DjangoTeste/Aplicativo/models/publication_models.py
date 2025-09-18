@@ -7,24 +7,22 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
-
     class PostType(models.TextChoices):
         EMPRESTIMO = "emprestimo", "Empréstimo"
         TROCA = "troca", "Troca"
+    
     post_type = models.CharField(
         max_length=10,
         choices=PostType.choices,
         default=PostType.EMPRESTIMO
         )
-
-
+    
     post_creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='publications',
         verbose_name= "Post Author",
         null=True
-
     )
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
@@ -69,7 +67,7 @@ class Interaction(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     
     book_rating = models.IntegerField(blank=True, null=True) # optional
-    is_liked = models.BooleanField(default=False)
+    is_saved = models.BooleanField(default=False)
     view_count = models.PositiveIntegerField(default=0)
     
     messaged_author = models.BooleanField(default=False)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
@@ -11,7 +11,7 @@ export default function FeedLivros() {
   const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  async function fetchBooks(url = "livros/") {
+  const fetchBooks = useCallback(async (url = "livros/") => {
     if (loading) return;
     setLoading(true);
 
@@ -24,11 +24,12 @@ export default function FeedLivros() {
     } finally {
       setLoading(false);
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // linha anterior faz a extensão ficar quieta e parar de encher o saco
 
   useEffect(() => {
     fetchBooks();
-  }, []);
+  }, [fetchBooks]);
 
   function handleLoadMore() {
     if (nextPage) {

@@ -2,14 +2,14 @@ import random
 from django.core.management.base import BaseCommand
 from faker import Faker
 from django.contrib.auth import get_user_model
-from Aplicativo.models.publication_models import Publication, PostType
+from Aplicativo.models.publication_models import Publication
 
 fake = Faker()
 User = get_user_model()
 
 class Command(BaseCommand):
     help = "Populate the DB with fake users and publications"
-
+    
     def add_arguments(self, parser):
         parser.add_argument(
             '--users',
@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 book_description=fake.paragraph(nb_sentences=3),
                 post_location_city=fake.city(),
                 post_description=fake.text(max_nb_chars=200),
-                post_type=random.choice([PostType.EMPRESTIMO, PostType.TROCA]),
+                post_type=random.choice([Publication.PostType.EMPRESTIMO, Publication.PostType.TROCA]),
                 book_rating=random.randint(0, 5),
                 tags=random.sample(
                     ["fantasy", "mystery", "romance", "sci-fi", "adventure", "horror"],
