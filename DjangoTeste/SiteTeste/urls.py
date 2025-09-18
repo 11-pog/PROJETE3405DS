@@ -29,17 +29,16 @@ from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginUsuario.as_view()),
-    path('api/cadastrar/', CadastrarUsuario.as_view()),
+    path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
+    path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
     path('api/editar/', EditarUsuario.as_view(), name="editar_usuario"),
     path('api/usuario/', GetUser.as_view()),
     path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
-    path('api/buscalivro/', ISBNLookup.as_view()),
     path('api/cadastrarlivro/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
     
     # tava mesmo nome do anterior, mudei pra isbn
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
-    path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
+    
     path('api/pesquisa/', pesquisadelivro.as_view()),
     path('api/livros/', GetBookList.as_view(), name='listar_livros'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
