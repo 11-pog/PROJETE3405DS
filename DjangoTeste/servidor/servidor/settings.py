@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5$=a)o)lt638%v(m#mu)6@u+(mf@%$&*0)sl-ek0r527lg76#8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.105']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
+    'servidor.livros',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'servidor.wsgi.application'
+ASGI_APPLICATION = 'servidor.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database

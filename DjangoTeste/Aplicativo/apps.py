@@ -10,6 +10,8 @@ class AplicativoConfig(AppConfig):
     
     
     def ready(self): # Automaticamente copia a imagem icone padrão de static para media/defaults
+        import Aplicativo.signals  # type: ignore
+        
         media_defaults = os.path.join(settings.MEDIA_ROOT, 'defaults')
         os.makedirs(media_defaults, exist_ok=True)
 

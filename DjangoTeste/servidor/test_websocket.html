@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test WebSocket</title>
+</head>
+<body>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Digite uma mensagem">
+    <button onclick="sendMessage()">Enviar</button>
+    <button onclick="simulatePublication()">Simular Publicação</button>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8000/ws/publications/');
+        const messages = document.getElementById('messages');
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const messageElement = document.createElement('div');
+            
+            if (data.type === 'new_publication') {
+                messageElement.innerHTML = `<strong>Nova Publicação:</strong> ${JSON.stringify(data.publication)}`;
+                messageElement.style.color = 'green';
+            } else {
+                messageElement.innerHTML = `Mensagem: ${data.message}`;
+            }
+            
+            messages.appendChild(messageElement);
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            socket.send(JSON.stringify({
+                'message': input.value
+            }));
+            input.value = '';
+        }
+
+        function simulatePublication() {
+            // Simula uma nova publicação
+            const publicationData = {
+                title: 'Novo Livro',
+                author: 'Autor Teste',
+                user: 'Usuario A'
+            };
+            
+            fetch('/test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(publicationData)
+            });
+        }
+    </script>
+</body>
+</html>
