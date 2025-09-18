@@ -8,6 +8,24 @@ class ISBNLookup(APIView):
         isbn = request.query_params.get('isbn')
         
         url = f"https://openlibrary.org/isbn/{isbn}.json" #link correto
+        
+        """
+        Nota importante:
+        
+        Essa url de isbn tá bloqueando requisições por causa de muito trafico
+        (Status code 429 - Too Many Requests)
+        
+        {
+            "status": 429,
+            "message": "Too Many Requests. Consider using https://openlibrary.org/developers/dumps."
+        }
+        
+        Ele recomenda usar https://openlibrary.org/developers/dumps
+        Ou seja, baixar tudo
+        
+        Só isso mesmo
+        """
+        
         resposta = requests.get(url)
         
         if resposta.status_code != 200:
