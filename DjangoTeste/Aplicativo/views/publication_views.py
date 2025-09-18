@@ -39,7 +39,7 @@ class CadastrarLivro(APIView):
                 book_publication_date=book_publication_date,
                 book_description=book_description
             )
-            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+            return Response({"mensagem": "Livro cadastrado com sucesso!","usuario": request.user.email}, status=201)
         except Exception as e:
             return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
 
