@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Picker } from "react-native";
-import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -9,8 +8,8 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
 
 export default function CadastroLivro() {
-    const router = useRouter();
-  
+  const router = useRouter();
+
   // estados para os inputs
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
@@ -35,26 +34,24 @@ export default function CadastroLivro() {
   const [rating, setRating] = useState(0);
 
 
-
   // salva livro no backend
   const SalvarLivro = async () => {
     console.log("botão apertado");
-      console.log("Escolhido", tipo, tipo, tipo);
+    console.log("Escolhido", tipo, tipo, tipo);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/cadastrarlivro/", {
+      const response = await api.post("cadastrarlivro/", {
         book_title: titulo,
         book_author: autor,
         book_publisher: editora,
         book_publication_date: data,
         book_description: descricao,
         post_type: tipo,
-
       });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
       console.log("salvo");
-       router.push('/pages/principal/principal')
+      router.push('/pages/principal/principal')
     } catch (error) {
       if (error.response) {
         console.log("Erro no cadastro:", error.response.data);
@@ -86,8 +83,14 @@ export default function CadastroLivro() {
   const buscarLivro = async (isbn) => {
     setLoadingLivro(true);
     try {
-      const response = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
-      const data = await response.json();
+      const response = api.get('isbn/',
+        {
+          params: {
+            isbn: isbn
+          }
+        }
+      )
+      const data = await response.data;
 
       if (data) {
         setLivro({
@@ -96,10 +99,10 @@ export default function CadastroLivro() {
           capa: data.cover?.medium || null,
         });
       } else {
-        Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
+        alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
     } catch (error) {
-      Alert.alert("Erro", "Falha ao buscar dados do livro.");
+      alert("Erro", "Falha ao buscar dados do livro.");
     } finally {
       setLoadingLivro(false);
     }
@@ -170,69 +173,69 @@ export default function CadastroLivro() {
 
   // Tela principal
   return (
-    
+
     <View style={styles.container}>
       <ScrollView>
-      <StatusBar hidden />
-      <Text style={styles.header}>Digite as informações do livro</Text>
-      
-      <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
-      <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
-      <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
-      <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
-      <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
-      <Picker
-        selectedValue={tipo}
-        onValueChange={(value) => setTipo(value)}
-      >
-        <Picker.Item label="Troca" value="TROCA" />
-        <Picker.Item label="Empréstimo" value="EMPRESTIMO" />
+        <StatusBar hidden />
+        <Text style={styles.header}>Digite as informações do livro</Text>
 
-      </Picker>
+        <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
+        <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
+        <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
+        <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
+        <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+        <Picker
+          selectedValue={tipo}
+          onValueChange={(value) => setTipo(value)}
+        >
+          <Picker.Item label="Troca" value="TROCA" />
+          <Picker.Item label="Empréstimo" value="EMPRESTIMO" />
 
-      {/* estrelas de avaliação */}
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
-            <Ionicons
-              name={star <= rating ? "star" : "star-outline"}
-              size={28}
-              color="#E09F3E"
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
+        </Picker>
 
-      {/* mostra foto capturada */}
-      {fotoLivro && (
-        <Image
-          source={{ uri: fotoLivro }}
-          style={{ width: 150, height: 200, borderRadius: 8, marginTop: 10 }}
-        />
-      )}
-
-      {/* mostra informações do livro via ISBN */}
-      {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
-      {livro && (
-        <View style={{ marginTop: 20, alignItems: "center" }}>
-          {livro.capa && (
-            <Image
-              source={{ uri: livro.capa }}
-              style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
-            />
-          )}
-          <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
-          <Text>{livro.autor}</Text>
+        {/* estrelas de avaliação */}
+        <View style={styles.starsContainer}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+              <Ionicons
+                name={star <= rating ? "star" : "star-outline"}
+                size={28}
+                color="#E09F3E"
+              />
+            </TouchableOpacity>
+          ))}
         </View>
-      )}
 
-      <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
+        {/* mostra foto capturada */}
+        {fotoLivro && (
+          <Image
+            source={{ uri: fotoLivro }}
+            style={{ width: 150, height: 200, borderRadius: 8, marginTop: 10 }}
+          />
+        )}
 
-      <Text style={styles.ouTexto}>ou</Text>
+        {/* mostra informações do livro via ISBN */}
+        {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
+        {livro && (
+          <View style={{ marginTop: 20, alignItems: "center" }}>
+            {livro.capa && (
+              <Image
+                source={{ uri: livro.capa }}
+                style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
+              />
+            )}
+            <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
+            <Text>{livro.autor}</Text>
+          </View>
+        )}
 
-      {/* botões para abrir câmera */}
-      <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
-      <Botao texto="Tirar Foto" aoApertar={() => handleOpenCamera("foto")} />
+        <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
+
+        <Text style={styles.ouTexto}>ou</Text>
+
+        {/* botões para abrir câmera */}
+        <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
+        <Botao texto="Tirar Foto" aoApertar={() => handleOpenCamera("foto")} />
       </ScrollView>
       <BarraInicial />
     </View>

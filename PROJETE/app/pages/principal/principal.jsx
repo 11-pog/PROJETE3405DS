@@ -2,36 +2,45 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
-import axios from 'axios';
 import { router } from 'expo-router'
-
+import api from '../../functions/api'
 
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
+  const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  async function fetchBooks() {
+  async function fetchBooks(url = "livros/") {
+    if (loading) return;
+    setLoading(true);
+
     try {
-      const response = await axios.get('livros/');
-      setBooks(response.data); // lista de livros
+      const response = await api.get(url);
+      setBooks((prev) => [...prev, ...response.data.results]);
+      setNextPage(response.data.next);
     } catch (error) {
       console.error("Erro ao buscar livros:", error);
-      return [];
+    } finally {
+      setLoading(false);
     }
-
   }
 
   useEffect(() => {
-
     fetchBooks();
   }, []);
+
+  function handleLoadMore() {
+    if (nextPage) {
+      fetchBooks(nextPage);
+    }
+  }
 
   function renderBook({ item }) {
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
-        <Image source={{ uri: item.cover }} style={styles.image} />
+        <Image source={{ uri: item.post_cover }} style={styles.image} />
 
         {/* Título e tipo */}
         <View style={styles.content}>
@@ -43,7 +52,7 @@ export default function FeedLivros() {
                 title: item.book_title,
                 author: item.book_author,
                 description: item.book_description, // só se tiver na API
-                cover: item.cover
+                cover: item.post_cover
               }
             })}
           >
@@ -102,7 +111,7 @@ export default function FeedLivros() {
         data={books}
         renderItem={renderBook}
         keyExtractor={(item) => item.id.toString()}
-        onEndReached={fetchBooks}
+        onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={loading && <ActivityIndicator size="large" />}
         contentContainerStyle={styles.listContent}

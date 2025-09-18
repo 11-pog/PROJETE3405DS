@@ -1,7 +1,4 @@
 from django.db import models
-from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -54,7 +51,7 @@ class Publication(models.Model):
     language = models.CharField(max_length=30, blank=True, null=True)
     full_text_excerpt = models.TextField(blank=True, null=True)
     
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
+    created = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
     def __str__(self):
         return self.book_title

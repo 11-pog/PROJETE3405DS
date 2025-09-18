@@ -3,16 +3,22 @@ from rest_framework.generics import ListAPIView#baixar pip install djangorestfra
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.pagination import CursorPagination
 from Aplicativo.models.publication_models import Publication
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 
 
+class FeedPagination(CursorPagination):
+    page_size = 10
+
 class GetBookList(ListAPIView):
     serializer_class = PublicationFeedSerializer
+    pagination_class = FeedPagination
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Publication.objects.all().order_by('-created_at')
+        # No futuro botarei a IA aqui
+        return Publication.objects.all().order_by('-created')
 
 
 class CadastrarLivro(APIView): 
@@ -27,29 +33,6 @@ class CadastrarLivro(APIView):
             serializer.save()
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def post(self, request):
-        book_title = request.data.get('book_title')
-        book_author = request.data.get('book_author')
-        book_publisher = request.data.get('book_publisher')
-        book_publication_date = request.data.get('book_publication_date')
-        book_description = request.data.get('book_description')
-        
-        
-        if not all([book_title, book_author, book_publisher, book_publication_date, book_description]):
-            return Response({'error': 'Todos os campos são obrigatórios'}, status=400)
-        
-        try:
-            livro = Publication.objects.create(
-                book_title=book_title,
-                book_author=book_author,
-                book_publisher=book_publisher,
-                book_publication_date=book_publication_date,
-                book_description=book_description
-            )
-            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
-        except Exception as e:
-            return Response({'error': f'Erro ao cadastrar o livro: {str(e)}'}, status=400)
 
 
 class pesquisadelivro(APIView):

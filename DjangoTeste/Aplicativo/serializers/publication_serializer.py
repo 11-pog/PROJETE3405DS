@@ -54,6 +54,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
 
 class PublicationFeedSerializer(serializers.ModelSerializer):
     post_creator = serializers.CharField(source="post_creator.username", read_only=True)
+    post_creator_id = serializers.IntegerField(source="post_creator.id", read_only=True)
     
     class Meta:
         model = Publication
@@ -64,5 +65,6 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "book_description",
             "post_type",
             "post_cover",
-            "post_creator"
+            "post_creator",
+            "post_creator_id"
         ]

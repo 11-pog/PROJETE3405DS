@@ -10,3 +10,4 @@ channels-redis>=4.3.0
 django-cleanup==9.0.0
 django-allauth==65.11.2
 django-htmx==1.24.1
+faker==37.8.0
