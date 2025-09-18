@@ -7,3 +7,6 @@ pillow>=11.3.0
 djangorestframework-simplejwt>=5.5.1
 daphne>=4.2.1
 channels-redis>=4.3.0
+django-cleanup==9.0.0
+django-allauth==65.11.2
+django-htmx==1.24.1

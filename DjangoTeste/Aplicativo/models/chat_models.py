@@ -22,4 +22,4 @@ class ChatMessage(models.Model):
         return f'{self.user.username} : {self.body}'
     
     class Meta:
-        ordering = ('created',)
+        ordering = ('created')
