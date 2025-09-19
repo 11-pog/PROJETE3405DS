@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.pagination import CursorPagination
+from django.http import JsonResponse, HttpResponse
 from Aplicativo.models.publication_models import Publication
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 
@@ -68,4 +69,63 @@ class pesquisadelivro(APIView):
                 'criado_por': livro.author_name
             })
         
-        return Response({'results': resultados}, status=200)      
+        return Response({'results': resultados}, status=200)
+
+
+class TestWebSocket(APIView):
+    def get(self, request):
+        return JsonResponse({'status': 'WebSocket server running'})
+
+
+class WebSocketTest(APIView):
+    def get(self, request):
+        host = request.get_host().split(':')[0]
+        html = f'''
+<!DOCTYPE html>
+<html>
+<head><title>Test WebSocket</title></head>
+<body>
+    <div id="status">Conectando...</div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Digite uma mensagem">
+    <button onclick="sendMessage()">Enviar</button>
+    <script>
+        const socket = new WebSocket('ws://{host}:8000/ws/publications/');
+        const messages = document.getElementById('messages');
+        const status = document.getElementById('status');
+        
+        socket.onopen = function(e) {{
+            status.innerHTML = 'Conectado!';
+            status.style.color = 'green';
+        }};
+        
+        socket.onclose = function(e) {{
+            status.innerHTML = 'Desconectado!';
+            status.style.color = 'red';
+        }};
+        
+        socket.onerror = function(e) {{
+            status.innerHTML = 'Erro de conexão!';
+            status.style.color = 'red';
+        }};
+        
+        socket.onmessage = function(e) {{
+            const data = JSON.parse(e.data);
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = `Mensagem: ${{data.message || JSON.stringify(data)}}`;
+            messages.appendChild(messageElement);
+        }};
+        
+        function sendMessage() {{
+            const input = document.getElementById('messageInput');
+            if (socket.readyState === WebSocket.OPEN) {{
+                socket.send(JSON.stringify({{'message': input.value}}));
+                input.value = '';
+            }} else {{
+                alert('WebSocket não conectado!');
+            }}
+        }}
+    </script>
+</body>
+</html>'''
+        return HttpResponse(html)      

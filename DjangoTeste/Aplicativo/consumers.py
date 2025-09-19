@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-class LivrosConsumer(AsyncWebsocketConsumer):
+class PublicationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         print(f"WebSocket conectado: {self.channel_name}")
         await self.channel_layer.group_add("publications", self.channel_name)
