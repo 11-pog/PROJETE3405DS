@@ -7,7 +7,7 @@ export default function WebSocketTest() {
 
   useEffect(() => {
     // conecta no WebSocket
-    socketRef.current = new WebSocket("ws://localhost:8000/ws/publications/");
+    socketRef.current = new WebSocket("ws://192.168.18.39:8000/ws/publications/");
 
     socketRef.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
