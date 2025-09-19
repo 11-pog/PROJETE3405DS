@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'Aplicativo',
     'channels',  
 ]
-ASGI_APPLICATION = 'servidor.asgi.application'
+ASGI_APPLICATION = 'SiteTeste.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {

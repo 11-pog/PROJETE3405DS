@@ -22,7 +22,7 @@ from django.urls import path, include
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
 from Aplicativo.views.usuario_views import CadastrarUsuario, EditarUsuario, GetUser, UploadUserImage
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, TestWebSocket, WebSocketTest
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -41,6 +41,10 @@ urlpatterns = [
     
     path('api/pesquisa/', pesquisadelivro.as_view()),
     path('api/livros/', GetBookList.as_view(), name='listar_livros'),
+    
+    # WebSocket test endpoints
+    path('test/', TestWebSocket.as_view(), name='test'),
+    path('websocket-test/', WebSocketTest.as_view(), name='websocket_test'),
     
     # path('api/livros/<int:book_id>/favoritar/'),
     # path('api/usuarios/favoritos')
