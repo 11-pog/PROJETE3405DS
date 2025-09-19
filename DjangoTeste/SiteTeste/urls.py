@@ -21,6 +21,8 @@ from django.urls import path, include
 
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
+from Aplicativo.views.usuario_views import UserView, UploadUserImage, ListUsers, SearchUser
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, TestWebSocket, WebSocketTest, FavoritePostView, GetFavoriteBooks
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
 from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks
 from Aplicativo.views.chat_views import PrivateChat
@@ -34,8 +36,10 @@ urlpatterns = [
     path('api/usuario/', UserView.as_view(), name="usuario"),
     path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
     path('api/usuario/favoritos/', GetFavoriteBooks.as_view()),
+    path('api/usuarios/', ListUsers.as_view(), name="listar_usuarios"),
+    path('api/search/usuarios/', SearchUser.as_view(), name="search_usuarios"),
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    path('api/livros/pesquisar/', pesquisadelivro.as_view()),
+    path('api/search/livros/', pesquisadelivro.as_view()),
     path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
     path('api/livros/cadastrar/', CadastrarLivro.as_view()),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view()),
