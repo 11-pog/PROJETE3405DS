@@ -1,16 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
-  TouchableOpacity
+  StyleSheet
 } from 'react-native'
 import Botao from '../../functions/botoes'
-import { navigate } from 'expo-router/build/global-state/routing'
-import Ionicons from 'react-native-vector-icons/Ionicons'
 import MeuInput from '../../functions/textBox'
 import api from '../../functions/api'
 import { useRouter } from 'expo-router'
@@ -26,15 +19,19 @@ export default function Editar() {
 
   const Editar = async () => {
     try {
-      const response = await api.patch(
-        'editar/',
-        {
-          username: usuario,
-          password: senha,
-          email: email,
-          cidade: cidade
-        }
-      )
+      const data = {
+        username: usuario,
+        password: senha,
+        email: email,
+        cidade: cidade
+      };
+
+      const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) => value) // faz com que apenas valores reais sejam mandados (sem vazio ou nulo)
+      );
+
+      const response = await api.patch('usuario/', filteredData)
+      // "patch" atualiza campos especificos apenas
 
       if (response.status === 200) {
         await AsyncStorage.setItem('access', response.data.access)

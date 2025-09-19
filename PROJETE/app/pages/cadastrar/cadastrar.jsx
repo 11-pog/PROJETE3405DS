@@ -40,14 +40,13 @@ function Cadastrar() {
   const router = useRouter();
 
   const enviarUsuario = async () => {
-
     // garante que valida antes de enviar
     if (validate()) {
       return;
     }
 
     try {
-      const response = await axios.post('cadastrar/', {
+      const response = await axios.post('usuario/', {
         usuario: usuario,
         email: email,
         senha: senha,

@@ -7,13 +7,13 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
-
+        
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
-
+    
     # criar superuser: aceita email + password + extra_fields
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
@@ -28,9 +28,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-phone_regex_pattern = r'^\+?1?\d{9,15}$'
-phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inválido.") # negocio do chat sla
-
 # Modelo de usuario pro banco de dados porque o padrão do django não tem numero de telefone
 # Os outro campos como nome, senha, email, etc, são derivados de AbstractUser, então não é necessário implementa-los denovo
 class Usuario(AbstractUser): 
@@ -39,22 +36,21 @@ class Usuario(AbstractUser):
     # não tem porque adicionar denovo, muito pelo contrario, isso pode quebrar migrações
     
     # nesse caso aqui, é preciso SOBRESCREVER os campos anteriores para mudar alguns parametros
-    username = models.CharField(max_length=150, unique=False) 
+    username = models.CharField(max_length=150, unique=False)
     email = models.EmailField(unique=True)
-    # Username não precisa ser unico, email já é
     
     objects = UserManager()
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
-
     # não precisa de numero de telefone por enquanto (o proprio aplicativo vai ter chat)
     
     profile_picture = models.ImageField(
         upload_to='profiles/',
         default='defaults/default_user.png',  # default inside media
     )
+    city = models.CharField(max_length=100, blank=True, null=True)  
     
     def __str__(self):
         return self.email

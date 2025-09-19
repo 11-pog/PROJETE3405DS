@@ -4,14 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router } from 'expo-router'
 import api from '../../functions/api'
-import WebSocketService from '../../services/websocket';
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchBooks = useCallback(async (url = "livros/") => {
+  const fetchBooks = useCallback(async (url = "livros/feed/") => {
     if (loading) return;
     setLoading(true);
 
@@ -24,25 +23,12 @@ export default function FeedLivros() {
     } finally {
       setLoading(false);
     }
+  }, [loading])
+
+  useEffect(() => {
+    fetchBooks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // linha anterior faz a extensão ficar quieta e parar de encher o saco
-
- useEffect(() => {
-  fetchBooks();
-  WebSocketService.connect();
-  const listener = (data) => {
-    if(data.type === 'new_publication') {
-      Alert.alert("Um novo livro foi adicionado ao feed.", data.publication.book_title);
-      setBooks(prev => [data.publication, ...prev]);
-    }
-  };
-  WebSocketService.addListener(listener);
-
-  return () => {
-    WebSocketService.disconnect();
-  };
-}, [fetchBooks]);
-
+  }, []);
 
   function handleLoadMore() {
     if (nextPage) {
@@ -55,7 +41,7 @@ export default function FeedLivros() {
       <View style={styles.card}>
         {/* Imagem do livro */}
         <Image source={{ uri: item.post_cover }} style={styles.image} />
-
+        
         {/* Título e tipo */}
         <View style={styles.content}>
           <Pressable
