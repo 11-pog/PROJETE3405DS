@@ -1,5 +1,7 @@
 from Aplicativo.models.publication_models import Publication
+from Aplicativo.models.user_models import Usuario
 from rest_framework import serializers
+
 
 """
 Os serializadores das publicações so sitezinho
@@ -32,6 +34,8 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class CreatePublicationSerializer(serializers.ModelSerializer):
+    is_saved = serializers.BooleanField(read_only=True)
+    
     class Meta:
         model = Publication
         fields = [
@@ -42,6 +46,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_description",
             "post_location_city",
             "post_type",
+            "is_saved"
         ]
     
     def create(self, validated_data):
@@ -49,6 +54,10 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
         validated_data.setdefault("post_location_city", "Não informado")
         validated_data.setdefault("post_type", Publication.PostType.EMPRESTIMO)
         return Publication.objects.create(post_creator=user, **validated_data)
+    
+    def get_is_saved(self, obj):
+        user: Usuario = self.context['request'].user
+        return bool(user.interactions.filter(publication=obj, is_saved=True).exists())
 
 
 class PublicationFeedSerializer(serializers.ModelSerializer):

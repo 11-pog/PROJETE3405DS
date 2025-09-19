@@ -15,6 +15,7 @@ class UserView(APIView):
             - Utiliza o UserSerializer para serializar os dados do usuário.
         
         post(request):
+            Registra um usuario
             - Literalmente o cadastrar usuario
             - O unico que não precisa de autenticação
         
@@ -29,6 +30,9 @@ class UserView(APIView):
             - Método PUT exige todos os campos obrigatórios.
             - Utiliza o UpdateUserSerializer com partial=False.
             - Retorna mensagem de sucesso e novos tokens de acesso e refresh.
+        
+        delete????(request):
+            Imagina
     """
     permission_classes = [IsAuthenticated]
     
@@ -111,10 +115,10 @@ class UploadUserImage(APIView):
             # Delete old image if exists and not the default
             if user.profile_picture and user.profile_picture.url.startswith("defaults/"):
                 user.profile_picture.delete(save=False)
-
+        
         serializer = UploadUserImageSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"image_url": request.build_absolute_uri(user.profile_picture.url)})
-
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -32,12 +32,12 @@ urlpatterns = [
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
     path('api/usuario/', UserView.as_view(), name="usuario"),
     path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
-    path('api/usuarios/favoritos/', GetFavoriteBooks.as_view()),
+    path('api/usuario/favoritos/', GetFavoriteBooks.as_view()),
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    path('api/pesquisa/', pesquisadelivro.as_view()),
-    path('api/livros/feed/', GetBookList.as_view(), name='listar_livros'),
+    path('api/livros/pesquisar/', pesquisadelivro.as_view()),
+    path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
+    path('api/livros/cadastrar/', CadastrarLivro.as_view()),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view()),
-    path('api/livros/cadastrar/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
 
     # WebSocket test endpoints
     path('test/', TestWebSocket.as_view(), name='test'),
