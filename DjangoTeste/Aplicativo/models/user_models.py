@@ -1,8 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser , PermissionsMixin, BaseUserManager
-from django.contrib.auth.models import User
-from django.conf import settings
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -35,25 +33,22 @@ phone_validator = RegexValidator(regex=phone_regex_pattern, message="Número inv
 
 # Modelo de usuario pro banco de dados porque o padrão do django não tem numero de telefone
 # Os outro campos como nome, senha, email, etc, são derivados de AbstractUser, então não é necessário implementa-los denovo
-class Usuario(AbstractUser, PermissionsMixin): 
-    
-    # email = models.EmailField(unique=True)
-    # username = models.CharField(max_length=150, blank=True, null=True)  # opcional
-    # nome = models.CharField(max_length=150, blank=True, null=True)
-    
-    # gente pelo amor de deus leiam comentarios de vez em quando
-    
+class Usuario(AbstractUser): 
     # email, username, password, is_active, is_staff, first_name, last_name
     # todos esses já existem nesse modelo por causa da heranca de AbstractUser
     # não tem porque adicionar denovo, muito pelo contrario, isso pode quebrar migrações
+    
+    # nesse caso aqui, é preciso SOBRESCREVER os campos anteriores para mudar alguns parametros
+    username = models.CharField(max_length=150, unique=False) 
+    email = models.EmailField(unique=True)
+    # Username não precisa ser unico, email já é
     
     objects = UserManager()
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
-    email = models.EmailField(unique=True)
-    
+
     # não precisa de numero de telefone por enquanto (o proprio aplicativo vai ter chat)
     
     profile_picture = models.ImageField(
