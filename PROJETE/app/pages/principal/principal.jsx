@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router } from 'expo-router'
 import api from '../../functions/api'
-
+import WebSocketService from '../../services/websocket';
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
@@ -27,9 +27,22 @@ export default function FeedLivros() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // linha anterior faz a extensão ficar quieta e parar de encher o saco
 
-  useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
+ useEffect(() => {
+  fetchBooks();
+  WebSocketService.connect();
+  const listener = (data) => {
+    if(data.type === 'new_publication') {
+      Alert.alert("Um novo livro foi adicionado ao feed.", data.publication.book_title);
+      setBooks(prev => [data.publication, ...prev]);
+    }
+  };
+  WebSocketService.addListener(listener);
+
+  return () => {
+    WebSocketService.disconnect();
+  };
+}, [fetchBooks]);
+
 
   function handleLoadMore() {
     if (nextPage) {
