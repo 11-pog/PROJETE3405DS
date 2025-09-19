@@ -18,26 +18,31 @@ function Cadastrar() {
   const [senhaErr, setSenhaErr] = useState(false)
 
   const validate = () => {
+    var result = false
+
     if (!validateEmail.test(email)) {
       setEmailErr(true)
+      result = true
     } else {
       setEmailErr(false)
     }
 
     if (!validatePassword.test(senha)) {
       setSenhaErr(true)
+      result = true
     } else {
       setSenhaErr(false)
     }
+
+    return result
   }
 
   const router = useRouter();
 
   const enviarUsuario = async () => {
-    validate(); // garante que valida antes de enviar
 
-    if (emailErr || senhaErr) {
-      Alert.alert("Erro", "Preencha os campos corretamente!");
+    // garante que valida antes de enviar
+    if (validate()) {
       return;
     }
 
@@ -51,22 +56,14 @@ function Cadastrar() {
 
       alert("Sucesso", response.data.mensagem);
 
-      const login_response = await axios.post(`login/`, {
-        email: email,
-        password: senha
-      })
-
-      console.log('Response do login:', login_response.data)
-
-      const token = login_response.data.token || login_response.data.access
-      const refresh = login_response.data.refresh;
-
+      const token = response.data.access
       await AsyncStorage.setItem('access', token)
+
+      const refresh = response.data.refresh;
       await AsyncStorage.setItem('refresh', refresh)
       
       router.push({
-        pathname: "/pages/principal/principal",
-        params: { usuario, email, cidade }
+        pathname: "/pages/principal/principal"
       });
     } catch (error) {
       if (error.response) {

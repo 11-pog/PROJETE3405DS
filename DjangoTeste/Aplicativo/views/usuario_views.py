@@ -50,7 +50,12 @@ class CadastrarUsuario(APIView):
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
-        return Response({"mensagem": "Usuário criado com sucesso!"}, status=status.HTTP_201_CREATED)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "mensagem": "Cadastro feito com sucesso",
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }, status=200)
 
 
 class GetUser(APIView):
