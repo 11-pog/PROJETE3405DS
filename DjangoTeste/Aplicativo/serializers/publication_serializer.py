@@ -34,8 +34,6 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class CreatePublicationSerializer(serializers.ModelSerializer):
-    is_saved = serializers.BooleanField(read_only=True)
-    
     class Meta:
         model = Publication
         fields = [
@@ -45,8 +43,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_publication_date",
             "book_description",
             "post_location_city",
-            "post_type",
-            "is_saved"
+            "post_type"
         ]
     
     def create(self, validated_data):
@@ -54,15 +51,12 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
         validated_data.setdefault("post_location_city", "Não informado")
         validated_data.setdefault("post_type", Publication.PostType.EMPRESTIMO)
         return Publication.objects.create(post_creator=user, **validated_data)
-    
-    def get_is_saved(self, obj):
-        user: Usuario = self.context['request'].user
-        return bool(user.interactions.filter(publication=obj, is_saved=True).exists())
 
 
 class PublicationFeedSerializer(serializers.ModelSerializer):
     post_creator = serializers.CharField(source="post_creator.username", read_only=True)
     post_creator_id = serializers.IntegerField(source="post_creator.id", read_only=True)
+    is_saved = serializers.SerializerMethodField()
     
     class Meta:
         model = Publication
@@ -74,5 +68,10 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "post_type",
             "post_cover",
             "post_creator",
-            "post_creator_id"
+            "post_creator_id",
+            "is_saved"
         ]
+    
+    def get_is_saved(self, obj):
+        user: Usuario = self.context['request'].user
+        return bool(user.interactions.filter(publication=obj, is_saved=True).exists())
