@@ -41,5 +41,9 @@ urlpatterns = [
     
     path('api/pesquisa/', pesquisadelivro.as_view()),
     path('api/livros/', GetBookList.as_view(), name='listar_livros'),
+    
+    # path('api/livros/<int:book_id>/favoritar/'),
+    # path('api/usuarios/favoritos')
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

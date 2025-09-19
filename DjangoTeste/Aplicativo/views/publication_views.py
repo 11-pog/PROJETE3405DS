@@ -21,6 +21,15 @@ class GetBookList(ListAPIView):
         return Publication.objects.all().order_by('-created')
 
 
+class GetFavoriteBooks(ListAPIView):
+    serializer_class = PublicationFeedSerializer
+    pagination_class = FeedPagination
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return super().get_queryset()
+    
+
 class CadastrarLivro(APIView): 
     permission_classes = [IsAuthenticated] # meio que obrigatório isso aqui
     
