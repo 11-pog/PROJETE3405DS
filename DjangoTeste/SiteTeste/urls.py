@@ -23,6 +23,8 @@ from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
 from Aplicativo.views.usuario_views import UserView, UploadUserImage, ListUsers, SearchUser
 from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, TestWebSocket, WebSocketTest, FavoritePostView, GetFavoriteBooks
+from Aplicativo.views.usuario_views import UserView, UploadUserImage
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, PrivateChat, FavoritePostView, GetFavoriteBooks
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -32,17 +34,16 @@ urlpatterns = [
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
     path('api/usuario/', UserView.as_view(), name="usuario"),
     path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
+    path('api/usuario/favoritos/', GetFavoriteBooks.as_view()),
     path('api/usuarios/', ListUsers.as_view(), name="listar_usuarios"),
     path('api/search/usuarios/', SearchUser.as_view(), name="search_usuarios"),
-    path('api/usuarios/favoritos/', GetFavoriteBooks.as_view()),
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    path('api/pesquisa/', pesquisadelivro.as_view()),
-    path('api/livros/feed/', GetBookList.as_view(), name='listar_livros'),
+    path('api/search/livros/', pesquisadelivro.as_view()),
+    path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
+    path('api/livros/cadastrar/', CadastrarLivro.as_view()),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view()),
-    path('api/livros/cadastrar/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
 
-    # WebSocket test endpoints
-    path('test/', TestWebSocket.as_view(), name='test'),
-    path('websocket-test/', WebSocketTest.as_view(), name='websocket_test'),
+        # Chat privado
+    path('private/<str:user1>/<str:user2>/', PrivateChat.as_view(), name='private_chat'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

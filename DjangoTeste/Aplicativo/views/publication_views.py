@@ -7,7 +7,7 @@ from rest_framework.pagination import CursorPagination
 from django.http import JsonResponse, HttpResponse
 from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
-
+from Aplicativo.serializers.interaction_serializer import InteractionSerializer
 
 
 class GeneralPagination(CursorPagination):
@@ -40,10 +40,12 @@ class GetFavoriteBooks(ListAPIView):
 class FavoritePostView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        pass
+    def post(self, request, book_id):
+        serializer = InteractionSerializer(
+            
+        )
 
-    def delete(self, request):
+    def delete(self, request, book_id):
         pass
 
 
