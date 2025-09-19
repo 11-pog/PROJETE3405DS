@@ -4,43 +4,51 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from Aplicativo.models.user_models import Usuario
 from rest_framework.permissions import IsAuthenticated
-from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer
+from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
-class EditarUsuario(APIView):
-    permission_classes = [IsAuthenticated]  # garante que só usuário logado pode editar
+class UserView(APIView):
+    """
+        get(request):
+            Retorna os dados do usuário autenticado.
+            - Método GET não possui corpo.
+            - Utiliza o UserSerializer para serializar os dados do usuário.
+        
+        post(request):
+            Registra um usuario
+            - Literalmente o cadastrar usuario
+            - O unico que não precisa de autenticação
+        
+        patch(request):
+            Atualiza parcialmente os dados do usuário autenticado.
+            - Método PATCH permite modificar apenas campos específicos.
+            - Utiliza o UpdateUserSerializer com partial=True.
+            - Retorna mensagem de sucesso e novos tokens de acesso e refresh.
+        
+        put(request):
+            Atualiza completamente os dados do usuário autenticado.
+            - Método PUT exige todos os campos obrigatórios.
+            - Utiliza o UpdateUserSerializer com partial=False.
+            - Retorna mensagem de sucesso e novos tokens de acesso e refresh.
+        
+        delete????(request):
+            Imagina
+    """
+    permission_classes = [IsAuthenticated]
     
-    def patch(self, request):
-        user = request.user
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
-        cidade = request.data.get('cidade')
-        
-        if username:
-            user.username = username
-        if password:
-            user.set_password(password)
-        if email:
-            user.email = email
-        if cidade:
-            user.cidade = cidade
-        
-        user.save()
-        
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "mensagem": "Dados atualizados com sucesso!",
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }, status=200)
-
-
-class CadastrarUsuario(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            # Se for POST, não é necessario autenticação (registrar usuario)
+            return []
+        return super().get_permissions()
+    
+    # GET -> pega informação (get request não tem corpo)
     def get(self, request):
-        return Response({"message": "Use POST to register a user."})
+        serializer = UserSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
     
+    # POST -> cria um objeto, eis o nome, post
+    # Vulgo CadastrarUsuario
     def post(self, request):
         usuario = request.data.get('usuario')
         senha = request.data.get('senha')
@@ -50,20 +58,48 @@ class CadastrarUsuario(APIView):
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
+        
         refresh = RefreshToken.for_user(user)
         return Response({
             "mensagem": "Cadastro feito com sucesso",
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-        }, status=200)
-
-
-class GetUser(APIView):
-    permission_classes = [IsAuthenticated]
+        }, status=201)
     
-    def get(self, request):
-        serializer = UserSerializer(request.user, context={'request': request})
-        return Response(serializer.data)
+    # Eu uni a logica de edição de usuario aqui pra GetUser
+    # PATCH -> parcialmente atualiza algum objeto
+    def patch(self, request):
+        serializer = UpdateUserSerializer(
+            request.user,
+            data=request.data,
+            partial = True
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            refresh = RefreshToken.for_user(request.user)
+            return Response({
+                "mensagem": "Dados atualizados com sucesso!",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            }, status=200)
+    
+    # PUT -> completamente atualiza o usuario
+    def put(self, request):
+        serializer = UpdateUserSerializer(
+            request.user,
+            data=request.data,
+            partial = False
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            refresh = RefreshToken.for_user(request.user)
+            return Response({
+                "mensagem": "Dados atualizados com sucesso!",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            }, status=200)
 
 
 class UploadUserImage(APIView):
@@ -79,11 +115,10 @@ class UploadUserImage(APIView):
             # Delete old image if exists and not the default
             if user.profile_picture and user.profile_picture.url.startswith("defaults/"):
                 user.profile_picture.delete(save=False)
-
+        
         serializer = UploadUserImageSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"image_url": request.build_absolute_uri(user.profile_picture.url)})
-
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    

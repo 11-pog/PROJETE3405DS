@@ -21,8 +21,8 @@ from django.urls import path, include
 
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
-from Aplicativo.views.usuario_views import CadastrarUsuario, EditarUsuario, GetUser, UploadUserImage
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, TestWebSocket, WebSocketTest, FavoritePostView
+from Aplicativo.views.usuario_views import UserView, UploadUserImage
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, PrivateChat, FavoritePostView, GetFavoriteBooks
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -30,26 +30,16 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginUsuario.as_view()),
     path('api/login/refresh/', TokenRefreshView.as_view(), name="token refresh"),
-    path('api/cadastrar/', CadastrarUsuario.as_view(), name="cadastrar_usuario"),
-    path('api/editar/', EditarUsuario.as_view(), name="editar_usuario"),
-    path('api/usuario/', GetUser.as_view()),
+    path('api/usuario/', UserView.as_view(), name="usuario"),
     path('api/usuario/mudarfoto/', UploadUserImage.as_view()),
-    path('api/cadastrarlivro/', CadastrarLivro.as_view()), #o url tem que alterar o nome ou utilzar este mesmo
-    
-    # tava mesmo nome do anterior, mudei pra isbn
+    path('api/usuario/favoritos/', GetFavoriteBooks.as_view()),
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    
-    path('api/pesquisa/', pesquisadelivro.as_view()),
-    path('api/livros/', GetBookList.as_view(), name='listar_livros'),
-    
-    path('api/favorite/', FavoritePostView.as_view()),
+    path('api/livros/pesquisar/', pesquisadelivro.as_view()),
+    path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
+    path('api/livros/cadastrar/', CadastrarLivro.as_view()),
+    path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view()),
 
-    # WebSocket test endpoints
-    path('test/', TestWebSocket.as_view(), name='test'),
-    path('websocket-test/', WebSocketTest.as_view(), name='websocket_test'),
-    
-    # path('api/livros/<int:book_id>/favoritar/'),
-    # path('api/usuarios/favoritos')
-    
+        # Chat privado
+    path('private/<str:user1>/<str:user2>/', PrivateChat.as_view(), name='private_chat'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
