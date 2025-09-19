@@ -67,8 +67,10 @@ class Interaction(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     
     book_rating = models.IntegerField(blank=True, null=True) # optional
-    is_saved = models.BooleanField(default=False)
     view_count = models.PositiveIntegerField(default=0)
+
+    is_saved = models.BooleanField(default=False)
+    saved_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     
     messaged_author = models.BooleanField(default=False)
     verified_trade = models.BooleanField(default=False)

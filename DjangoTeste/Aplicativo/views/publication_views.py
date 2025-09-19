@@ -5,16 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.pagination import CursorPagination
 from django.http import JsonResponse, HttpResponse
-from Aplicativo.models.publication_models import Publication
+from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 
 
-class FeedPagination(CursorPagination):
+
+class GeneralPagination(CursorPagination):
     page_size = 10
 
 class GetBookList(ListAPIView):
     serializer_class = PublicationFeedSerializer
-    pagination_class = FeedPagination
+    pagination_class = GeneralPagination
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -24,12 +25,27 @@ class GetBookList(ListAPIView):
 
 class GetFavoriteBooks(ListAPIView):
     serializer_class = PublicationFeedSerializer
-    pagination_class = FeedPagination
+    pagination_class = GeneralPagination
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return super().get_queryset()
-    
+        user = self.request.user
+        saved_interactions = Interaction.objects.filter(
+            user=user,
+            is_saved=True
+            ).select_related('publication').order_by('-saved_at')
+        return saved_interactions
+
+
+class FavoritePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        pass
+
+    def delete(self, request):
+        pass
+
 
 class CadastrarLivro(APIView): 
     permission_classes = [IsAuthenticated] # meio que obrigatório isso aqui

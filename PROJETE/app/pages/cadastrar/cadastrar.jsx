@@ -40,7 +40,6 @@ function Cadastrar() {
   const router = useRouter();
 
   const enviarUsuario = async () => {
-
     // garante que valida antes de enviar
     if (validate()) {
       return;
