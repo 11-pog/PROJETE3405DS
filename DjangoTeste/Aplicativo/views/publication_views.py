@@ -72,59 +72,67 @@ class pesquisadelivro(APIView):
         return Response({'results': resultados}, status=200)
 
 
-class TestWebSocket(APIView):
-    def get(self, request):
-        return JsonResponse({'status': 'WebSocket server running'})
 
 
-class WebSocketTest(APIView):
-    def get(self, request):
+
+class PrivateChat(APIView):
+    def get(self, request, user1, user2):
         host = request.get_host().split(':')[0]
         html = f'''
 <!DOCTYPE html>
 <html>
-<head><title>Test WebSocket</title></head>
+<head><title>Chat Privado: {user1} & {user2}</title></head>
 <body>
-    <div id="status">Conectando...</div>
-    <div id="messages"></div>
-    <input type="text" id="messageInput" placeholder="Digite uma mensagem">
-    <button onclick="sendMessage()">Enviar</button>
+    <h3>Chat Privado entre {user1} e {user2}</h3>
+    <div id="messages" style="border:1px solid #ccc; height:400px; overflow-y:auto; padding:10px; margin:10px 0;"></div>
+    
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem" style="flex:1;">
+        <select id="senderSelect">
+            <option value="{user1}">{user1}</option>
+            <option value="{user2}">{user2}</option>
+        </select>
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+    
     <script>
-        const socket = new WebSocket('ws://{host}:8000/ws/publications/');
+        const socket = new WebSocket('ws://{host}:8000/ws/private/{user1}/{user2}/');
         const messages = document.getElementById('messages');
-        const status = document.getElementById('status');
         
-        socket.onopen = function(e) {{
-            status.innerHTML = 'Conectado!';
-            status.style.color = 'green';
-        }};
-        
-        socket.onclose = function(e) {{
-            status.innerHTML = 'Desconectado!';
-            status.style.color = 'red';
-        }};
-        
-        socket.onerror = function(e) {{
-            status.innerHTML = 'Erro de conexão!';
-            status.style.color = 'red';
-        }};
+        socket.onopen = () => console.log('Chat privado conectado!');
         
         socket.onmessage = function(e) {{
             const data = JSON.parse(e.data);
             const messageElement = document.createElement('div');
-            messageElement.innerHTML = `Mensagem: ${{data.message || JSON.stringify(data)}}`;
+            const isMe = data.sender === document.getElementById('senderSelect').value;
+            
+            messageElement.style.textAlign = isMe ? 'right' : 'left';
+            messageElement.style.margin = '5px 0';
+            messageElement.style.padding = '8px';
+            messageElement.style.backgroundColor = isMe ? '#e3f2fd' : '#f5f5f5';
+            messageElement.style.borderRadius = '10px';
+            
+            messageElement.innerHTML = `<strong>${{data.sender}}:</strong> ${{data.message}}`;
             messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
         }};
         
         function sendMessage() {{
-            const input = document.getElementById('messageInput');
-            if (socket.readyState === WebSocket.OPEN) {{
-                socket.send(JSON.stringify({{'message': input.value}}));
-                input.value = '';
-            }} else {{
-                alert('WebSocket não conectado!');
+            const messageInput = document.getElementById('messageInput');
+            const senderSelect = document.getElementById('senderSelect');
+            
+            if (messageInput.value.trim()) {{
+                socket.send(JSON.stringify({{
+                    'message': messageInput.value,
+                    'sender': senderSelect.value
+                }}));
+                messageInput.value = '';
             }}
         }}
+        
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {{
+            if (e.key === 'Enter') sendMessage();
+        }});
     </script>
 </body>
 </html>'''

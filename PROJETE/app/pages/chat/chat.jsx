@@ -1,65 +1,74 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useUser } from "../../hooks/useUser";
 
 export default function WebSocketTest() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [chatPartner, setChatPartner] = useState("maria");
   const socketRef = useRef(null);
+  const { user, loading } = useUser();
+  
+  if (loading) {
+    return <div style={{ padding: 20 }}>Carregando...</div>;
+  }
+  
+  if (!user) {
+    return <div style={{ padding: 20 }}>Erro ao carregar usuário</div>;
+  }
+  
+  const currentUser = user.username;
 
   useEffect(() => {
-    // conecta no WebSocket
-    socketRef.current = new WebSocket("ws://192.168.18.39:8000/ws/publications/");
+    // Conecta no WebSocket do chat privado
+    const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
+    socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
 
-      if (data.type === "new_publication") {
+      if (data.type === "private_message") {
         setMessages((prev) => [
           ...prev,
-          { text: `Nova Publicação: ${JSON.stringify(data.publication)}`, type: "new" },
+          { text: `${data.sender}: ${data.message}`, type: data.sender === currentUser ? "me" : "other" },
         ]);
-      } else {
-        setMessages((prev) => [...prev, { text: `Mensagem: ${data.message}`, type: "msg" }]);
       }
     };
 
-    socketRef.current.onopen = () => console.log("✅ WebSocket conectado");
-    socketRef.current.onclose = () => console.log("🔌 WebSocket desconectado");
-    socketRef.current.onerror = (err) => console.error("❌ Erro WebSocket:", err);
+    socketRef.current.onopen = () => console.log(`✅ Chat conectado: ${currentUser} ↔ ${chatPartner}`);
+    socketRef.current.onclose = () => console.log("🔌 Chat desconectado");
+    socketRef.current.onerror = (err) => console.error("❌ Erro no chat:", err);
 
     return () => {
       if (socketRef.current) socketRef.current.close();
     };
-  }, []);
+  }, [user?.username, chatPartner]);
 
   const sendMessage = () => {
     if (!inputValue.trim()) return;
-    socketRef.current.send(JSON.stringify({ message: inputValue }));
-    setMessages((prev) => [...prev, { text: `Você: ${inputValue}`, type: "me" }]);
+    
+    socketRef.current.send(JSON.stringify({ 
+      message: inputValue,
+      sender: user.username 
+    }));
+    
     setInputValue("");
   };
 
-  const simulatePublication = async () => {
-    const publicationData = {
-      title: "Novo Livro",
-      author: "Autor Teste",
-      user: "Usuario A",
-    };
 
-    try {
-      await fetch("/test/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(publicationData),
-      });
-      console.log("📢 Publicação simulada");
-    } catch (error) {
-      console.error("Erro ao simular publicação:", error);
-    }
-  };
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Teste WebSocket</h2>
+      <h2>Chat com {chatPartner}</h2>
+      
+      <div style={{ marginBottom: 15 }}>
+        <label>Conversar com: </label>
+        <select value={chatPartner} onChange={(e) => setChatPartner(e.target.value)}>
+          <option value="maria">Maria</option>
+          <option value="ana">Ana</option>
+          <option value="pedro">Pedro</option>
+        </select>
+        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user.username}</small>
+      </div>
 
       <div
         id="messages"
@@ -90,9 +99,6 @@ export default function WebSocketTest() {
         style={{ marginRight: 10 }}
       />
       <button onClick={sendMessage}>Enviar</button>
-      <button onClick={simulatePublication} style={{ marginLeft: 10 }}>
-        Simular Publicação
-      </button>
     </div>
   );
 }
