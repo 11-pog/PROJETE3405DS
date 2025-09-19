@@ -46,7 +46,7 @@ function Cadastrar() {
     }
 
     try {
-      const response = await axios.post('cadastrar/', {
+      const response = await axios.post('usuario/', {
         usuario: usuario,
         email: email,
         senha: senha,
