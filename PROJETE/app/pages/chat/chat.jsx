@@ -8,19 +8,14 @@ export default function WebSocketTest() {
   const socketRef = useRef(null);
   const { user, loading } = useUser();
   
-  if (loading) {
-    return <div style={{ padding: 20 }}>Carregando...</div>;
-  }
   
-  if (!user) {
-    return <div style={{ padding: 20 }}>Erro ao carregar usuário</div>;
-  }
-  
-  const currentUser = user.username;
+  const currentUser = user?.username || "";
 
   useEffect(() => {
+     if (!currentUser) return; 
+     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
@@ -67,7 +62,7 @@ export default function WebSocketTest() {
           <option value="ana">Ana</option>
           <option value="pedro">Pedro</option>
         </select>
-        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user.username}</small>
+        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username}</small>
       </div>
 
       <div

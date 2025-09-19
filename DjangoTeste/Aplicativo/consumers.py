@@ -25,8 +25,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data['message']
-        sender = data['sender']
+        message = data.get('message', "")
+        sender = data.get('sender', "unknown")
         
         await self.channel_layer.group_send(
             self.room_group_name,

@@ -12,7 +12,7 @@ class PrivateChatService {
     this.chatPartner = chatPartner;
     
     // Conecta no WebSocket do chat privado
-    this.ws = new WebSocket(`ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`);
+    this.ws = new WebSocket(`ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`);
 
     this.ws.onopen = () => console.log(`💬 Chat conectado: ${currentUser} ↔ ${chatPartner}`);
     
@@ -34,11 +34,11 @@ class PrivateChatService {
     this.listeners = this.listeners.filter(listener => listener !== callback);
   }
 
-  sendMessage(message) {
+  sendMessage(message, sender) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
         message: message,
-        sender: this.currentUser
+        sender: sender
       }));
     }
   }

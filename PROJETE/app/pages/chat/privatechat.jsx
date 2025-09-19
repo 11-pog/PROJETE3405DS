@@ -7,6 +7,7 @@ export default function PrivateChat({ currentUser, chatPartner }) {
   const [inputMessage, setInputMessage] = useState('');
   const scrollViewRef = useRef();
 
+  console.log("Current User:", currentUser, "Chat Partner:", chatPartner);
   useEffect(() => {
     // Conecta no chat privado
     PrivateChatService.connect(currentUser, chatPartner);
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     padding: 15,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#335c67',
     color: 'white',
   },
   messagesContainer: {
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#335c67',
   },
   otherMessage: {
     alignSelf: 'flex-start',
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#335c67',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
