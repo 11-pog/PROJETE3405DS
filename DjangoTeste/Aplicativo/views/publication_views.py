@@ -4,49 +4,99 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.pagination import CursorPagination
-from django.http import JsonResponse, HttpResponse
 from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
-
-
-class GeneralPagination(CursorPagination):
-    page_size = 10
+from django.db.models import F
 
 class GetBookList(ListAPIView):
+    class Pagination(CursorPagination):
+        page_size = 20
+        ordering = "-created_at"
+    
     serializer_class = PublicationFeedSerializer
-    pagination_class = GeneralPagination
+    pagination_class = Pagination
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         # No futuro botarei a IA aqui
-        return Publication.objects.all().order_by('-created')
+        return Publication.objects.all().order_by('-created_at', 'id')
 
 
 class GetFavoriteBooks(ListAPIView):
+    class Pagination(CursorPagination):
+        page_size = 20
+        ordering = "-saved_at"
+    
     serializer_class = PublicationFeedSerializer
-    pagination_class = GeneralPagination
+    pagination_class = Pagination
     permission_classes = [IsAuthenticated]
+    
     
     def get_queryset(self):
         user = self.request.user
+        
         saved_interactions = Interaction.objects.filter(
             user=user,
             is_saved=True
-            ).select_related('publication').order_by('-saved_at')
-        return saved_interactions
-
+        ).select_related('publication')
+        
+        
+        publications = Publication.objects.filter(
+            id__in=saved_interactions.values_list('publication_id', flat=True)
+        ).annotate(
+            saved_at=F('interactions__saved_at')
+        ).order_by('-saved_at', 'id')
+        
+        return publications
 
 class FavoritePostView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request, book_id):
         serializer = InteractionSerializer(
-            
+            data = {
+                'publication': book_id,
+                'is_saved': True
+            },
+            partial = True,
+            context = {
+                'request': request
+            }
         )
-
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data = {
+                'message': 'Livro favoritado'
+            }, status=201)
+        return Response(data = {
+            'message': 'erro',
+            'details': serializer.errors
+        }, status=400)
+    
+    
     def delete(self, request, book_id):
-        pass
+        serializer = InteractionSerializer(
+            data = {
+                'publication': book_id,
+                'is_saved': False
+            },
+            partial = True,
+            context = {
+                'request': request
+            }
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data = {
+                'message': 'Livro desfavoritado'
+            }, status=204)
+        return Response(data = {
+            'message': 'erro',
+            'details': serializer.errors
+        }, status=400)
 
 
 class CadastrarLivro(APIView): 
@@ -88,70 +138,3 @@ class pesquisadelivro(APIView):
             })
         
         return Response({'results': resultados}, status=200)
-
-
-
-
-
-class PrivateChat(APIView):
-    def get(self, request, user1, user2):
-        host = request.get_host().split(':')[0]
-        html = f'''
-<!DOCTYPE html>
-<html>
-<head><title>Chat Privado: {user1} & {user2}</title></head>
-<body>
-    <h3>Chat Privado entre {user1} e {user2}</h3>
-    <div id="messages" style="border:1px solid #ccc; height:400px; overflow-y:auto; padding:10px; margin:10px 0;"></div>
-    
-    <div style="display:flex; gap:10px;">
-        <input type="text" id="messageInput" placeholder="Digite sua mensagem" style="flex:1;">
-        <select id="senderSelect">
-            <option value="{user1}">{user1}</option>
-            <option value="{user2}">{user2}</option>
-        </select>
-        <button onclick="sendMessage()">Enviar</button>
-    </div>
-    
-    <script>
-        const socket = new WebSocket('ws://{host}:8000/ws/private/{user1}/{user2}/');
-        const messages = document.getElementById('messages');
-        
-        socket.onopen = () => console.log('Chat privado conectado!');
-        
-        socket.onmessage = function(e) {{
-            const data = JSON.parse(e.data);
-            const messageElement = document.createElement('div');
-            const isMe = data.sender === document.getElementById('senderSelect').value;
-            
-            messageElement.style.textAlign = isMe ? 'right' : 'left';
-            messageElement.style.margin = '5px 0';
-            messageElement.style.padding = '8px';
-            messageElement.style.backgroundColor = isMe ? '#e3f2fd' : '#f5f5f5';
-            messageElement.style.borderRadius = '10px';
-            
-            messageElement.innerHTML = `<strong>${{data.sender}}:</strong> ${{data.message}}`;
-            messages.appendChild(messageElement);
-            messages.scrollTop = messages.scrollHeight;
-        }};
-        
-        function sendMessage() {{
-            const messageInput = document.getElementById('messageInput');
-            const senderSelect = document.getElementById('senderSelect');
-            
-            if (messageInput.value.trim()) {{
-                socket.send(JSON.stringify({{
-                    'message': messageInput.value,
-                    'sender': senderSelect.value
-                }}));
-                messageInput.value = '';
-            }}
-        }}
-        
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {{
-            if (e.key === 'Enter') sendMessage();
-        }});
-    </script>
-</body>
-</html>'''
-        return HttpResponse(html)      

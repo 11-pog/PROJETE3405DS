@@ -12,12 +12,14 @@ export default function FeedLivros() {
 
   const fetchBooks = useCallback(async (url = "livros/feed/") => {
     if (loading) return;
+
     setLoading(true);
 
     try {
       const response = await api.get(url);
       setBooks((prev) => [...prev, ...response.data.results]);
       setNextPage(response.data.next);
+      console.log(response.data)
     } catch (error) {
       console.error("Erro ao buscar livros:", error);
     } finally {
@@ -36,12 +38,34 @@ export default function FeedLivros() {
     }
   }
 
+  function toggleSaved(item) {
+    var bookId = item.id
+    const willBeSaved = !item.is_saved;
+
+    setBooks(prevBooks =>
+      prevBooks.map(book =>
+        book.id === bookId
+          ? { ...book, is_saved: willBeSaved }
+          : book
+      )
+    );
+
+    const endpoint = `livros/${bookId}/favoritar/`;
+
+    if (willBeSaved) {
+      api.post(endpoint)
+    }
+    else {
+      api.delete(endpoint)
+    }
+  }
+
   function renderBook({ item }) {
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
         <Image source={{ uri: item.post_cover }} style={styles.image} />
-        
+
         {/* Título e tipo */}
         <View style={styles.content}>
           <Pressable
@@ -76,8 +100,12 @@ export default function FeedLivros() {
 
         {/* Botões de interação */}
         <View style={styles.actions}>
-          <TouchableOpacity>
-            <Ionicons name="heart-outline" size={22} color="#9e2a2b" />
+          <TouchableOpacity onPress={() => toggleSaved(item)}>
+            <Ionicons
+              name={item.is_saved ? "heart" : "heart-outline"} // 🔹 filled if saved
+              size={22}
+              color={item.is_saved ? "#e63946" : "#9e2a2b"} // 🔹 red if saved
+            />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.commentBtn}>
@@ -112,7 +140,7 @@ export default function FeedLivros() {
         renderItem={renderBook}
         keyExtractor={(item) => item.id.toString()}
         onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.1}
         ListFooterComponent={loading && <ActivityIndicator size="large" />}
         contentContainerStyle={styles.listContent}
       />

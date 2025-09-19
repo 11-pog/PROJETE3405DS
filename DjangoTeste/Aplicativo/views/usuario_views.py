@@ -7,6 +7,36 @@ from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
+class SearchUser(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # Busca todos os usuários do banco exceto o atual
+        usuarios = Usuario.objects.exclude(id=request.user.id)
+        
+        users_data = []
+        for user in usuarios:
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_active': user.is_active
+            })
+        
+        return Response({
+            'total': len(users_data),
+            'users': users_data
+        })
+
+
+class ListUsers(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        users = Usuario.objects.exclude(id=request.user.id).values('id', 'username', 'email')
+        return Response(list(users))
+
+
 class UserView(APIView):
     """
         get(request):

@@ -1,21 +1,28 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "../../hooks/useUser";
+import api from '../../functions/api';
 
 export default function WebSocketTest() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [chatPartner, setChatPartner] = useState("maria");
+  const [chatPartner, setChatPartner] = useState("");
+  const [availableUsers, setAvailableUsers] = useState([]);
   const socketRef = useRef(null);
   const { user, loading } = useUser();
   
+  if (loading) {
+    return <div style={{ padding: 20 }}>Carregando...</div>;
+  }
   
-  const currentUser = user?.username || "";
+  if (!user) {
+    return <div style={{ padding: 20 }}>Erro ao carregar usuário</div>;
+  }
+  
+  const currentUser = user.username;
 
   useEffect(() => {
-     if (!currentUser) return; 
-     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
@@ -24,12 +31,12 @@ export default function WebSocketTest() {
       if (data.type === "private_message") {
         setMessages((prev) => [
           ...prev,
-          { text: `${data.sender}: ${data.message}`, type: data.sender === currentUser ? "me" : "other" },
+          { text: `${data.sender}: ${data.message}`, type: data.sender === user.username ? "me" : "other" },
         ]);
       }
     };
 
-    socketRef.current.onopen = () => console.log(`✅ Chat conectado: ${currentUser} ↔ ${chatPartner}`);
+    socketRef.current.onopen = () => console.log(`✅ Chat conectado: ${user.username} ↔ ${chatPartner}`);
     socketRef.current.onclose = () => console.log("🔌 Chat desconectado");
     socketRef.current.onerror = (err) => console.error("❌ Erro no chat:", err);
 
@@ -39,7 +46,7 @@ export default function WebSocketTest() {
   }, [user?.username, chatPartner]);
 
   const sendMessage = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !user?.username) return;
     
     socketRef.current.send(JSON.stringify({ 
       message: inputValue,
@@ -49,7 +56,13 @@ export default function WebSocketTest() {
     setInputValue("");
   };
 
-
+  if (loading) {
+    return <div style={{ padding: 20 }}>Carregando...</div>;
+  }
+  
+  if (!user) {
+    return <div style={{ padding: 20 }}>Erro ao carregar usuário</div>;
+  }
 
   return (
     <div style={{ padding: 20 }}>
@@ -58,11 +71,15 @@ export default function WebSocketTest() {
       <div style={{ marginBottom: 15 }}>
         <label>Conversar com: </label>
         <select value={chatPartner} onChange={(e) => setChatPartner(e.target.value)}>
-          <option value="maria">Maria</option>
-          <option value="ana">Ana</option>
-          <option value="pedro">Pedro</option>
+          {availableUsers.length === 0 ? (
+            <option value="">Nenhum usuário disponível</option>
+          ) : (
+            availableUsers.map(u => (
+              <option key={u.id} value={u.username}>{u.username}</option>
+            ))
+          )}
         </select>
-        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username}</small>
+        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user.username}</small>
       </div>
 
       <div
