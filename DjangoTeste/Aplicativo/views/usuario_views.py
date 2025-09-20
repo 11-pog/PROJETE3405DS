@@ -7,40 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-class SearchUser(APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
-        try:
-            # Busca TODOS os usuários da tabela Aplicativo_usuario exceto o atual
-            todos_usuarios = Usuario.objects.exclude(id=request.user.id)
-            
-            users_data = []
-            for usuario in todos_usuarios:
-                user_info = {
-                    'id': usuario.id,
-                    'username': usuario.username,
-                    'email': usuario.email,
-                    'is_active': usuario.is_active,
-                    'date_joined': usuario.date_joined.strftime('%Y-%m-%d') if usuario.date_joined else None
-                }
-                users_data.append(user_info)
-                
-            return Response({
-                'success': True,
-                'total_usuarios': len(users_data),
-                'usuarios_disponiveis': users_data,
-                'message': f'Encontrados {len(users_data)} usuários para chat privado'
-            })
-            
-        except Exception as e:
-            return Response({
-                'success': False,
-                'error': str(e),
-                'message': 'Erro ao buscar usuários do banco'
-            }, status=500)
-
-
 class ListUsers(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -164,3 +130,36 @@ class UploadUserImage(APIView):
             return Response({"image_url": request.build_absolute_uri(user.profile_picture.url)})
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class SearchUser(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            # Busca TODOS os usuários da tabela Aplicativo_usuario exceto o atual
+            todos_usuarios = Usuario.objects.exclude(id=request.user.id)
+            
+            users_data = []
+            for usuario in todos_usuarios:
+                user_info = {
+                    'id': usuario.id,
+                    'username': usuario.username,
+                    'email': usuario.email,
+                    'is_active': usuario.is_active,
+                    'date_joined': usuario.date_joined.strftime('%Y-%m-%d') if usuario.date_joined else None
+                }
+                users_data.append(user_info)
+                
+            return Response({
+                'success': True,
+                'total_usuarios': len(users_data),
+                'usuarios_disponiveis': users_data,
+                'message': f'Encontrados {len(users_data)} usuários para chat privado'
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e),
+                'message': 'Erro ao buscar usuários do banco'
+            }, status=500)

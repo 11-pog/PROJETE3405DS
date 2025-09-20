@@ -1,33 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import api from '../../functions/api';
+import { useUser } from '../../hooks/useUser';
 
-export default function ChatList({ currentUser }) {
+export default function ChatList() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { user } = useUser();
 
   useEffect(() => {
-    // Aqui você pode buscar a lista de usuários da sua API
-    // Por enquanto, vou usar dados mockados
-    setUsers([
-      { id: 1, username: 'joao', name: 'João Silva' },
-      { id: 2, username: 'maria', name: 'Maria Santos' },
-      { id: 3, username: 'ana', name: 'Ana Costa' },
-      { id: 4, username: 'pedro', name: 'Pedro Lima' },
-    ]);
-  }, []);
+    async function fetchUsers() {
+      try {
+        const response = await api.get('search/usuarios/');
+        if (response.data.success && response.data.usuarios_disponiveis) {
+          // Filtrar usuários sem username válido
+          const validUsers = response.data.usuarios_disponiveis.filter(u => u.username && u.username.trim() !== '');
+          setUsers(validUsers);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar usuários:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    if (user) {
+      fetchUsers();
+    }
+  }, [user]);
 
- const startChat = (user) => {
-  navigation.navigate("privatechat", {
-    currentUser: currentUser,
-    chatPartner: user.username,
-    chatPartnerName: user.name
-  });
-};
+  const startChat = (selectedUser) => {
+    const chatPartner = selectedUser.username || selectedUser.email;
+    
+    console.log('ChatList - startChat chamado com:', selectedUser);
+    console.log('ChatList - user atual:', user);
+    console.log('ChatList - Navegando com params:', {
+      currentUser: user?.username,
+      chatPartner: chatPartner
+    });
+    
+    router.push({
+      pathname: '/pages/chat/privatechat',
+      params: {
+        currentUser: user?.username,
+        chatPartner: chatPartner
+      }
+    });
+  };
 
   const renderUser = ({ item }) => {
-    if (item.username === currentUser) return null; // Não mostra o próprio usuário
-    
     return (
       <TouchableOpacity 
         style={styles.userItem} 
@@ -35,16 +58,27 @@ export default function ChatList({ currentUser }) {
       >
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {item.name.charAt(0).toUpperCase()}
+            {item.username.charAt(0).toUpperCase()}
           </Text>
         </View>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.name}</Text>
-          <Text style={styles.userUsername}>@{item.username}</Text>
+          <Text style={styles.userName}>{item.username}</Text>
+          <Text style={styles.userUsername}>{item.email}</Text>
+          <Text style={styles.status}>
+            {item.is_active ? '• Online' : '• Offline'}
+          </Text>
         </View>
       </TouchableOpacity>
     );
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Carregando usuários...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -108,5 +142,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 2,
+  },
+  status: {
+    fontSize: 12,
+    color: '#28a745',
+    marginTop: 4,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
