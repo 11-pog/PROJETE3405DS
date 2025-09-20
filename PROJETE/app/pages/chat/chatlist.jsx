@@ -17,17 +17,13 @@ export default function ChatList({ currentUser }) {
     ]);
   }, []);
 
-  const startChat = (user) => {
-    // Navega para o chat privado
-    router.push({
-      pathname: '/pages/chat/privatechat',
-      params: {
-        currentUser: currentUser,
-        chatPartner: user.username,
-        chatPartnerName: user.name
-      }
-    });
-  };
+ const startChat = (user) => {
+  navigation.navigate("privatechat", {
+    currentUser: currentUser,
+    chatPartner: user.username,
+    chatPartnerName: user.name
+  });
+};
 
   const renderUser = ({ item }) => {
     if (item.username === currentUser) return null; // Não mostra o próprio usuário
@@ -73,7 +69,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     padding: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#335c67',
     color: 'white',
   },
   usersList: {
@@ -90,7 +86,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#335c67',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,

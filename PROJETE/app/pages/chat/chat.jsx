@@ -35,12 +35,18 @@ export default function WebSocketTest() {
       fetchUsers();
     }
   }, [user]);
+  
+  
+  const currentUser = user?.username || "";
 
   useEffect(() => {
     if (!user?.username) return;
     
+     if (!currentUser) return; 
+     
     // Conecta no WebSocket do chat privado
     const wsUrl = `ws://192.168.18.39:8000/ws/private/${user.username}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
@@ -101,6 +107,7 @@ export default function WebSocketTest() {
           {availableUsers.length} usuário(s) disponível(is)
         </small>
         <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username || 'Carregando...'}</small>
+        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username}</small>
       </div>
 
       <div

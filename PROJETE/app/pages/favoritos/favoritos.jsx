@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, FlatList, Dimensions, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
+import api from '../../functions/api';
 
-const PAGE_SIZE = 10;
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
 
@@ -14,32 +14,56 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function Favoritos() {
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [nextPage, setNextPage] = useState(null)
+
+  const fetchBooks = useCallback(async (url = "usuario/favoritos/") => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const response = await api.get(url);
+      setBooks((prev) => [...prev, ...response.data.results]);
+      setNextPage(response.data.next);
+      console.log(response.data)
+    } catch (error) {
+      console.error("Erro ao buscar livros:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading])
+
+  function handleLoadMore() {
+    if (nextPage) {
+      fetchBooks(nextPage);
+    }
+  }
 
   useEffect(() => {
-    async function loadFavorites() {
-      const data = await fetchLivrosMock(1, PAGE_SIZE);
-      setBooks(data);
-    }
-    loadFavorites();
+    fetchBooks()
   }, []);
 
   const removeFavorite = (id) => {
     // Animação de remoção
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setBooks((prev) => prev.filter((book) => book.id !== id));
+
+    api.delete(`livros/${id}/favoritar/`)
   };
 
   const renderBook = ({ item }) => (
     <View style={styles.card}>
       {/* Capa */}
-      <Image source={{ uri: item.cover }} style={styles.image} />
+      <Image source={{ uri: item.post_cover }} style={styles.image} />
 
       {/* Texto */}
       <Text style={styles.title} numberOfLines={2}>
-        {item.title} - {item.author}
+        {item.book_title} - {item.book_author}
       </Text>
-      <Text style={styles.tipoAcao}>Empréstimo / Troca</Text>
+      <Text style={styles.tipoAcao}>
+        {item.post_type === 'Troca' ? 'Empréstimo' : 'Troca'}
+      </Text>
 
       {/* Ações */}
       <View style={styles.actions}>
@@ -57,20 +81,21 @@ export default function Favoritos() {
 
   return (
     <View style={styles.container}>
-      {/* Cabeçalho */}
       <View style={styles.header}>
         <Ionicons name="heart" size={24} color="#9e2a2b" style={{ marginRight: 6 }} />
         <Text style={styles.headerText}>Meus Favoritos ({books.length})</Text>
       </View>
 
-      {/* Lista em Grid */}
       <FlatList
         data={books}
         renderItem={renderBook}
         keyExtractor={(item) => item.id.toString()}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
         numColumns={2}
+        ListFooterComponent={loading && <ActivityIndicator size="large" />}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 70 }}
+        contentContainerStyle={styles.listContent}
       />
 
       <BarraInicial />
@@ -82,6 +107,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+  },
+  listContent: {
+    paddingBottom: 80, // evita sobreposição com a barra inferior
   },
   header: {
     flexDirection: 'row',
@@ -95,6 +123,7 @@ const styles = StyleSheet.create({
     color: '#1c1c1c',
   },
   card: {
+    
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 10,
@@ -110,19 +139,19 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: CARD_WIDTH * 1.2,
+    height: CARD_WIDTH * 1.0, // was 1.2
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: 6,
     backgroundColor: '#ddd',
   },
   title: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#1c1c1c',
     textAlign: 'center',
   },
   tipoAcao: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#888',
     textAlign: 'center',
     marginTop: 2,

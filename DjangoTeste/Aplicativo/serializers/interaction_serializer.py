@@ -18,3 +18,15 @@ class InteractionSerializer(serializers.ModelSerializer):
             "last_viewed_at",
         ]
         read_only_fields = ["saved_at", "last_viewed_at", "view_count"]
+    
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        kwargs['user'] = user
+        
+        if not self.instance:
+            publication = self.initial_data.get("publication")
+
+            # Fetch the original if it exists
+            self.instance = Interaction.objects.filter(user=user, publication=publication).first()
+        
+        return super().save(**kwargs)

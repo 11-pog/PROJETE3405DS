@@ -22,9 +22,10 @@ from django.urls import path, include
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
 from Aplicativo.views.usuario_views import UserView, UploadUserImage, ListUsers, SearchUser
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, TestWebSocket, WebSocketTest, FavoritePostView, GetFavoriteBooks
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, PrivateChat, FavoritePostView, GetFavoriteBooks
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks
+from Aplicativo.views.chat_views import PrivateChat
 from rest_framework_simplejwt.views import TokenRefreshView
 
 

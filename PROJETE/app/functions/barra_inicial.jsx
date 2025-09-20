@@ -25,7 +25,7 @@ export default function BarraInicial() {
     router.push("/pages/favoritos/favoritos");
   }
   function GoToChat() {
-    router.push("/pages/chat/chat");
+    router.push("/pages/chat/chatlist");
   }
   return (
     <View style={styles.barra}>

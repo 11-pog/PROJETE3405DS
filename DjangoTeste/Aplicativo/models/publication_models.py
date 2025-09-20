@@ -56,15 +56,21 @@ class Publication(models.Model):
     language = models.CharField(max_length=30, blank=True, null=True)
     full_text_excerpt = models.TextField(blank=True, null=True)
     
-    created = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
     def __str__(self):
         return self.book_title
 
 
 class Interaction(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='interactions')
+    publication = models.ForeignKey(
+        Publication,
+        on_delete=models.CASCADE,
+        related_name='interactions')
     
     book_rating = models.IntegerField(blank=True, null=True) # optional
     view_count = models.PositiveIntegerField(default=0)
