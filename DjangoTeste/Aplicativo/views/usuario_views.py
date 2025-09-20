@@ -11,22 +11,34 @@ class SearchUser(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        # Busca todos os usuários do banco exceto o atual
-        usuarios = Usuario.objects.exclude(id=request.user.id)
-        
-        users_data = []
-        for user in usuarios:
-            users_data.append({
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'is_active': user.is_active
+        try:
+            # Busca TODOS os usuários da tabela Aplicativo_usuario exceto o atual
+            todos_usuarios = Usuario.objects.exclude(id=request.user.id)
+            
+            users_data = []
+            for usuario in todos_usuarios:
+                user_info = {
+                    'id': usuario.id,
+                    'username': usuario.username,
+                    'email': usuario.email,
+                    'is_active': usuario.is_active,
+                    'date_joined': usuario.date_joined.strftime('%Y-%m-%d') if usuario.date_joined else None
+                }
+                users_data.append(user_info)
+                
+            return Response({
+                'success': True,
+                'total_usuarios': len(users_data),
+                'usuarios_disponiveis': users_data,
+                'message': f'Encontrados {len(users_data)} usuários para chat privado'
             })
-        
-        return Response({
-            'total': len(users_data),
-            'users': users_data
-        })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e),
+                'message': 'Erro ao buscar usuários do banco'
+            }, status=500)
 
 
 class ListUsers(APIView):

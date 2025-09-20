@@ -13,11 +13,18 @@ export default function WebSocketTest() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await api.get('usuarios/');
-        console.log('Usuários encontrados:', response.data);
-        setAvailableUsers(response.data);
-        if (response.data.length > 0 && !chatPartner) {
-          setChatPartner(response.data[0].username);
+        const response = await api.get('search/usuarios/');
+        console.log('Resposta da API:', response.data);
+        
+        if (response.data.success && response.data.usuarios_disponiveis) {
+          const usuarios = response.data.usuarios_disponiveis;
+          setAvailableUsers(usuarios);
+          
+          if (usuarios.length > 0 && !chatPartner) {
+            setChatPartner(usuarios[0].username);
+          }
+          
+          console.log(`${usuarios.length} usuários carregados para chat privado`);
         }
       } catch (error) {
         console.error('Erro ao buscar usuários:', error);
