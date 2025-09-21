@@ -1,43 +1,156 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import PrivateChatService from '../../services/privatechat';
+import { useLocalSearchParams } from 'expo-router';
+import { useUser } from '../../hooks/useUser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function PrivateChat({ currentUser, chatPartner }) {
+export default function PrivateChat() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
   const scrollViewRef = useRef();
+  const socketRef = useRef(null);
+  const params = useLocalSearchParams();
+  const { user } = useUser();
+  
+  const currentUser = user?.username;
+  const chatPartner = params.chatPartner;
+  const chatKey = `chat_${[currentUser, chatPartner].sort().join('_')}`;
+  
+  console.log('PrivateChat - Params:', params);
+  console.log('PrivateChat - User:', user);
+  console.log('PrivateChat - CurrentUser:', currentUser);
+  console.log('PrivateChat - ChatPartner:', chatPartner);
 
-  console.log("Current User:", currentUser, "Chat Partner:", chatPartner);
+  // Salvar mensagens no AsyncStorage
+  const saveMessages = async (newMessages) => {
+    try {
+      await AsyncStorage.setItem(chatKey, JSON.stringify(newMessages));
+    } catch (error) {
+      console.error('Erro ao salvar mensagens:', error);
+    }
+  };
+
+  // Carregar mensagens do AsyncStorage
+  const loadMessages = async () => {
+    try {
+      const savedMessages = await AsyncStorage.getItem(chatKey);
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar mensagens:', error);
+    }
+  };
+
   useEffect(() => {
-    // Conecta no chat privado
-    PrivateChatService.connect(currentUser, chatPartner);
+    if (!currentUser || !chatPartner) return;
+    
+    // Limpar estado anterior
+    setMessages([]);
+    setIsConnected(false);
+    
+    // Fechar conexão anterior se existir
+    if (socketRef.current) {
+      socketRef.current.close();
+    }
+    
+    // Carregar mensagens salvas
+    loadMessages();
+    
+    // Conecta no WebSocket do chat privado
+    const wsUrl = `ws://192.168.0.105:8000/ws/private/${currentUser}/${chatPartner}/`;
+    console.log('Tentando conectar WebSocket:', wsUrl);
+    console.log('Usuários:', { currentUser, chatPartner });
+    
+    socketRef.current = new WebSocket(wsUrl);
 
-    // Listener para receber mensagens
-    const handleMessage = (data) => {
+    socketRef.current.onmessage = (e) => {
+      const data = JSON.parse(e.data);
       if (data.type === 'private_message') {
-        setMessages(prev => [...prev, {
+        const newMessage = {
           id: Date.now(),
           text: data.message,
           sender: data.sender,
-          isMe: data.sender === currentUser
-        }]);
+          isMe: data.sender === currentUser,
+          timestamp: new Date().toISOString()
+        };
+        
+        setMessages(prev => {
+          const updatedMessages = [...prev, newMessage];
+          saveMessages(updatedMessages);
+          return updatedMessages;
+        });
       }
     };
 
-    PrivateChatService.addListener(handleMessage);
+    socketRef.current.onopen = () => {
+      console.log(`✅ Chat conectado: ${currentUser} ↔ ${chatPartner}`);
+      setIsConnected(true);
+    };
+    
+    socketRef.current.onclose = () => {
+      console.log('🔌 Chat desconectado');
+      setIsConnected(false);
+    };
+    
+    socketRef.current.onerror = (err) => {
+      console.error('❌ Erro no chat:', err);
+      console.error('URL tentada:', wsUrl);
+      console.error('Estado do WebSocket:', socketRef.current?.readyState);
+      setIsConnected(false);
+    };
 
     return () => {
-      PrivateChatService.removeListener(handleMessage);
-      PrivateChatService.disconnect();
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+      setIsConnected(false);
     };
   }, [currentUser, chatPartner]);
 
   const sendMessage = () => {
-    if (inputMessage.trim()) {
-      PrivateChatService.sendMessage(inputMessage);
+    if (!inputMessage.trim() || !currentUser || !isConnected) {
+      console.log('Não pode enviar:', { inputMessage: !!inputMessage.trim(), currentUser: !!currentUser, isConnected });
+      return;
+    }
+    
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        message: inputMessage,
+        sender: currentUser
+      }));
       setInputMessage('');
+    } else {
+      console.log('WebSocket não está pronto');
     }
   };
+
+  if (!user) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Carregando usuário...</Text>
+      </View>
+    );
+  }
+  
+  if (!currentUser) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Erro: Usuário não encontrado</Text>
+        <Text style={{fontSize: 12, marginTop: 10}}>User: {JSON.stringify(user)}</Text>
+      </View>
+    );
+  }
+  
+  if (!chatPartner) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Erro: Parceiro de chat não encontrado</Text>
+        <Text style={{fontSize: 12, marginTop: 10}}>Params: {JSON.stringify(params)}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -57,7 +170,7 @@ export default function PrivateChat({ currentUser, chatPartner }) {
             ]}
           >
             <Text style={styles.senderName}>{msg.sender}</Text>
-            <Text style={styles.messageText}>{msg.text}</Text>
+            <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
           </View>
         ))}
       </ScrollView>
@@ -70,8 +183,14 @@ export default function PrivateChat({ currentUser, chatPartner }) {
           placeholder="Digite sua mensagem..."
           multiline
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Enviar</Text>
+        <TouchableOpacity 
+          style={[styles.sendButton, !isConnected && styles.sendButtonDisabled]} 
+          onPress={sendMessage}
+          disabled={!isConnected}
+        >
+          <Text style={styles.sendButtonText}>
+            {isConnected ? 'Enviar' : 'Conectando...'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -117,7 +236,10 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
-    color: '#333',
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -140,6 +262,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#ccc',
   },
   sendButtonText: {
     color: 'white',
