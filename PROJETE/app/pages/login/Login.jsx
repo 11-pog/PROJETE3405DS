@@ -3,11 +3,8 @@ import { Text, View, Pressable } from 'react-native'
 import MeuInput from '../../functions/textBox'
 import Botao from '../../functions/botoes'
 import { router } from 'expo-router'
-import axios from 'axios'
-import Constants from 'expo-constants'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
-const BACKEND_URL = Constants.expoConfig.extra.BACKEND_URL
+import api from '../../functions/api'
 
 export default function Login () {
   const [email, setEmail] = useState('')
@@ -18,10 +15,9 @@ export default function Login () {
   const fazerLogin = async () => {
     setTentouLogin(true)
     try {
-      console.log(BACKEND_URL)
-      const response = await axios.post(`login/`, {
+      const response = await api.post('login/', {
         email: email,
-        password: senha //é essa parte aqui que conecta com o backend
+        password: senha
       })
 
       const token = response.data.token || response.data.access
@@ -30,6 +26,7 @@ export default function Login () {
       await AsyncStorage.setItem('access', token)
       await AsyncStorage.setItem('refresh', refresh)
 
+      console.log(' token salvo.', token )
       router.push('/pages/principal/principal')
     } catch (error) {
       if (error.response) {

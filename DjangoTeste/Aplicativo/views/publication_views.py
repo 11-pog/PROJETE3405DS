@@ -100,24 +100,46 @@ class FavoritePostView(APIView):
 
 
 class CadastrarLivro(APIView): 
-    permission_classes = [IsAuthenticated] # meio que obrigatório isso aqui
+    permission_classes = [IsAuthenticated]
     
-    # Duas coisas:
-    #   GET não é pra criar objetos, ele só serve pro front ler informação, LER, não escrever
-    #   Uso de serializer é melhor (olhar em publication_serializer.py)
     def post(self, request):
+        print("📚 VIEW CADASTRAR LIVRO EXECUTADA!")
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
         serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            publication = serializer.save()
+            
+            # Dispara notificação manualmente
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                message_data = {
+                    'type': 'new_publication',
+                    'publication': {
+                        'title': publication.book_title,
+                        'author': publication.book_author,
+                        'user': publication.post_creator.username if publication.post_creator else 'Usuário',
+                        'message': f'Novo livro cadastrado: {publication.book_title}'
+                    }
+                }
+                print(f"📡 Enviando notificação: {message_data}")
+                async_to_sync(channel_layer.group_send)('publications', message_data)
+            else:
+                print("⚠️ Channel layer não encontrado!")
+            
             return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class pesquisadelivro(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         return Response({"message": "Use POST to search for a book."})
     
     def post(self, request):
+        print(f"🔍 VIEW BUSCA EXECUTADA! Dados: {request.data}")
         book_title = request.data.get('book_title')
         if not book_title:
             return Response({'error': 'O título do livro é obrigatório'}, status=400)
@@ -129,12 +151,15 @@ class pesquisadelivro(APIView):
         resultados = []
         for livro in livros:
             resultados.append({
+                'id': livro.id,
                 'book_title': livro.book_title,
                 'book_author': livro.book_author,
                 'book_publisher': livro.book_publisher,
                 'book_publication_date': livro.book_publication_date,
                 'book_description': livro.book_description,
-                'criado_por': livro.author_name
+                'post_type': livro.post_type,
+                'post_cover': livro.post_cover.url if livro.post_cover else None,
+                'criado_por': livro.post_creator.username if livro.post_creator else 'Usuário'
             })
         
         return Response({'results': resultados}, status=200)

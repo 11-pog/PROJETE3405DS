@@ -42,7 +42,7 @@ export default function CadastroLivro() {
     console.log("Escolhido", tipo, tipo, tipo);
 
     try {
-      const response = await api.post("cadastrarlivro/", {
+      const response = await api.post("livros/cadastrar/", {
         book_title: titulo,
         book_author: autor,
         book_publisher: editora,
@@ -53,6 +53,16 @@ export default function CadastroLivro() {
       });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
+      
+      // Simula notificação para outros usuários
+      setTimeout(() => {
+        Alert.alert(
+          "📚 Novo livro disponível!", 
+          `${titulo} foi adicionado por ${response.data.user || 'um usuário'}`,
+          [{text: 'OK'}]
+        );
+      }, 2000);
+      
       console.log("salvo");
       router.push('/pages/principal/principal')
     } catch (error) {

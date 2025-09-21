@@ -14,7 +14,7 @@ export default function WebSocketTest() {
     async function fetchUsers() {
       try {
         const response = await api.get('usuarios/');
-        console.log('Usuários encontrados:', response.data);
+
         setAvailableUsers(response.data);
         if (response.data.length > 0 && !chatPartner) {
           setChatPartner(response.data[0].username);
@@ -30,16 +30,12 @@ export default function WebSocketTest() {
   }, [user]);
   
   
-  const currentUser = user?.username || "";
 
   useEffect(() => {
-    if (!user?.username) return;
-    
-     if (!currentUser) return; 
-     
-    // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.18.39:8000/ws/private/${user.username}/${chatPartner}/`;
-    const wsUrl = `ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`;
+    if (!user?.username || !chatPartner) {
+      return;
+    }
+    const wsUrl = `ws://127.0.0.1:8001/ws/private/${user.username}/${chatPartner}/`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
@@ -99,7 +95,6 @@ export default function WebSocketTest() {
         <small style={{ display: 'block', color: '#999', marginTop: 5 }}>
           {availableUsers.length} usuário(s) disponível(is)
         </small>
-        <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username || 'Carregando...'}</small>
         <small style={{ marginLeft: 10, color: "#666" }}>Você: {user?.username}</small>
       </div>
 

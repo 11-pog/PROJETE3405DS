@@ -4,39 +4,155 @@ import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router } from 'expo-router'
 import api from '../../functions/api'
+import { useNotifications } from '../../hooks/useNotifications'
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false); // para indicar se o usuário está no modo busca
+  const { notifications } = useNotifications();
+
+  // Funções de busca com useCallback para evitar re-renders
+  const performSearch = useCallback(async (query) => {
+    console.log("Iniciando busca para:", query);
+    setIsSearching(true);
+    setLoading(true);
+
+    try {
+      const response = await api.post('search/livros/', {
+        book_title: query
+      });
+      
+      console.log("Resultado da busca:", response.data);
+      
+      if (response.data.results) {
+        const searchResults = response.data.results.map(book => ({
+          ...book,
+          is_saved: false
+        }));
+        setBooks(searchResults);
+        setNextPage(null);
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const resetToFeed = useCallback(async () => {
+    console.log("Resetando para feed normal");
+    setIsSearching(false);
+    setLoading(true);
+    
+    try {
+      const response = await api.get("livros/feed/");
+      if (response.data?.results) {
+        setBooks(response.data.results);
+        setNextPage(response.data.next);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar feed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const fetchBooks = useCallback(async (url = "livros/feed/") => {
-    if (loading) return;
-
     setLoading(true);
 
     try {
       const response = await api.get(url);
-      setBooks((prev) => [...prev, ...response.data.results]);
-      setNextPage(response.data.next);
-      console.log(response.data)
+      if (response.data && response.data.results) {
+        setBooks((prev) => [...prev, ...response.data.results]);
+        setNextPage(response.data.next);
+      }
     } catch (error) {
       console.error("Erro ao buscar livros:", error);
+      // Se for erro de servidor, mostra uma mensagem mais amigável
+      if (error.response?.status === 500) {
+        Alert.alert("Erro", "Servidor temporariamente indisponível");
+      }
     } finally {
       setLoading(false);
     }
-  }, [loading])
+  }, [])
 
+  // useEffect para busca em tempo real
+  useEffect(() => {
+    console.log("searchQuery mudou:", searchQuery);
+    
+    // Cancela timeout anterior se existir
+    const timeoutId = setTimeout(() => {
+      console.log("Executando busca para:", searchQuery);
+      
+      if (searchQuery.trim().length > 0) {
+        performSearch(searchQuery);// Busca em tempo real
+
+      } else {
+        resetToFeed(); // Campo vazio - volta ao feed normal
+      }
+    }, 500);
+
+    return () => {
+      console.log("Cancelando timeout anterior");
+      clearTimeout(timeoutId);
+    };
+  }, [searchQuery, performSearch, resetToFeed]);
+
+  // useEffect inicial para carregar o feed
   useEffect(() => {
     fetchBooks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchBooks]);
 
   function handleLoadMore() {
     if (nextPage) {
       fetchBooks(nextPage);
     }
   }
+
+  //faz a pesquisa dos livros
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      // Se busca vazia, recarrega feed normal
+      setBooks([]);
+      setIsSearching(false);
+      fetchBooks();
+      return;
+    }
+
+    setIsSearching(true);
+    setLoading(true);
+
+    try {
+      const response = await api.post('search/livros/', {
+        book_title: searchQuery
+      });
+      
+      if (response.data.results) {
+        // Usa os dados da busca diretamente
+        const searchResults = response.data.results.map(book => ({
+          ...book,
+          is_saved: false // Valor padrão para busca
+        }));
+        setBooks(searchResults);
+        setNextPage(null); // Busca não tem paginação
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      if (error.response?.status === 404) {
+        Alert.alert('Nenhum resultado', 'Nenhum livro encontrado com esse título');
+        setBooks([]);
+      } else {
+        Alert.alert('Erro', 'Erro ao buscar livros');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };//fim const handleSearch
 
   function toggleSaved(item) {
     var bookId = item.id
@@ -53,10 +169,30 @@ export default function FeedLivros() {
     const endpoint = `livros/${bookId}/favoritar/`;
 
     if (willBeSaved) {
-      api.post(endpoint)
+      api.post(endpoint).catch(error => {
+        console.error('Erro ao favoritar:', error);
+        // Reverte o estado se der erro
+        setBooks(prevBooks =>
+          prevBooks.map(book =>
+            book.id === bookId
+              ? { ...book, is_saved: !willBeSaved }
+              : book
+          )
+        );
+      });
     }
     else {
-      api.delete(endpoint)
+      api.delete(endpoint).catch(error => {
+        console.error('Erro ao desfavoritar:', error);
+        // Reverte o estado se der erro
+        setBooks(prevBooks =>
+          prevBooks.map(book =>
+            book.id === bookId
+              ? { ...book, is_saved: !willBeSaved }
+              : book
+          )
+        );
+      });
     }
   }
 
@@ -118,16 +254,34 @@ export default function FeedLivros() {
 
   return (
     <View style={styles.container}>
+      {/* Botão para limpar busca */}
+      {isSearching && (
+        <TouchableOpacity 
+          style={{backgroundColor: '#9e2a2b', padding: 8, margin: 10, borderRadius: 5}}
+          onPress={() => {
+            setSearchQuery('');
+            setBooks([]);
+            setIsSearching(false);
+            fetchBooks();
+          }}
+        >
+          <Text style={{color: 'white', textAlign: 'center', fontSize: 12}}>Limpar busca</Text>
+        </TouchableOpacity>
+      )}
+      
       {/* Campo de pesquisa no topo */}
       <View style={styles.pesquisarArea}>
         <TextInput
           placeholder="Buscar um livro"
           placeholderTextColor="#333"
           style={styles.input}
+          value={searchQuery}
+          onChangeText={setSearchQuery}//onde atualiza a cada tecla
+          onSubmitEditing={handleSearch}
         />
         <TouchableOpacity
           style={styles.iconePesquisa}
-          onPress={() => console.log('Pesquisar clicado')}
+          onPress={handleSearch}
         >
           <Ionicons name="search" size={22} color="#9e2a2b" />
         </TouchableOpacity>
