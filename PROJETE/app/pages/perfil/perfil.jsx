@@ -115,12 +115,12 @@ export default function Perfil() {
         aoApertar={() => router.push('/pages/perfil/editar')}
       />
       <Botao
+        texto='Meus livros'
+        aoApertar={() => router.push('/pages/perfil/minhasPublicacoes')} />
+      <Botao
         texto='Sair'
         aoApertar={() => router.push('/pages/login/Login')}
       />
-      <Botao
-        texto='Meus livros'
-        aoApertar={() => router.push('/pages/perfil/minhasPublicacoes')} />
 
       <BarraInicial />
 
