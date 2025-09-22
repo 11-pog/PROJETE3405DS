@@ -1,13 +1,23 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Picker } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  StatusBar,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Picker,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
-import api from '../../functions/api'
-
+import api from "../../functions/api";
 
 export default function CadastroLivro() {
   const router = useRouter();
@@ -18,10 +28,28 @@ export default function CadastroLivro() {
   const [editora, setEditora] = useState("");
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [tipo, setTipo] = useState("troca")
+  const [tipo, setTipo] = useState("troca");
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
+  if (!permission) {
+    return (
+      <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+        <Text>Carregando permissões...</Text>
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+        <Text>Precisamos da sua permissão para usar a câmera.</Text>
+        <TouchableOpacity onPress={requestPermission} style={{backgroundColor: "#E09F3E", padding: 10, borderRadius: 8, marginTop: 10}}>
+          <Text style={{color: "#fff", fontWeight: "bold"}}>Conceder Permissão</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   const [showCamera, setShowCamera] = useState(false);
   const [cameraMode, setCameraMode] = useState("isbn"); // "isbn" ou "foto"
   const [cameraReady, setCameraReady] = useState(false);
@@ -34,7 +62,6 @@ export default function CadastroLivro() {
   const [loadingLivro, setLoadingLivro] = useState(false);
   const [fotoLivro, setFotoLivro] = useState(null);
   const [rating, setRating] = useState(0);
-
 
   // salva livro no backend
   const SalvarLivro = async () => {
@@ -53,18 +80,18 @@ export default function CadastroLivro() {
       });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
-      
+
       // Simula notificação para outros usuários
       setTimeout(() => {
         Alert.alert(
-          "📚 Novo livro disponível!", 
-          `${titulo} foi adicionado por ${response.data.user || 'um usuário'}`,
-          [{text: 'OK'}]
+          "📚 Novo livro disponível!",
+          `${titulo} foi adicionado por ${response.data.user || "um usuário"}`,
+          [{ text: "OK" }]
         );
       }, 2000);
-      
+
       console.log("salvo");
-      router.push('/pages/principal/principal')
+      router.push("/pages/principal/principal");
     } catch (error) {
       if (error.response) {
         console.log("Erro no cadastro:", error.response.data);
@@ -96,23 +123,26 @@ export default function CadastroLivro() {
   const buscarLivro = async (isbn) => {
     setLoadingLivro(true);
     try {
-      const response = api.get('isbn/',
-        {
-          params: {
-            isbn: isbn
-          }
-        }
-      )
+      const response = api.get("isbn/", {
+        params: {
+          isbn: isbn,
+        },
+      });
       const data = await response.data;
 
       if (data) {
         setLivro({
           titulo: data.title || "Título desconhecido",
-          autor: data.authors ? data.authors.map((a) => a.name).join(", ") : "Autor desconhecido",
+          autor: data.authors
+            ? data.authors.map((a) => a.name).join(", ")
+            : "Autor desconhecido",
           capa: data.cover?.medium || null,
         });
       } else {
-        alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
+        alert(
+          "Livro não encontrado",
+          "Não foi possível encontrar informações para este ISBN."
+        );
       }
     } catch (error) {
       alert("Erro", "Falha ao buscar dados do livro.");
@@ -124,7 +154,9 @@ export default function CadastroLivro() {
   const handleTakePicture = async () => {
     if (cameraRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.7,
+        });
         setFotoLivro(photo.uri);
         setShowCamera(false);
       } catch (error) {
@@ -133,77 +165,109 @@ export default function CadastroLivro() {
     }
   };
 
-  // Tela da câmera
-  if (showCamera) {
-    return (
-      <View style={{ flex: 1 }}>
-        {!cameraError ? (
-          <>
-            <CameraView
-              style={{ flex: 1, width: "100%" }}
-              ref={cameraRef}
-              facing="back"
-              onCameraReady={() => setCameraReady(true)}
-              onMountError={() => setCameraError(true)}
-              onBarcodeScanned={cameraMode === "isbn" ? handleBarCodeScanned : undefined}
+// Tela da câmera
+if (showCamera) {
+  return (
+    <View style={{ flex: 1 }}>
+      {!cameraError ? (
+        <>
+          <CameraView
+            style={{ flex: 1, width: "100%" }}
+            ref={cameraRef}
+            facing="back"
+            onCameraReady={() => setCameraReady(true)}
+            onMountError={() => setCameraError(true)}
+            onBarcodeScanned={
+              cameraMode === "isbn" ? handleBarCodeScanned : undefined
+            }
+            barcodeScannerSettings={{
+              barcodeTypes: ["ean13", "ean8"],
+            }}
+          />
+
+          {!cameraReady && (
+            <ActivityIndicator
+              size="large"
+              color="#E09F3E"
+              style={{
+                position: "absolute",
+                top: "50%",
+                alignSelf: "center",
+              }}
             />
+          )}
 
-            {!cameraReady && (
-              <ActivityIndicator
-                size="large"
-                color="#E09F3E"
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  alignSelf: "center",
-                }}
-              />
-            )}
+          {/* botão para fechar a câmera */}
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowCamera(false)}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
+          </TouchableOpacity>
 
-            {cameraMode === "foto" && cameraReady && (
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={handleTakePicture}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>📸 Capturar</Text>
-              </TouchableOpacity>
-            )}
-          </>
-        ) : (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
+          {/* botão de captura só aparece no modo "foto" */}
+          {cameraMode === "foto" && cameraReady && (
             <TouchableOpacity
-              style={styles.errorButton}
-              onPress={() => setShowCamera(false)}
+              style={styles.captureButton}
+              onPress={handleTakePicture}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>📸 Capturar</Text>
             </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  }
+          )}
+        </>
+      ) : (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
+          <TouchableOpacity
+            style={styles.errorButton}
+            onPress={() => setShowCamera(false)}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
 
   // Tela principal
   return (
-
     <View style={styles.container}>
       <ScrollView>
         <StatusBar hidden />
         <Text style={styles.header}>Digite as informações do livro</Text>
 
-        <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
-        <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
-        <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
-        <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
-        <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
-       <Picker
-  selectedValue={tipo}
-  onValueChange={(value) => setTipo(value)}
->
-  <Picker.Item label="Troca" value="troca" />
-  <Picker.Item label="Empréstimo" value="emprestimo" />
-</Picker>
+        <MeuInput
+          width={80}
+          label="Título do Livro:"
+          value={titulo}
+          onChange={setTitulo}
+        />
+        <MeuInput
+          width={80}
+          label="Autor(a):"
+          value={autor}
+          onChange={setAutor}
+        />
+        <MeuInput
+          width={80}
+          label="Editora"
+          value={editora}
+          onChange={setEditora}
+        />
+        <MeuInput
+          width={80}
+          label="Descrição"
+          value={descricao}
+          onChange={setDescricao}
+        />
+        <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
+          <Picker.Item label="Troca" value="troca" />
+          <Picker.Item label="Empréstimo" value="emprestimo" />
+        </Picker>
         {/* estrelas de avaliação */}
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
@@ -232,10 +296,17 @@ export default function CadastroLivro() {
             {livro.capa && (
               <Image
                 source={{ uri: livro.capa }}
-                style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
+                style={{
+                  width: 100,
+                  height: 150,
+                  borderRadius: 8,
+                  marginBottom: 10,
+                }}
               />
             )}
-            <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+              {livro.titulo}
+            </Text>
             <Text>{livro.autor}</Text>
           </View>
         )}
@@ -292,4 +363,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
   },
+  closeButton: {
+  position: "absolute",
+  top: 40,
+  right: 20,
+  backgroundColor: "rgba(0,0,0,0.6)",
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
 });
