@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router } from 'expo-router'
 import api from '../../functions/api'
-import { useNotifications } from '../../hooks/useNotifications'
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
@@ -12,7 +11,6 @@ export default function FeedLivros() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false); // para indicar se o usuário está no modo busca
-  const { notifications } = useNotifications();
 
   // Funções de busca com useCallback para evitar re-renders
   const performSearch = useCallback(async (query) => {
@@ -155,7 +153,7 @@ export default function FeedLivros() {
   };//fim const handleSearch
 
   function toggleSaved(item) {
-    var bookId = item.id
+    let bookId = item.id
     const willBeSaved = !item.is_saved;
 
     setBooks(prevBooks =>
@@ -208,11 +206,7 @@ export default function FeedLivros() {
             onPress={() => router.push({
               pathname: '/pages/infoIsolado/infoisolado',
               params: {
-                id: item.id,
-                title: item.book_title,
-                author: item.book_author,
-                description: item.book_description, // só se tiver na API
-                cover: item.post_cover
+                id: item.id
               }
             })}
           >

@@ -7,7 +7,10 @@ from rest_framework.pagination import CursorPagination
 from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
+from Aplicativo.serializers.user_serializer import UserSerializer
 from django.db.models import F
+from django.shortcuts import get_object_or_404
+
 
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
@@ -21,6 +24,36 @@ class GetBookList(ListAPIView):
     def get_queryset(self):
         # No futuro botarei a IA aqui
         return Publication.objects.all().order_by('-created_at', 'id')
+
+
+class BookDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, book_id):
+        p = get_object_or_404(Publication, id=book_id)
+        
+        p_serializer = PublicationFeedSerializer(p,
+            context = {
+                'request': request
+            })
+        user_serializer = UserSerializer(p.post_creator,
+            context = {
+                'request': request
+            })
+        
+        InteractionSerializer.increment_view(
+            request.user,
+            p
+        )
+        
+        return Response(
+            {
+                'book': p_serializer.data,
+                'post_creator': user_serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
 
 
 class GetFavoriteBooks(ListAPIView):
@@ -49,6 +82,7 @@ class GetFavoriteBooks(ListAPIView):
         ).order_by('-saved_at', 'id')
         
         return publications
+
 
 class FavoritePostView(APIView):
     permission_classes = [IsAuthenticated]

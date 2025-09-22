@@ -22,9 +22,8 @@ from django.urls import path, include
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
 from Aplicativo.views.usuario_views import UserView, UploadUserImage, ListUsers, SearchUser
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks
+from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks, BookDetailView
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
-from Aplicativo.views.publication_views import CadastrarLivro, pesquisadelivro, GetBookList, FavoritePostView, GetFavoriteBooks
 from Aplicativo.views.chat_views import PrivateChat
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -43,6 +42,7 @@ urlpatterns = [
     path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
     path('api/livros/cadastrar/', CadastrarLivro.as_view()),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view()),
+    path('api/livros/<int:book_id>/', BookDetailView.as_view()),
 
         # Chat privado
     path('private/<str:user1>/<str:user2>/', PrivateChat.as_view(), name='private_chat'),
