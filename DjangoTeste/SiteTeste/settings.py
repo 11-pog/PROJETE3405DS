@@ -67,7 +67,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware'
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_ALL_ORIGINS = True  # this is fine alone
 CORS_ALLOW_CREDENTIALS = True  # if using cookies
 CORS_ALLOW_HEADERS = list(default_headers) + [

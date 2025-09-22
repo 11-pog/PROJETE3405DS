@@ -34,6 +34,9 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class CreatePublicationSerializer(serializers.ModelSerializer):
+    book_publication_date = serializers.DateField(
+    input_formats=['%d/%m/%y'],
+    format='%d/%m/%y')
     class Meta:
         model = Publication
         fields = [

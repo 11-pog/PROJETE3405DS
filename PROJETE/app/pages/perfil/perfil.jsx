@@ -27,7 +27,7 @@ export default function Perfil() {
       await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     if (!permissionResult.granted) {
-      alert('Preciso de permissão para acessar tuas imagens!')
+      alert('Preciso de permissão para acessar as suas imagens!')
       return
     }
 
@@ -99,7 +99,7 @@ export default function Perfil() {
   }, [])
 
   return (
-    <View style={styles.container}> 
+    <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatarWrapper}>
           <Image source={{ uri: profileImage }} style={styles.avatar} />
@@ -111,11 +111,20 @@ export default function Perfil() {
       </View>
 
       <Botao
-        texto='Editar'
+        texto='Editar perfil'
         aoApertar={() => router.push('/pages/perfil/editar')}
       />
-      <Botao texto='Sair' aoApertar={() => router.push('/pages/login/Login')} />
+      <Botao
+        texto='Sair'
+        aoApertar={() => router.push('/pages/login/Login')}
+      />
+      <Botao
+        texto='Meus livros'
+        aoApertar={() => router.push('/pages/perfil/minhasPublicacoes')} />
+
       <BarraInicial />
+
+
     </View>
   )
 }

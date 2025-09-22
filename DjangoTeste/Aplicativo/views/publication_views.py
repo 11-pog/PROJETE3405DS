@@ -1,9 +1,11 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView#baixar pip install djangorestframework
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.pagination import CursorPagination
+from django.db.models import F
+
 from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
@@ -12,7 +14,11 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 
-class GetBookList(ListAPIView):
+class GetMinhasPublicacoes(ListAPIView):
+    """
+    Endpoint para listar apenas as publicações do usuário logado.
+    Usa a mesma paginação e serializer do feed principal.
+    """
     class Pagination(CursorPagination):
         page_size = 20
         ordering = "-created_at"
@@ -22,7 +28,24 @@ class GetBookList(ListAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # No futuro botarei a IA aqui
+        user = self.request.user
+        return Publication.objects.filter(post_creator=user).order_by('-created_at', 'id')
+
+
+
+class GetBookList(ListAPIView):
+    """
+    Lista todas as publicações para o feed geral (ordenadas pela data de criação).
+    """
+    class Pagination(CursorPagination):
+        page_size = 20
+        ordering = "-created_at"
+    
+    serializer_class = PublicationFeedSerializer
+    pagination_class = Pagination
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
         return Publication.objects.all().order_by('-created_at', 'id')
 
 
@@ -57,6 +80,9 @@ class BookDetailView(APIView):
 
 
 class GetFavoriteBooks(ListAPIView):
+    """
+    Lista apenas os livros que o usuário marcou como favoritos.
+    """
     class Pagination(CursorPagination):
         page_size = 20
         ordering = "-saved_at"
@@ -65,15 +91,12 @@ class GetFavoriteBooks(ListAPIView):
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
     
-    
     def get_queryset(self):
         user = self.request.user
-        
         saved_interactions = Interaction.objects.filter(
             user=user,
             is_saved=True
         ).select_related('publication')
-        
         
         publications = Publication.objects.filter(
             id__in=saved_interactions.values_list('publication_id', flat=True)
@@ -85,55 +108,41 @@ class GetFavoriteBooks(ListAPIView):
 
 
 class FavoritePostView(APIView):
+    """
+    Permite favoritar ou desfavoritar uma publicação.
+    POST = favoritar
+    DELETE = desfavoritar
+    """
     permission_classes = [IsAuthenticated]
     
     def post(self, request, book_id):
         serializer = InteractionSerializer(
-            data = {
-                'publication': book_id,
-                'is_saved': True
-            },
-            partial = True,
-            context = {
-                'request': request
-            }
+            data={'publication': book_id, 'is_saved': True},
+            partial=True,
+            context={'request': request}
         )
-        
         if serializer.is_valid():
             serializer.save()
-            return Response(data = {
-                'message': 'Livro favoritado'
-            }, status=201)
-        return Response(data = {
-            'message': 'erro',
-            'details': serializer.errors
-        }, status=400)
-    
+            return Response({'message': 'Livro favoritado'}, status=201)
+        return Response({'message': 'erro', 'details': serializer.errors}, status=400)
     
     def delete(self, request, book_id):
         serializer = InteractionSerializer(
-            data = {
-                'publication': book_id,
-                'is_saved': False
-            },
-            partial = True,
-            context = {
-                'request': request
-            }
+            data={'publication': book_id, 'is_saved': False},
+            partial=True,
+            context={'request': request}
         )
-        
         if serializer.is_valid():
             serializer.save()
-            return Response(data = {
-                'message': 'Livro desfavoritado'
-            }, status=204)
-        return Response(data = {
-            'message': 'erro',
-            'details': serializer.errors
-        }, status=400)
+            return Response({'message': 'Livro desfavoritado'}, status=204)
+        return Response({'message': 'erro', 'details': serializer.errors}, status=400)
 
 
 class CadastrarLivro(APIView): 
+    """
+    Endpoint para cadastrar um novo livro/publicação.
+    Também dispara uma notificação via Django Channels.
+    """
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
@@ -145,7 +154,7 @@ class CadastrarLivro(APIView):
         if serializer.is_valid():
             publication = serializer.save()
             
-            # Dispara notificação manualmente
+            # Dispara notificação para o grupo de publicações
             channel_layer = get_channel_layer()
             if channel_layer:
                 message_data = {
@@ -167,6 +176,10 @@ class CadastrarLivro(APIView):
 
 
 class pesquisadelivro(APIView):
+    """
+    Endpoint de busca por título de livro.
+    Usa POST para receber o termo e retorna lista de resultados.
+    """
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
@@ -192,8 +205,4 @@ class pesquisadelivro(APIView):
                 'book_publication_date': livro.book_publication_date,
                 'book_description': livro.book_description,
                 'post_type': livro.post_type,
-                'post_cover': livro.post_cover.url if livro.post_cover else None,
-                'criado_por': livro.post_creator.username if livro.post_creator else 'Usuário'
             })
-        
-        return Response({'results': resultados}, status=200)
