@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Desabilitado para APIs REST
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -68,10 +68,19 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_ALL_ORIGINS = True  # this is fine alone
 CORS_ALLOW_CREDENTIALS = True  # if using cookies
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "Authorization",
+]
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://192.168.0.200:8000",
+    "http://192.168.0.200:8081",
 ]
 
 ROOT_URLCONF = 'SiteTeste.urls'

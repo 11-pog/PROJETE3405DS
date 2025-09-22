@@ -12,7 +12,9 @@ class PrivateChatService {
     this.chatPartner = chatPartner;
     
     // Conecta no WebSocket do chat privado
-    this.ws = new WebSocket(`ws://192.168.0.200:8000/ws/private/${currentUser}/${chatPartner}/`);
+    const wsUrl = `ws://192.168.0.200:8001/ws/private/${currentUser}/${chatPartner}/`;
+    console.log('URL tentada:', wsUrl);
+    this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => console.log(`💬 Chat conectado: ${currentUser} ↔ ${chatPartner}`);
     
@@ -22,8 +24,16 @@ class PrivateChatService {
       this.listeners.forEach((callback) => callback(data));
     };
 
-    this.ws.onclose = () => console.log('💬 Chat desconectado');
-    this.ws.onerror = (error) => console.log('❌ Erro no chat:', error);
+    this.ws.onclose = () => {
+      console.log('💬 Chat desconectado');
+      console.log('Estado do WebSocket:', this.ws.readyState);
+    };
+    
+    this.ws.onerror = (error) => {
+      console.log('❌ Erro no chat:', error);
+      console.log('URL tentada:', wsUrl);
+      console.log('Estado do WebSocket:', this.ws.readyState);
+    };
   }
 
   addListener(callback) {

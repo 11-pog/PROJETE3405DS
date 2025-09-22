@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router } from 'expo-router'
 import api from '../../functions/api'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useFocusEffect } from '@react-navigation/native'
 
 export default function FeedLivros() {
   const [books, setBooks] = useState([]);
@@ -12,6 +13,7 @@ export default function FeedLivros() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false); // para indicar se o usuário está no modo busca
+  const [refreshing, setRefreshing] = useState(false);
   const { notifications } = useNotifications();
 
   // Funções de busca com useCallback para evitar re-renders
@@ -21,14 +23,14 @@ export default function FeedLivros() {
     setLoading(true);
 
     try {
-      const response = await api.post('search/livros/', {
+      const response = await api.post('pesquisadelivro/', {
         book_title: query
       });
       
       console.log("Resultado da busca:", response.data);
       
-      if (response.data.results) {
-        const searchResults = response.data.results.map(book => ({
+      if (response.data.livros) {
+        const searchResults = response.data.livros.map(book => ({
           ...book,
           is_saved: false
         }));
@@ -61,13 +63,23 @@ export default function FeedLivros() {
     }
   }, []);
 
-  const fetchBooks = useCallback(async (url = "livros/feed/") => {
-    setLoading(true);
+  const fetchBooks = useCallback(async (url = "livros/feed/", isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
 
     try {
       const response = await api.get(url);
       if (response.data && response.data.results) {
-        setBooks((prev) => [...prev, ...response.data.results]);
+        if (isRefresh || url === "livros/feed/") {
+          // Se é refresh ou primeira página, substitui
+          setBooks(response.data.results);
+        } else {
+          // Se é paginação, adiciona
+          setBooks((prev) => [...prev, ...response.data.results]);
+        }
         setNextPage(response.data.next);
       }
     } catch (error) {
@@ -78,6 +90,7 @@ export default function FeedLivros() {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [])
 
@@ -108,6 +121,24 @@ export default function FeedLivros() {
     fetchBooks();
   }, [fetchBooks]);
 
+  // Função para atualizar manualmente
+  const onRefresh = useCallback(() => {
+    console.log('Atualizando feed manualmente');
+    if (!isSearching) {
+      fetchBooks("livros/feed/", true);
+    }
+  }, [fetchBooks, isSearching]);
+
+  // Recarrega quando a tela ganha foco (volta de outras telas)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Tela principal ganhou foco - recarregando feed');
+      if (!isSearching) {
+        onRefresh();
+      }
+    }, [onRefresh, isSearching])
+  );
+
   function handleLoadMore() {
     if (nextPage) {
       fetchBooks(nextPage);
@@ -128,13 +159,13 @@ export default function FeedLivros() {
     setLoading(true);
 
     try {
-      const response = await api.post('search/livros/', {
+      const response = await api.post('pesquisadelivro/', {
         book_title: searchQuery
       });
       
-      if (response.data.results) {
+      if (response.data.livros) {
         // Usa os dados da busca diretamente
-        const searchResults = response.data.results.map(book => ({
+        const searchResults = response.data.livros.map(book => ({
           ...book,
           is_saved: false // Valor padrão para busca
         }));
@@ -171,14 +202,21 @@ export default function FeedLivros() {
     if (willBeSaved) {
       api.post(endpoint).catch(error => {
         console.error('Erro ao favoritar:', error);
-        // Reverte o estado se der erro
-        setBooks(prevBooks =>
-          prevBooks.map(book =>
-            book.id === bookId
-              ? { ...book, is_saved: !willBeSaved }
-              : book
-          )
-        );
+        
+        // Se o livro não existe mais (404), remove da lista
+        if (error.response?.status === 404) {
+          setBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
+          Alert.alert('Aviso', 'Este livro não existe mais e foi removido da lista.');
+        } else {
+          // Reverte o estado se for outro erro
+          setBooks(prevBooks =>
+            prevBooks.map(book =>
+              book.id === bookId
+                ? { ...book, is_saved: !willBeSaved }
+                : book
+            )
+          );
+        }
       });
     }
     else {
@@ -297,6 +335,14 @@ export default function FeedLivros() {
         onEndReachedThreshold={0.1}
         ListFooterComponent={loading && <ActivityIndicator size="large" />}
         contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#E09F3E']}
+            tintColor={'#E09F3E'}
+          />
+        }
       />
 
       {/* Barra inferior */}

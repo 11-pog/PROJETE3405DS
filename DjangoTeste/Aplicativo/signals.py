@@ -4,7 +4,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models.publication_models import Publication
 
-print("📡 Signals.py carregado - sistema de notificações ativo!")
+print("[SIGNALS] Signals.py carregado - sistema de notificacoes ativo!")
 
 @receiver(post_save, sender=Publication)
 def notify_new_publication(sender, instance, created, **kwargs):

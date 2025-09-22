@@ -12,6 +12,13 @@ export default function Login () {
   const [erro, setErro] = useState('')
   const [tentouLogin, setTentouLogin] = useState(false)
 
+  const limparTokens = async () => {
+    await AsyncStorage.removeItem('access')
+    await AsyncStorage.removeItem('refresh')
+    setErro('')
+    console.log('Tokens limpos')
+  }
+
   const fazerLogin = async () => {
     setTentouLogin(true)
     try {
@@ -99,6 +106,19 @@ label='Senha:'
           }}
         >
           Ainda não tem uma conta? Clique aqui.
+        </Text>
+      </Pressable>
+
+      <Pressable onPress={limparTokens}>
+        <Text
+          style={{
+            fontSize: 14,
+            color: '#666',
+            textAlign: 'center',
+            marginTop: 10
+          }}
+        >
+          Limpar dados salvos
         </Text>
       </Pressable>
     </View>

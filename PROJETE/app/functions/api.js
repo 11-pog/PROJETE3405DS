@@ -2,7 +2,7 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://127.0.0.1:8000/api/"
+export const BASE_API_URL = "http://192.168.0.200:8000/api/"
 axios.defaults.baseURL = BASE_API_URL
 
 const api = axios.create({
@@ -11,8 +11,10 @@ const api = axios.create({
 
 api.interceptors.request.use(
     async config => {
+        console.log(`[API] Fazendo requisição ${config.method?.toUpperCase()} para: ${config.url}`);
+        console.log(`[API] URL completa: ${config.baseURL}${config.url}`);
+        
         const token = await AsyncStorage.getItem("access");
-
 
         if (!token) {
             // No access token -> redirect immediately

@@ -6,19 +6,31 @@ class WebSocketService {
   }
 
   connect() {
-    // Substitua pelo IP do seu servidor
-    this.ws = new WebSocket('ws://192.168.0.200:8000/ws/publications/');
+    try {
+      // Substitua pelo IP do seu servidor
+      this.ws = new WebSocket('ws://192.168.0.200:8001/ws/publications/');
 
-    this.ws.onopen = () => console.log('WebSocket conectado!');
-    
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Chama todos os listeners registrados
-      this.listeners.forEach((callback) => callback(data));
-    };
+      this.ws.onopen = () => console.log('WebSocket conectado!');
+      
+      this.ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        // Chama todos os listeners registrados
+        this.listeners.forEach((callback) => callback(data));
+      };
 
-    this.ws.onclose = () => console.log('WebSocket desconectado.');
-    this.ws.onerror = (error) => console.log('Erro WebSocket:', error);
+      this.ws.onclose = () => {
+        console.log('WebSocket desconectado.');
+        // Tenta reconectar após 3 segundos
+        setTimeout(() => this.connect(), 3000);
+      };
+      
+      this.ws.onerror = (error) => {
+        console.log('Erro WebSocket:', error);
+        // Se der erro, não tenta conectar novamente
+      };
+    } catch (error) {
+      console.log('Erro ao conectar WebSocket:', error);
+    }
   }
 
   addListener(callback) {

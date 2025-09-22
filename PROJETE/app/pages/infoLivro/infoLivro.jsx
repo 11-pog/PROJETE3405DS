@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Picker } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -66,10 +66,24 @@ export default function CadastroLivro() {
       console.log("salvo");
       router.push('/pages/principal/principal')
     } catch (error) {
+      console.log("Erro completo:", error);
       if (error.response) {
+        console.log("Status:", error.response.status);
         console.log("Erro no cadastro:", error.response.data);
+        
+        let errorMessage = "Erro desconhecido";
+        if (error.response.status === 500) {
+          errorMessage = "Erro interno do servidor. Verifique os logs do Django.";
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = "Erro no servidor";
+        } else {
+          errorMessage = JSON.stringify(error.response.data);
+        }
+        
+        Alert.alert("Erro", errorMessage);
       } else {
         console.log("Erro inesperado:", error.message);
+        Alert.alert("Erro", error.message);
       }
     }
   };
@@ -197,13 +211,23 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Data de publicação" value={data} onChange={setData} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
-       <Picker
-  selectedValue={tipo}
-  onValueChange={(value) => setTipo(value)}
->
-  <Picker.Item label="Troca" value="troca" />
-  <Picker.Item label="Empréstimo" value="emprestimo" />
-</Picker>
+        {/* Seletor de tipo */}
+        <Text style={styles.tipoLabel}>Tipo de publicação:</Text>
+        <View style={styles.tipoContainer}>
+          <TouchableOpacity 
+            style={[styles.tipoButton, tipo === 'troca' && styles.tipoButtonSelected]}
+            onPress={() => setTipo('troca')}
+          >
+            <Text style={[styles.tipoText, tipo === 'troca' && styles.tipoTextSelected]}>Troca</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.tipoButton, tipo === 'emprestimo' && styles.tipoButtonSelected]}
+            onPress={() => setTipo('emprestimo')}
+          >
+            <Text style={[styles.tipoText, tipo === 'emprestimo' && styles.tipoTextSelected]}>Empréstimo</Text>
+          </TouchableOpacity>
+        </View>
         {/* estrelas de avaliação */}
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
@@ -291,5 +315,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
+  },
+  tipoLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  tipoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 10,
+  },
+  tipoButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#E09F3E',
+    backgroundColor: 'transparent',
+  },
+  tipoButtonSelected: {
+    backgroundColor: '#E09F3E',
+  },
+  tipoText: {
+    color: '#E09F3E',
+    fontWeight: 'bold',
+  },
+  tipoTextSelected: {
+    color: 'white',
   },
 });

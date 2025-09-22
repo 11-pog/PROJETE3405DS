@@ -19,7 +19,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from django.urls import path
-from .views import PublicationDeleteView
+from Aplicativo.views.delete_views import PublicationDeleteView
 
 from Aplicativo.views.auth_views import LoginUsuario
 from Aplicativo.views.external_api_views import ISBNLookup
@@ -60,5 +60,5 @@ urlpatterns = [
     # Outros
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
     path('private/<str:user1>/<str:user2>/', PrivateChat.as_view(), name='private_chat'),
-    path("usuario/publicacoes/<int:pk>/delete/", PublicationDeleteView.as_view(), name="publication-delete"),
+    path("api/usuario/publicacoes/<int:pk>/delete/", PublicationDeleteView, name="publication-delete"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

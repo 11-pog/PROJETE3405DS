@@ -25,7 +25,12 @@ export default function MinhasPublicacoes() {
     try {
       const response = await api.get(url);
       if (response.data && response.data.results) {
-        setPublicacoes((prev) => [...prev, ...response.data.results]);
+        // Se é a primeira página, substitui. Se não, adiciona (paginação)
+        if (url === 'usuario/publicacoes/') {
+          setPublicacoes(response.data.results); // Substitui completamente
+        } else {
+          setPublicacoes((prev) => [...prev, ...response.data.results]); // Adiciona para paginação
+        }
         setNextPage(response.data.next);
       } else {
         setPublicacoes([]);
@@ -43,11 +48,17 @@ export default function MinhasPublicacoes() {
   }, [fetchMinhasPublicacoes]);
 
   async function confirmDelete(item) {
-    if (excluindo) return;
+    console.log('confirmDelete iniciado para item:', item.id);
+    if (excluindo) {
+      console.log('Já está excluindo, retornando...');
+      return;
+    }
     setExcluindo(true);
     try {
+      console.log('Fazendo requisição DELETE para:', `usuario/publicacoes/${item.id}/delete/`);
       await api.delete(`usuario/publicacoes/${item.id}/delete/`);
       setPublicacoes((prev) => prev.filter((pub) => pub.id !== item.id));
+      console.log('Publicação excluída com sucesso');
     } catch (error) {
       console.error('Erro ao excluir publicação:', error.response?.data || error);
       Alert.alert('Erro', 'Não foi possível excluir esta publicação.');
@@ -57,18 +68,28 @@ export default function MinhasPublicacoes() {
   }
 
   function handleDelete(item) {
+    console.log('handleDelete chamado para item:', item);
+    console.log('Criador da publicação:', item.post_creator);
+    console.log('ID do criador:', item.post_creator_id);
+    
     Alert.alert(
-      'Excluir publicação',
+      'Confirmar Exclusão',
       `Tem certeza que deseja excluir "${item.book_title}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+          onPress: () => console.log('Usuário cancelou exclusão')
+        },
         {
           text: 'Excluir',
           style: 'destructive',
-          onPress: () => confirmDelete(item),
-        },
-      ],
-      { cancelable: true }
+          onPress: () => {
+            console.log('Usuário confirmou exclusão');
+            confirmDelete(item);
+          }
+        }
+      ]
     );
   }
 
@@ -114,7 +135,10 @@ export default function MinhasPublicacoes() {
             <Ionicons name="create" size={22} color="#9e2a2b" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => handleDelete(item)}>
+          <TouchableOpacity onPress={() => {
+            console.log('Botão de lixeira clicado');
+            handleDelete(item);
+          }}>
             <Ionicons name="trash" size={22} color="#9e2a2b" />
           </TouchableOpacity>
         </View>
