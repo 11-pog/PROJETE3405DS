@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useUser } from '../../hooks/useUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -154,7 +154,9 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
+      <Pressable  >
       <Text style={styles.header}>Chat com {chatPartner}</Text>
+      </Pressable>
       
       <ScrollView 
         ref={scrollViewRef}
