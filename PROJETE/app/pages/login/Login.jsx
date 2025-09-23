@@ -22,7 +22,7 @@ export default function Login () {
   const fazerLogin = async () => {
     setTentouLogin(true)
     try {
-      const response = await api.post('login/', {
+      const response = await axios.post('login/', {
         email: email,
         password: senha
       })

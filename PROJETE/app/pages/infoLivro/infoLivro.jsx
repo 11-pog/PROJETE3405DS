@@ -9,13 +9,15 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  Picker,
+  Platform,
+  ActionSheetIOS,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
 import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import api from "../../functions/api";
 
@@ -32,24 +34,6 @@ export default function CadastroLivro() {
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
-  if (!permission) {
-    return (
-      <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
-        <Text>Carregando permissões...</Text>
-      </View>
-    );
-  }
-
-  if (!permission.granted) {
-    return (
-      <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
-        <Text>Precisamos da sua permissão para usar a câmera.</Text>
-        <TouchableOpacity onPress={requestPermission} style={{backgroundColor: "#E09F3E", padding: 10, borderRadius: 8, marginTop: 10}}>
-          <Text style={{color: "#fff", fontWeight: "bold"}}>Conceder Permissão</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
   const [showCamera, setShowCamera] = useState(false);
   const [cameraMode, setCameraMode] = useState("isbn"); // "isbn" ou "foto"
   const [cameraReady, setCameraReady] = useState(false);
@@ -65,9 +49,6 @@ export default function CadastroLivro() {
 
   // salva livro no backend
   const SalvarLivro = async () => {
-    console.log("botão apertado");
-    console.log("Escolhido", tipo, tipo, tipo);
-
     try {
       const response = await api.post("livros/cadastrar/", {
         book_title: titulo,
@@ -81,7 +62,6 @@ export default function CadastroLivro() {
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
 
-      // Simula notificação para outros usuários
       setTimeout(() => {
         Alert.alert(
           "📚 Novo livro disponível!",
@@ -90,26 +70,20 @@ export default function CadastroLivro() {
         );
       }, 2000);
 
-      console.log("salvo");
       router.push("/pages/principal/principal");
     } catch (error) {
       console.log("Erro completo:", error);
       if (error.response) {
-        console.log("Status:", error.response.status);
-        console.log("Erro no cadastro:", error.response.data);
-        
         let errorMessage = "Erro desconhecido";
         if (error.response.status === 500) {
           errorMessage = "Erro interno do servidor. Verifique os logs do Django.";
-        } else if (typeof error.response.data === 'string') {
+        } else if (typeof error.response.data === "string") {
           errorMessage = "Erro no servidor";
         } else {
           errorMessage = JSON.stringify(error.response.data);
         }
-        
         Alert.alert("Erro", errorMessage);
       } else {
-        console.log("Erro inesperado:", error.message);
         Alert.alert("Erro", error.message);
       }
     }
@@ -119,12 +93,71 @@ export default function CadastroLivro() {
 
   const handleOpenCamera = async (mode) => {
     if (!permission?.granted) {
-      await requestPermission();
+      const { granted } = await requestPermission();
+      if (!granted) {
+        Alert.alert("Permissão necessária", "Você precisa conceder acesso à câmera.");
+        return;
+      }
     }
     setCameraMode(mode);
     setCameraError(false);
     setShowCamera(true);
     setLivro(null);
+  };
+
+  // abre opções de foto
+  const handleChoosePhoto = () => {
+    if (Platform.OS === "web") {
+      pickImageFromLibrary();
+    } else if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancelar", "Escolher da Galeria", "Tirar Foto"],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            pickImageFromLibrary();
+          } else if (buttonIndex === 2) {
+            pickImageFromCamera();
+          }
+        }
+      );
+    } else {
+      Alert.alert("Escolher foto", "De onde você quer pegar a imagem?", [
+        { text: "Galeria", onPress: pickImageFromLibrary },
+        { text: "Câmera", onPress: pickImageFromCamera },
+        { text: "Cancelar", style: "cancel" },
+      ]);
+    }
+  };
+
+  const pickImageFromLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setFotoLivro(result.assets[0].uri);
+    }
+  };
+
+  const pickImageFromCamera = async () => {
+    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) {
+      Alert.alert("Permissão necessária", "Você precisa conceder acesso à câmera.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setFotoLivro(result.assets[0].uri);
+    }
   };
 
   // quando ISBN é escaneado
@@ -137,13 +170,8 @@ export default function CadastroLivro() {
   const buscarLivro = async (isbn) => {
     setLoadingLivro(true);
     try {
-      const response = api.get("isbn/", {
-        params: {
-          isbn: isbn,
-        },
-      });
+      const response = api.get("isbn/", { params: { isbn } });
       const data = await response.data;
-
       if (data) {
         setLivro({
           titulo: data.title || "Título desconhecido",
@@ -153,13 +181,10 @@ export default function CadastroLivro() {
           capa: data.cover?.medium || null,
         });
       } else {
-        alert(
-          "Livro não encontrado",
-          "Não foi possível encontrar informações para este ISBN."
-        );
+        Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
     } catch (error) {
-      alert("Erro", "Falha ao buscar dados do livro.");
+      Alert.alert("Erro", "Falha ao buscar dados do livro.");
     } finally {
       setLoadingLivro(false);
     }
@@ -168,9 +193,7 @@ export default function CadastroLivro() {
   const handleTakePicture = async () => {
     if (cameraRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync({
-          quality: 0.7,
-        });
+        const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
         setFotoLivro(photo.uri);
         setShowCamera(false);
       } catch (error) {
@@ -179,73 +202,60 @@ export default function CadastroLivro() {
     }
   };
 
-// Tela da câmera
-if (showCamera) {
-  return (
-    <View style={{ flex: 1 }}>
-      {!cameraError ? (
-        <>
-          <CameraView
-            style={{ flex: 1, width: "100%" }}
-            ref={cameraRef}
-            facing="back"
-            onCameraReady={() => setCameraReady(true)}
-            onMountError={() => setCameraError(true)}
-            onBarcodeScanned={
-              cameraMode === "isbn" ? handleBarCodeScanned : undefined
-            }
-            barcodeScannerSettings={{
-              barcodeTypes: ["ean13", "ean8"],
-            }}
-          />
-
-          {!cameraReady && (
-            <ActivityIndicator
-              size="large"
-              color="#E09F3E"
-              style={{
-                position: "absolute",
-                top: "50%",
-                alignSelf: "center",
-              }}
+  // Tela da câmera
+  if (showCamera) {
+    return (
+      <View style={{ flex: 1 }}>
+        {!cameraError ? (
+          <>
+            <CameraView
+              style={{ flex: 1, width: "100%" }}
+              ref={cameraRef}
+              facing="back"
+              onCameraReady={() => setCameraReady(true)}
+              onMountError={() => setCameraError(true)}
+              onBarcodeScanned={cameraMode === "isbn" ? handleBarCodeScanned : undefined}
+              barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8"] }}
             />
-          )}
 
-          {/* botão para fechar a câmera */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setShowCamera(false)}
-          >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
-          </TouchableOpacity>
+            {!cameraReady && (
+              <ActivityIndicator
+                size="large"
+                color="#E09F3E"
+                style={{ position: "absolute", top: "50%", alignSelf: "center" }}
+              />
+            )}
 
-          {/* botão de captura só aparece no modo "foto" */}
-          {cameraMode === "foto" && cameraReady && (
             <TouchableOpacity
-              style={styles.captureButton}
-              onPress={handleTakePicture}
+              style={styles.closeButton}
+              onPress={() => setShowCamera(false)}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>📸 Capturar</Text>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
-          )}
-        </>
-      ) : (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
-          <TouchableOpacity
-            style={styles.errorButton}
-            onPress={() => setShowCamera(false)}
-          >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
-}
 
+            {cameraMode === "foto" && cameraReady && (
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleTakePicture}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>📸 Capturar</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        ) : (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
+            <TouchableOpacity
+              style={styles.errorButton}
+              onPress={() => setShowCamera(false)}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  }
 
   // Tela principal
   return (
@@ -254,35 +264,11 @@ if (showCamera) {
         <StatusBar hidden />
         <Text style={styles.header}>Digite as informações do livro</Text>
 
-        <MeuInput
-          width={80}
-          label="Título do Livro:"
-          value={titulo}
-          onChange={setTitulo}
-        />
-        <MeuInput
-          width={80}
-          label="Autor(a):"
-          value={autor}
-          onChange={setAutor}
-        />
-        <MeuInput
-          width={80}
-          label="Editora"
-          value={editora}
-          onChange={setEditora}
-        />
-        <MeuInput
-          width={80}
-          label="Descrição"
-          value={descricao}
-          onChange={setDescricao}
-        />
-        <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
-          <Picker.Item label="Troca" value="troca" />
-          <Picker.Item label="Empréstimo" value="emprestimo" />
-        </Picker>
-        {/* estrelas de avaliação */}
+        <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
+        <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
+        <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
+        <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
             <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
@@ -295,7 +281,6 @@ if (showCamera) {
           ))}
         </View>
 
-        {/* mostra foto capturada */}
         {fotoLivro && (
           <Image
             source={{ uri: fotoLivro }}
@@ -303,35 +288,24 @@ if (showCamera) {
           />
         )}
 
-        {/* mostra informações do livro via ISBN */}
         {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
         {livro && (
           <View style={{ marginTop: 20, alignItems: "center" }}>
             {livro.capa && (
               <Image
                 source={{ uri: livro.capa }}
-                style={{
-                  width: 100,
-                  height: 150,
-                  borderRadius: 8,
-                  marginBottom: 10,
-                }}
+                style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
               />
             )}
-            <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-              {livro.titulo}
-            </Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
             <Text>{livro.autor}</Text>
           </View>
         )}
 
         <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
-
         <Text style={styles.ouTexto}>ou</Text>
-
-        {/* botões para abrir câmera */}
         <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
-        <Botao texto="Tirar Foto" aoApertar={() => handleOpenCamera("foto")} />
+        <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
       </ScrollView>
       <BarraInicial />
     </View>
@@ -378,13 +352,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   closeButton: {
-  position: "absolute",
-  top: 40,
-  right: 20,
-  backgroundColor: "rgba(0,0,0,0.6)",
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  borderRadius: 20,
-},
-
+    position: "absolute",
+    top: 40,
+    right: 20,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
 });

@@ -2,7 +2,7 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://192.168.0.200:8000/api/"
+export const BASE_API_URL = "http://localhost:8000/api/"
 axios.defaults.baseURL = BASE_API_URL
 
 const api = axios.create({
@@ -43,7 +43,7 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     const res = await axios.post(
-                        BASE_API_URL + 'login/refresh/',
+                        'login/refresh/',
                         {
                             refresh: refreshToken
                         }
