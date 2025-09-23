@@ -23,7 +23,7 @@ export default function FeedLivros() {
     setLoading(true);
 
     try {
-      const response = await api.post('pesquisadelivro/', {
+      const response = await api.post('search/livros/', {
         book_title: query
       });
       

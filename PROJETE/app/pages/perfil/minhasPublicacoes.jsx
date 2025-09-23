@@ -23,8 +23,11 @@ export default function MinhasPublicacoes() {
 
   const fetchMinhasPublicacoes = useCallback(async (url = 'usuario/publicacoes/') => {
     try {
+      console.log("requisitando pata", url);
       const response = await api.get(url);
+      console.log("resposta da api", response.data);
       if (response.data && response.data.results) {
+          console.log('Publicações encontradas:', response.data.results.length);
         // Se é a primeira página, substitui. Se não, adiciona (paginação)
         if (url === 'usuario/publicacoes/') {
           setPublicacoes(response.data.results); // Substitui completamente
