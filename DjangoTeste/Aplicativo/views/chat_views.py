@@ -1,29 +1,36 @@
 from rest_framework.views import APIView
 from django.http import HttpResponse
+from Aplicativo.models.user_models import Usuario
 
 
 class PrivateChat(APIView):
-    def get(self, request, user1, user2):
+    def get(self, request, user1_id, user2_id):
+        try:
+            user1 = Usuario.objects.get(id=user1_id)
+            user2 = Usuario.objects.get(id=user2_id)
+        except Usuario.DoesNotExist:
+            return HttpResponse("Usuário não encontrado", status=404)
+            
         host = request.get_host().split(':')[0]
         html = f'''
 <!DOCTYPE html>
 <html>
-<head><title>Chat Privado: {user1} & {user2}</title></head>
+<head><title>Chat Privado: {user1.username} & {user2.username}</title></head>
 <body>
-    <h3>Chat Privado entre {user1} e {user2}</h3>
+    <h3>Chat Privado entre {user1.username} e {user2.username}</h3>
     <div id="messages" style="border:1px solid #ccc; height:400px; overflow-y:auto; padding:10px; margin:10px 0;"></div>
     
     <div style="display:flex; gap:10px;">
         <input type="text" id="messageInput" placeholder="Digite sua mensagem" style="flex:1;">
         <select id="senderSelect">
-            <option value="{user1}">{user1}</option>
-            <option value="{user2}">{user2}</option>
+            <option value="{user1.username}">{user1.username}</option>
+            <option value="{user2.username}">{user2.username}</option>
         </select>
         <button onclick="sendMessage()">Enviar</button>
     </div>
     
     <script>
-        const socket = new WebSocket('ws://{host}:8000/ws/private/{user1}/{user2}/');
+        const socket = new WebSocket('ws://{host}:8000/ws/private/{user1_id}/{user2_id}/');
         const messages = document.getElementById('messages');
         
         socket.onopen = () => console.log('Chat privado conectado!');

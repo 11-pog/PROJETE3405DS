@@ -35,6 +35,7 @@ from Aplicativo.views.publication_views import (
 )
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
 from Aplicativo.views.chat_views import PrivateChat
+from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -60,8 +61,14 @@ urlpatterns = [
     path('api/search/livros/', pesquisadelivro.as_view(), name="pesquisa-livros"),
     path('api/usuario/publicacoes/', GetMinhasPublicacoes.as_view(), name="minhas-publicacoes"),
 
+    # Empréstimos
+    path('api/emprestimos/criar/', CreateLoan.as_view(), name='create_loan'),
+    path('api/emprestimos/finalizar/', CompleteLoan.as_view(), name='complete_loan'),
+    path('api/usuario/<int:user_id>/perfil/', UserProfile.as_view(), name='user_profile'),
+    path('api/chat/gerar-link/', GenerateChatLink.as_view(), name='generate_chat_link'),
+
     # Outros
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
-    path('private/<str:user1>/<str:user2>/', PrivateChat.as_view(), name='private_chat'),
+    path('private/<int:user1_id>/<int:user2_id>/', PrivateChat.as_view(), name='private_chat'),
     path("api/usuario/publicacoes/<int:pk>/delete/", PublicationDeleteView, name="publication-delete"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
