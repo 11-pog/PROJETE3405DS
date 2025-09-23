@@ -92,3 +92,66 @@ class Interaction(models.Model):
     
     class Meta:
         unique_together = ('user', 'publication')
+
+class Loan(models.Model):
+    class LoanStatus(models.TextChoices):
+        ACTIVE = "active", "Ativo"
+        COMPLETED = "completed", "Finalizado"
+        OVERDUE = "overdue", "Atrasado"
+        CANCELLED = "cancelled", "Cancelado"
+    
+    publication = models.ForeignKey(
+        Publication,
+        on_delete=models.CASCADE,
+        related_name='loans'
+    )
+    lender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='lent_books',
+        verbose_name="Quem emprestou"
+    )
+    borrower = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='borrowed_books',
+        verbose_name="Quem pegou emprestado"
+    )
+    
+    start_date = models.DateTimeField(auto_now_add=True)
+    expected_return_date = models.DateField()
+    actual_return_date = models.DateTimeField(null=True, blank=True)
+    
+    status = models.CharField(
+        max_length=10,
+        choices=LoanStatus.choices,
+        default=LoanStatus.ACTIVE
+    )
+    
+    notes = models.TextField(blank=True, null=True, verbose_name="Observações")
+    
+    def __str__(self):
+        return f"{self.publication.book_title} - {self.borrower.username}"
+    
+    class Meta:
+        ordering = ['-start_date']
+
+
+class BookCareRating(models.Model):
+    loan = models.OneToOneField(
+        Loan,
+        on_delete=models.CASCADE,
+        related_name='care_rating'
+    )
+    care_rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        verbose_name="Nota de cuidado (1-5)"
+    )
+    comments = models.TextField(
+        blank=True, null=True,
+        verbose_name="Comentários sobre o estado do livro"
+    )
+    rated_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.loan.publication.book_title} - {self.care_rating} estrelas"
