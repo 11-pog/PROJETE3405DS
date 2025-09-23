@@ -30,8 +30,10 @@ from Aplicativo.views.publication_views import (
     GetBookList,
     FavoritePostView,
     GetFavoriteBooks,
+    BookDetailView,
     GetMinhasPublicacoes,  
 )
+from Aplicativo.views.usuario_views import UserView, UploadUserImage
 from Aplicativo.views.chat_views import PrivateChat
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -53,6 +55,7 @@ urlpatterns = [
     # Livros / Publicações
     path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
     path('api/livros/cadastrar/', CadastrarLivro.as_view(), name='cadastrar-livro'),
+    path('api/livros/<int:book_id>/', BookDetailView.as_view()),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view(), name="favoritar-livro"),
     path('api/search/livros/', pesquisadelivro.as_view(), name="pesquisa-livros"),
     path('api/usuario/publicacoes/', GetMinhasPublicacoes.as_view(), name="minhas-publicacoes"),

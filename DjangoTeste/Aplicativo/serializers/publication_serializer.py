@@ -34,6 +34,9 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class CreatePublicationSerializer(serializers.ModelSerializer):
+    book_publication_date = serializers.DateField(
+    input_formats=['%d/%m/%y'],
+    format='%d/%m/%y')
     class Meta:
         model = Publication
         fields = [
@@ -62,13 +65,13 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
         model = Publication
         fields = [
             "id",
+            "post_creator_id",
+            "post_creator",
             "book_title",
             "book_author",
             "book_description",
             "post_type",
             "post_cover",
-            "post_creator",
-            "post_creator_id",
             "is_saved"
         ]
     

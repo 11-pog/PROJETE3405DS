@@ -1,10 +1,47 @@
-import { View, Text, Image, ScrollView, Pressable } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useState, useEffect, useCallback } from "react"
+import { View, Text, Image, ScrollView, Pressable, TouchableOpacity } from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import api from "../../functions/api";
 
 export default function InfoIsolado() {
-  const { id, title, author, description, cover, addedBy, userImage, actionType } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
+  const [book, setBook] = useState(null);
+  const [creator, setCreator] = useState(null)
+  const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(0);
+
+  const getBook = useCallback(async () => {
+    try {
+      const response = await api.get(`livros/${id}/`);
+      const data = response.data;
+
+      setBook(data.book);
+      setCreator(data.post_creator);
+    } catch (error) {
+      console.error("Erro ao buscar livro:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id])
+
+  function handleStarPress(star) {
+    setRating(star);
+    // later: api.post(`/livros/${id}/rating/`, { rating: star })
+  }
+
+  useEffect(() => {
+    getBook()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (loading || !book || !creator) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
@@ -19,9 +56,9 @@ export default function InfoIsolado() {
       {/* Container principal */}
       <View style={{ alignItems: "center", padding: 20 }}>
         {/* Capa */}
-        {cover ? (
+        {book.post_cover ? (
           <Image
-            source={{ uri: cover }}
+            source={{ uri: book.post_cover }}
             style={{
               width: 150,
               height: 220,
@@ -48,7 +85,6 @@ export default function InfoIsolado() {
           />
         )}
 
-        {/* Título e autor */}
         <Text
           style={{
             fontSize: 22,
@@ -58,7 +94,7 @@ export default function InfoIsolado() {
             textAlign: "center",
           }}
         >
-          {title}
+          {book.book_title}
         </Text>
         <Text
           style={{
@@ -68,41 +104,39 @@ export default function InfoIsolado() {
             textAlign: "center",
           }}
         >
-          {author}
+          {book.book_author}
         </Text>
 
-      {/* Descrição */}
-<View style={{ width: "90%", marginBottom: 20 }}>
-  <Text
-    style={{
-      fontWeight: "bold",
-      fontSize: 16,
-      color: "#335c67",
-      marginBottom: 6,
-    }}
-  >
-     Descrição:
-  </Text>
-  <Text
-    style={{
-      fontSize: 13,
-      color: "#333",
-      backgroundColor: "#fff",
-      padding: 12,
-      borderRadius: 15,
-      shadowColor: "#000",
-      shadowOffset: { width: 2, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 3,
-      textAlign: "justify",
-    }}
-  >
-    {description || "Nenhuma descrição disponível"}
-  </Text>
-</View>
+        <View style={{ width: "90%", marginBottom: 20 }}>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 16,
+              color: "#335c67",
+              marginBottom: 6,
+            }}
+          >
+            Descrição:
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              color: "#333",
+              backgroundColor: "#fff",
+              padding: 12,
+              borderRadius: 15,
+              shadowColor: "#000",
+              shadowOffset: { width: 2, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 3,
+              elevation: 3,
+              textAlign: "justify",
+            }}
+          >
+            {book.book_description || "Nenhuma descrição disponível"}
+          </Text>
+        </View>
 
-        {/* Informações do usuário que adicionou */}
         <View
           style={{
             flexDirection: "row",
@@ -119,10 +153,9 @@ export default function InfoIsolado() {
           }}
         >
 
-          {/* Foto do usuário */}
-          {userImage ? (
+          {creator.image_url ? (
             <Image
-              source={{ uri: userImage }}
+              source={{ uri: creator.image_url }}
               style={{
                 width: 50,
                 height: 50,
@@ -153,10 +186,36 @@ export default function InfoIsolado() {
               Livro adicionado por:
             </Text>
             <Text style={{ color: "#9e2a2b", marginBottom: 4 }}>
-            </Text> {/* colocar o nome do usuario aqui quando estiver pronto*/}
-            <Text style={{ color: "#335c67" }}>
-              Tipo de ação: {actionType || "Não especificado"} {/* aqui tem que arrumar çocorro*/}
+              {creator.username}
             </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+              <Text style={{ backgroundColor: "#e09f3e", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, margin: 4 }}>
+                {book.post_type}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View style={{ width: "90%", marginBottom: 20 }}>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 16,
+              color: "#335c67",
+              marginBottom: 6,
+            }}
+          >
+            Avalie:
+          </Text>
+          <View style={{ flexDirection: "row", marginVertical: 10, justifyContent: "center", }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                <Ionicons
+                  name={star <= rating ? "star" : "star-outline"}
+                  size={28}
+                  color="#E09F3E"
+                />
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       </View>

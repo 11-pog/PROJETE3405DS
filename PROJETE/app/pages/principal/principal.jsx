@@ -186,7 +186,7 @@ export default function FeedLivros() {
   };//fim const handleSearch
 
   function toggleSaved(item) {
-    var bookId = item.id
+    let bookId = item.id
     const willBeSaved = !item.is_saved;
 
     setBooks(prevBooks =>
@@ -246,11 +246,7 @@ export default function FeedLivros() {
             onPress={() => router.push({
               pathname: '/pages/infoIsolado/infoisolado',
               params: {
-                id: item.id,
-                title: item.book_title,
-                author: item.book_author,
-                description: item.book_description, // só se tiver na API
-                cover: item.post_cover
+                id: item.id
               }
             })}
           >

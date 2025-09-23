@@ -1,8 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-
-
+from django.utils import timezone
 
 
 # Modelo de banco de dados de Postagem/Publicação
@@ -73,14 +72,23 @@ class Interaction(models.Model):
         related_name='interactions')
     
     book_rating = models.IntegerField(blank=True, null=True) # optional
-    view_count = models.PositiveIntegerField(default=0)
-
+    view_count = models.PositiveIntegerField(default=1)
+    
     is_saved = models.BooleanField(default=False)
-    saved_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    saved_at = models.DateTimeField(null=True, blank=True)
     
     messaged_author = models.BooleanField(default=False)
     verified_trade = models.BooleanField(default=False)
     last_viewed_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, force_insert = False, force_update = False, using = None, update_fields = None):
+        if self.is_saved and not self.saved_at:
+            self.saved_at = timezone.now()
+        
+        elif not self.is_saved:
+            self.saved_at = None
+        
+        return super().save(force_insert, force_update, using, update_fields)
     
     class Meta:
         unique_together = ('user', 'publication')

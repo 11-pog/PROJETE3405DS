@@ -10,6 +10,9 @@ from Aplicativo.models.publication_models import Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
 from django.db.models import Q
+from Aplicativo.serializers.user_serializer import UserSerializer
+from django.db.models import F
+from django.shortcuts import get_object_or_404
 
 
 class GetMinhasPublicacoes(ListAPIView):
@@ -20,14 +23,15 @@ class GetMinhasPublicacoes(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
         ordering = "-created_at"
-
+    
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
-
+    
     def get_queryset(self):
         user = self.request.user
         return Publication.objects.filter(post_creator=user).order_by('-created_at', 'id')
+
 
 
 class GetBookList(ListAPIView):
@@ -44,6 +48,36 @@ class GetBookList(ListAPIView):
     
     def get_queryset(self):
         return Publication.objects.all().order_by('-created_at', 'id')
+
+
+class BookDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, book_id):
+        p = get_object_or_404(Publication, id=book_id)
+        
+        p_serializer = PublicationFeedSerializer(p,
+            context = {
+                'request': request
+            })
+        user_serializer = UserSerializer(p.post_creator,
+            context = {
+                'request': request
+            })
+        
+        InteractionSerializer.increment_view(
+            request.user,
+            p
+        )
+        
+        return Response(
+            {
+                'book': p_serializer.data,
+                'post_creator': user_serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
 
 
 class GetFavoriteBooks(ListAPIView):
