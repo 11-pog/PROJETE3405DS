@@ -5,6 +5,7 @@ import Botao from '../../functions/botoes'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import api from '../../functions/api'
+import axios from 'axios';
 
 export default function Login () {
   const [email, setEmail] = useState('')

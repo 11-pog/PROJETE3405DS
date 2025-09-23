@@ -43,7 +43,7 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     const res = await axios.post(
-                        'login/refresh/',
+                        BASE_API_URL + 'login/refresh/',
                         {
                             refresh: refreshToken
                         }
