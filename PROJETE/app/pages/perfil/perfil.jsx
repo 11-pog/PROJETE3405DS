@@ -118,6 +118,12 @@ export default function Perfil() {
         texto='Meus livros'
         aoApertar={() => router.push('/pages/perfil/minhasPublicacoes')} />
       <Botao
+        texto='Meus pontos'
+        aoApertar={() => {
+          console.log('Clicou em Meus pontos');
+          router.push('/pages/perfil/meusPontos');
+        }} />
+      <Botao
         texto='Sair'
         aoApertar={() => router.push('/pages/login/Login')}
       />

@@ -50,7 +50,8 @@ class Usuario(AbstractUser):
         upload_to='profiles/',
         default='defaults/default_user.png',  # default inside media
     )
-    city = models.CharField(max_length=100, blank=True, null=True)  
+    city = models.CharField(max_length=100, blank=True, null=True)
+    points = models.IntegerField(default=0)  
     
     def get_care_rating_average(self):
         from .publication_models import BookCareRating, Loan

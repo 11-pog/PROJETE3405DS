@@ -278,7 +278,33 @@ export default function FeedLivros() {
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.commentBtn}>
+          <TouchableOpacity 
+            style={styles.commentBtn}
+            onPress={async () => {
+              try {
+                console.log('Buscando autor para livro ID:', item.id);
+                const response = await api.get(`livros/${item.id}/author/`);
+                console.log('Resposta da API:', response.data);
+                const authorUsername = response.data.author_username;
+                
+                if (!authorUsername) {
+                  console.error('Autor não encontrado!');
+                  return;
+                }
+                
+                console.log('Navegando para chat com:', authorUsername);
+                router.push({
+                  pathname: '/pages/chat/privatechat',
+                  params: {
+                    chatPartner: authorUsername
+                  }
+                });
+              } catch (error) {
+                console.error('Erro ao buscar autor:', error);
+                console.error('Detalhes do erro:', error.response?.data);
+              }
+            }}
+          >
             <Ionicons name="chatbubble-ellipses-outline" size={22} color="#E09F3E" />
           </TouchableOpacity>
         </View>

@@ -95,6 +95,7 @@ class Interaction(models.Model):
 
 class Loan(models.Model):
     class LoanStatus(models.TextChoices):
+        PENDING = "pending", "Pendente"
         ACTIVE = "active", "Ativo"
         COMPLETED = "completed", "Finalizado"
         OVERDUE = "overdue", "Atrasado"
@@ -125,7 +126,7 @@ class Loan(models.Model):
     status = models.CharField(
         max_length=10,
         choices=LoanStatus.choices,
-        default=LoanStatus.ACTIVE
+        default=LoanStatus.PENDING
     )
     
     notes = models.TextField(blank=True, null=True, verbose_name="Observações")

@@ -34,6 +34,13 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class CreatePublicationSerializer(serializers.ModelSerializer):
+    book_author = serializers.CharField(required=False, allow_blank=True)
+    book_publisher = serializers.CharField(required=False, allow_blank=True)
+    book_publication_date = serializers.DateField(required=False, allow_null=True)
+    book_description = serializers.CharField(required=False, allow_blank=True)
+    post_location_city = serializers.CharField(required=False, allow_blank=True)
+    post_type = serializers.CharField(required=False)
+    
     class Meta:
         model = Publication
         fields = [
@@ -56,7 +63,9 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
 class PublicationFeedSerializer(serializers.ModelSerializer):
     post_creator = serializers.CharField(source="post_creator.username", read_only=True)
     post_creator_id = serializers.IntegerField(source="post_creator.id", read_only=True)
+    author_username = serializers.CharField(source="post_creator.username", read_only=True)
     is_saved = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
     
     class Meta:
         model = Publication
@@ -64,14 +73,20 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "id",
             "post_creator_id",
             "post_creator",
+            "author_username",
             "book_title",
             "book_author",
             "book_description",
             "post_type",
             "post_cover",
-            "is_saved"
+            "is_saved",
+            "is_owner"
         ]
     
     def get_is_saved(self, obj):
         user: Usuario = self.context['request'].user
         return bool(user.interactions.filter(publication=obj, is_saved=True).exists())
+    
+    def get_is_owner(self, obj):
+        user: Usuario = self.context['request'].user
+        return obj.post_creator.id == user.id

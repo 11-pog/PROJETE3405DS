@@ -47,7 +47,7 @@ class GetBookList(ListAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Publication.objects.all().order_by('-created_at', 'id')
+        return Publication.objects.select_related('post_creator').all().order_by('-created_at', 'id')
 
 
 class BookDetailView(APIView):
@@ -163,19 +163,11 @@ class FavoritePostView(APIView):
         return Response({'message': 'erro', 'details': serializer.errors}, status=400)
 
 
-class CadastrarLivro(APIView): 
-    """
-    Endpoint para cadastrar um novo livro/publicação.
-    Também dispara uma notificação via Django Channels.
-    """
+class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
         try:
-            print("[CADASTRAR] VIEW CADASTRAR LIVRO EXECUTADA!")
-            print(f"[CADASTRAR] Dados recebidos: {request.data}")
-            print(f"[CADASTRAR] Usuario: {request.user}")
-            
             from channels.layers import get_channel_layer
             from asgiref.sync import async_to_sync
             
@@ -183,33 +175,47 @@ class CadastrarLivro(APIView):
             if serializer.is_valid():
                 publication = serializer.save()
                 
-                # Dispara notificação para o grupo de publicações
+                # Dispara notificação
                 channel_layer = get_channel_layer()
                 if channel_layer:
                     message_data = {
                         'type': 'new_publication',
                         'publication': {
                             'title': publication.book_title,
-                            'author': publication.book_author,
-                            'user': publication.post_creator.username if publication.post_creator else 'Usuário',
+                            'author': publication.book_author or 'Autor não informado',
+                            'user': publication.post_creator.username,
                             'message': f'Novo livro cadastrado: {publication.book_title}'
                         }
                     }
-                    print(f"[CADASTRAR] Enviando notificacao: {message_data}")
                     async_to_sync(channel_layer.group_send)('publications', message_data)
-                else:
-                    print("[CADASTRAR] Channel layer nao encontrado!")
                 
-                return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=status.HTTP_201_CREATED)
+                return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
             
-            print(f"[CADASTRAR] Erros de validacao: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=400)
             
         except Exception as e:
-            print(f"[CADASTRAR] ERRO INTERNO: {str(e)}")
-            import traceback
-            print(f"[CADASTRAR] TRACEBACK: {traceback.format_exc()}")
-            return Response({"error": "Erro interno do servidor"}, status=500)
+            return Response({"error": str(e)}, status=500)
+
+
+class EditarLivro(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request, book_id):
+        try:
+            publication = get_object_or_404(Publication, id=book_id)
+            
+            if publication.post_creator != request.user:
+                return Response({"error": "Você não pode editar este livro"}, status=403)
+            
+            serializer = CreatePublicationSerializer(publication, data=request.data, partial=True, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"mensagem": "Livro atualizado com sucesso!"}, status=200)
+            
+            return Response(serializer.errors, status=400)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
 
 
 class pesquisadelivro(APIView):
