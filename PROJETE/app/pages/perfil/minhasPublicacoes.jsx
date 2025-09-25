@@ -100,7 +100,7 @@ export default function MinhasPublicacoes() {
       ]
     );
   }
-
+  
   function handleEdit(item) {
     router.push({
       pathname: '/pages/perfil/editarPublicacao',

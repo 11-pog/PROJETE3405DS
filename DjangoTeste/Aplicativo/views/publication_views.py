@@ -14,6 +14,9 @@ from Aplicativo.serializers.user_serializer import UserSerializer
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 
 class GetMinhasPublicacoes(ListAPIView):
     """
@@ -165,9 +168,6 @@ class CadastrarLivro(APIView):
     
     def post(self, request):
         try:
-            from channels.layers import get_channel_layer
-            from asgiref.sync import async_to_sync
-            
             serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 publication = serializer.save()
