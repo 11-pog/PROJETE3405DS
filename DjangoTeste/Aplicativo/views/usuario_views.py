@@ -69,6 +69,8 @@ class UserView(APIView):
     # POST -> cria um objeto, eis o nome, post
     # Vulgo CadastrarUsuario
     def post(self, request):
+        print('oi')
+        
         usuario = request.data.get('usuario')
         senha = request.data.get('senha')
         email = request.data.get('email')

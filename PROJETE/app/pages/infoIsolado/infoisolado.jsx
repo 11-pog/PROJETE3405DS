@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import api from "../../functions/api";
 
 export default function InfoIsolado() {
-  const { id } = useLocalSearchParams();
+  const { id, path_back } = useLocalSearchParams();
   const [book, setBook] = useState(null);
   const [creator, setCreator] = useState(null)
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function InfoIsolado() {
     <ScrollView style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       {/* Botão de voltar */}
       <Pressable
-        onPress={() => router.push("/pages/principal/principal")}
+        onPress={() => router.push(path_back)}
         style={{ padding: 12 }}
       >
         <Ionicons name="arrow-back" size={28} color="#25373bff" />

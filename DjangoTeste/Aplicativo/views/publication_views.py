@@ -35,9 +35,6 @@ class GetMinhasPublicacoes(ListAPIView):
 
 
 class GetBookList(ListAPIView):
-    """
-    Lista todas as publicações para o feed geral (ordenadas pela data de criação).
-    """
     class Pagination(CursorPagination):
         page_size = 20
         ordering = "-created_at"

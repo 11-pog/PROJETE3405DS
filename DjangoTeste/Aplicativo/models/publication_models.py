@@ -20,8 +20,7 @@ class Publication(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='publications',
-        verbose_name= "Post Author",
-        null=True
+        verbose_name= "Post Author"
     )
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:

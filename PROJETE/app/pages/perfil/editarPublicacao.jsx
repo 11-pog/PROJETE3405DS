@@ -59,13 +59,15 @@ export default function EditarPublicacao() {
     } finally {
       setLoading(false);
     }
+
+    router.push("pages/perfil/minhasPublicacoes")
   };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Editar Livro</Text>
 
-      <Text style={styles.label}>Título do Livro *</Text>
+      <Text style={styles.label}>Título do Livro</Text>
       <TextInput
         style={styles.input}
         value={bookTitle}

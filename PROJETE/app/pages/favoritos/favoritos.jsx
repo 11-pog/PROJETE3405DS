@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, FlatList, Dimensions, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, FlatList, Dimensions, LayoutAnimation, Platform, UIManager, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { fetchLivrosMock } from '../../mocks/mockBooks';
+import { router, usePathname } from 'expo-router'
 import api from '../../functions/api';
 
 const { width } = Dimensions.get('window');
@@ -17,6 +18,7 @@ export default function Favoritos() {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(false)
   const [nextPage, setNextPage] = useState(null)
+  const path_back = usePathname()
 
   const fetchBooks = useCallback(async (url = "usuario/favoritos/") => {
     if (loading) return;
@@ -54,28 +56,36 @@ export default function Favoritos() {
 
   const renderBook = ({ item }) => (
     <View style={styles.card}>
-      {/* Capa */}
-      <Image source={{ uri: item.post_cover }} style={styles.image} />
+      <Pressable onPress={() => router.push({
+        pathname: '/pages/infoIsolado/infoisolado',
+        params: {
+          id: item.id,
+          path_back: path_back
+        }
+      })}>
+        {/* Capa */}
+        < Image source={{ uri: item.post_cover }} style={styles.image} />
 
-      {/* Texto */}
-      <Text style={styles.title} numberOfLines={2}>
-        {item.book_title} - {item.book_author}
-      </Text>
-      <Text style={styles.tipoAcao}>
-        {item.post_type === 'Troca' ? 'Empréstimo' : 'Troca'}
-      </Text>
+        {/* Texto */}
+        <Text style={styles.title} numberOfLines={2}>
+          {item.book_title} - {item.book_author}
+        </Text>
+        <Text style={styles.tipoAcao}>
+          {item.post_type === 'Troca' ? 'Empréstimo' : 'Troca'}
+        </Text>
 
-      {/* Ações */}
-      <View style={styles.actions}>
-        <TouchableOpacity onPress={() => removeFavorite(item.id)} style={styles.actionBtn}>
-          <Ionicons name="heart" size={20} color="#9e2a2b" />
-        </TouchableOpacity>
+        {/* Ações */}
+        <View style={styles.actions}>
+          <TouchableOpacity onPress={() => removeFavorite(item.id)} style={styles.actionBtn}>
+            <Ionicons name="heart" size={20} color="#9e2a2b" />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => console.log('Ir para chat')} style={styles.actionBtn}>
-          <Ionicons name="chatbubble-ellipses-outline" size={20} color="#E09F3E" />
-        </TouchableOpacity>
-      </View>
-    </View>
+          <TouchableOpacity onPress={() => console.log('Ir para chat')} style={styles.actionBtn}>
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#E09F3E" />
+          </TouchableOpacity>
+        </View>
+      </Pressable>
+    </View >
   );
 
 
@@ -123,7 +133,7 @@ const styles = StyleSheet.create({
     color: '#1c1c1c',
   },
   card: {
-    
+
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 10,

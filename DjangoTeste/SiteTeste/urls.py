@@ -60,8 +60,8 @@ urlpatterns = [
     # Livros / Publicações
     path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
     path('api/livros/cadastrar/', CadastrarLivro.as_view(), name='cadastrar-livro'),
-    path('api/livros/<int:book_id>/editar/', EditarLivro.as_view(), name='editar-livro'),
     path('api/livros/<int:book_id>/', BookDetailView.as_view()),
+    path('api/livros/<int:book_id>/editar/', EditarLivro.as_view(), name='editar-livro'),
     path('api/livros/<int:book_id>/author/', GetBookAuthor.as_view(), name='book-author'),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view(), name="favoritar-livro"),
     path('api/search/livros/', pesquisadelivro.as_view(), name="pesquisa-livros"),

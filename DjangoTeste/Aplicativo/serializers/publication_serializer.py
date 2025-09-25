@@ -33,14 +33,7 @@ class PublicationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CreatePublicationSerializer(serializers.ModelSerializer):
-    book_author = serializers.CharField(required=False, allow_blank=True)
-    book_publisher = serializers.CharField(required=False, allow_blank=True)
-    book_publication_date = serializers.DateField(required=False, allow_null=True)
-    book_description = serializers.CharField(required=False, allow_blank=True)
-    post_location_city = serializers.CharField(required=False, allow_blank=True)
-    post_type = serializers.CharField(required=False)
-    
+class CreatePublicationSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Publication
         fields = [
@@ -49,8 +42,9 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_publisher",
             "book_publication_date",
             "book_description",
+            "post_creator",
             "post_location_city",
-            "post_type"
+            "post_type",
         ]
     
     def create(self, validated_data):

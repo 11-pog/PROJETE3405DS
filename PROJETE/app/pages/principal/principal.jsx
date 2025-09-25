@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
-import { router } from 'expo-router'
+import { router, usePathname } from 'expo-router'
 import api from '../../functions/api'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useFocusEffect } from '@react-navigation/native'
@@ -15,9 +15,11 @@ export default function FeedLivros() {
   const [isSearching, setIsSearching] = useState(false); // para indicar se o usuário está no modo busca
   const [refreshing, setRefreshing] = useState(false);
   const { notifications } = useNotifications();
+  const path_back = usePathname()
 
   // Funções de busca com useCallback para evitar re-renders
   const performSearch = useCallback(async (query) => {
+
     console.log("Iniciando busca para:", query);
     setIsSearching(true);
     setLoading(true);
@@ -26,9 +28,9 @@ export default function FeedLivros() {
       const response = await api.post('search/livros/', {
         book_title: query
       });
-      
+
       console.log("Resultado da busca:", response.data);
-      
+
       if (response.data.livros) {
         const searchResults = response.data.livros.map(book => ({
           ...book,
@@ -49,7 +51,7 @@ export default function FeedLivros() {
     console.log("Resetando para feed normal");
     setIsSearching(false);
     setLoading(true);
-    
+
     try {
       const response = await api.get("livros/feed/");
       if (response.data?.results) {
@@ -97,11 +99,11 @@ export default function FeedLivros() {
   // useEffect para busca em tempo real
   useEffect(() => {
     console.log("searchQuery mudou:", searchQuery);
-    
+
     // Cancela timeout anterior se existir
     const timeoutId = setTimeout(() => {
       console.log("Executando busca para:", searchQuery);
-      
+
       if (searchQuery.trim().length > 0) {
         performSearch(searchQuery);// Busca em tempo real
 
@@ -162,7 +164,7 @@ export default function FeedLivros() {
       const response = await api.post('pesquisadelivro/', {
         book_title: searchQuery
       });
-      
+
       if (response.data.livros) {
         // Usa os dados da busca diretamente
         const searchResults = response.data.livros.map(book => ({
@@ -202,7 +204,7 @@ export default function FeedLivros() {
     if (willBeSaved) {
       api.post(endpoint).catch(error => {
         console.error('Erro ao favoritar:', error);
-        
+
         // Se o livro não existe mais (404), remove da lista
         if (error.response?.status === 404) {
           setBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
@@ -243,12 +245,16 @@ export default function FeedLivros() {
         {/* Título e tipo */}
         <View style={styles.content}>
           <Pressable
-            onPress={() => router.push({
-              pathname: '/pages/infoIsolado/infoisolado',
-              params: {
-                id: item.id
+            onPress={() =>
+              router.push({
+                pathname: '/pages/infoIsolado/infoisolado',
+                params: {
+                  id: item.id,
+                  path_back: path_back
+                }
               }
-            })}
+              )
+            }
           >
             <Text style={styles.title}>
               {item.book_title} - {item.book_author}
@@ -278,7 +284,7 @@ export default function FeedLivros() {
             />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.commentBtn}
             onPress={async () => {
               try {
@@ -286,12 +292,12 @@ export default function FeedLivros() {
                 const response = await api.get(`livros/${item.id}/author/`);
                 console.log('Resposta da API:', response.data);
                 const authorUsername = response.data.author_username;
-                
+
                 if (!authorUsername) {
                   console.error('Autor não encontrado!');
                   return;
                 }
-                
+
                 console.log('Navegando para chat com:', authorUsername);
                 router.push({
                   pathname: '/pages/chat/privatechat',
@@ -316,8 +322,8 @@ export default function FeedLivros() {
     <View style={styles.container}>
       {/* Botão para limpar busca */}
       {isSearching && (
-        <TouchableOpacity 
-          style={{backgroundColor: '#9e2a2b', padding: 8, margin: 10, borderRadius: 5}}
+        <TouchableOpacity
+          style={{ backgroundColor: '#9e2a2b', padding: 8, margin: 10, borderRadius: 5 }}
           onPress={() => {
             setSearchQuery('');
             setBooks([]);
@@ -325,10 +331,10 @@ export default function FeedLivros() {
             fetchBooks();
           }}
         >
-          <Text style={{color: 'white', textAlign: 'center', fontSize: 12}}>Limpar busca</Text>
+          <Text style={{ color: 'white', textAlign: 'center', fontSize: 12 }}>Limpar busca</Text>
         </TouchableOpacity>
       )}
-      
+
       {/* Campo de pesquisa no topo */}
       <View style={styles.pesquisarArea}>
         <TextInput
