@@ -40,7 +40,7 @@ class Publication(models.Model):
         upload_to='thumbnails/',
         default='defaults/default_thumbnail.png'
         )
-    post_location_city   = models.CharField(max_length=100, verbose_name= "Post City")
+    post_location_city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
     
     

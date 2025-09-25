@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import api from '../../functions/api';
+import MeuInput from '../../functions/textBox'
 
 export default function EditarPublicacao() {
   const [bookTitle, setBookTitle] = useState('');
@@ -68,7 +69,7 @@ export default function EditarPublicacao() {
       <Text style={styles.title}>Editar Livro</Text>
 
       <Text style={styles.label}>Título do Livro</Text>
-      <TextInput
+      <MeuInput
         style={styles.input}
         value={bookTitle}
         onChangeText={setBookTitle}
@@ -76,7 +77,7 @@ export default function EditarPublicacao() {
       />
 
       <Text style={styles.label}>Autor</Text>
-      <TextInput
+      <MeuInput
         style={styles.input}
         value={bookAuthor}
         onChangeText={setBookAuthor}
@@ -84,7 +85,7 @@ export default function EditarPublicacao() {
       />
 
       <Text style={styles.label}>Editora</Text>
-      <TextInput
+      <MeuInput
         style={styles.input}
         value={bookPublisher}
         onChangeText={setBookPublisher}
@@ -92,7 +93,7 @@ export default function EditarPublicacao() {
       />
 
       <Text style={styles.label}>Descrição</Text>
-      <TextInput
+      <MeuInput
         style={[styles.input, styles.textArea]}
         value={bookDescription}
         onChangeText={setBookDescription}
@@ -134,24 +135,16 @@ const styles = StyleSheet.create({
     marginTop: 15,
     color: '#333',
   },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-  },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
   saveButton: {
-    backgroundColor: '#335c67',
-    borderRadius: 10,
-    padding: 15,
-    marginTop: 30,
-    marginBottom: 50,
+   backgroundColor: "#335C67",
+    borderRadius: 50,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    marginVertical: 10,
   },
   disabledButton: {
     backgroundColor: '#ccc',

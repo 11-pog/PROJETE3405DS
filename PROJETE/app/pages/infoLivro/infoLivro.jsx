@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View,Text, TouchableOpacity,StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS,} from "react-native";
+import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS, Picker} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -256,6 +256,13 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+
+      
+          <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
+          <Picker.Item label="Troca" value="troca" />
+          <Picker.Item label="Empréstimo" value="emprestimo" />
+          </Picker>
+
 
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
