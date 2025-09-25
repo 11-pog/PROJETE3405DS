@@ -26,6 +26,7 @@ from Aplicativo.views.external_api_views import ISBNLookup
 from Aplicativo.views.usuario_views import UserView, UploadUserImage, ListUsers, SearchUser
 from Aplicativo.views.publication_views import (
     CadastrarLivro,
+    EditarLivro,
     pesquisadelivro,
     GetBookList,
     FavoritePostView,
@@ -35,7 +36,10 @@ from Aplicativo.views.publication_views import (
 )
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
 from Aplicativo.views.chat_views import PrivateChat
-from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink
+from Aplicativo.views.chat_author_view import GetBookAuthor
+from Aplicativo.views.chat_message_view import SendChatMessage
+from Aplicativo.views.test_auth import TestAuth
+from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink, RateLoanCare, RequestLoan, GetUserBooks, AcceptLoan, RejectLoan
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -56,14 +60,23 @@ urlpatterns = [
     # Livros / Publicações
     path('api/livros/feed/', GetBookList.as_view(), name='listar-livros'),
     path('api/livros/cadastrar/', CadastrarLivro.as_view(), name='cadastrar-livro'),
+    path('api/livros/<int:book_id>/editar/', EditarLivro.as_view(), name='editar-livro'),
     path('api/livros/<int:book_id>/', BookDetailView.as_view()),
+    path('api/livros/<int:book_id>/author/', GetBookAuthor.as_view(), name='book-author'),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view(), name="favoritar-livro"),
     path('api/search/livros/', pesquisadelivro.as_view(), name="pesquisa-livros"),
     path('api/usuario/publicacoes/', GetMinhasPublicacoes.as_view(), name="minhas-publicacoes"),
 
     # Empréstimos
     path('api/emprestimos/criar/', CreateLoan.as_view(), name='create_loan'),
+    path('api/emprestimos/solicitar/', RequestLoan.as_view(), name='request_loan'),
+    path('api/emprestimos/aceitar/', AcceptLoan.as_view(), name='accept_loan'),
+    path('api/emprestimos/rejeitar/', RejectLoan.as_view(), name='reject_loan'),
     path('api/emprestimos/finalizar/', CompleteLoan.as_view(), name='complete_loan'),
+    path('api/emprestimos/avaliar/', RateLoanCare.as_view(), name='rate_loan_care'),
+    path('api/usuarios/<str:username>/livros/', GetUserBooks.as_view(), name='user_books'),
+    path('api/chat/enviar-mensagem/', SendChatMessage.as_view(), name='send_chat_message'),
+    path('api/test-auth/', TestAuth.as_view(), name='test_auth'),
     path('api/usuario/<int:user_id>/perfil/', UserProfile.as_view(), name='user_profile'),
     path('api/chat/gerar-link/', GenerateChatLink.as_view(), name='generate_chat_link'),
 

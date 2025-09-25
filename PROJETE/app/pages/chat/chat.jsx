@@ -41,7 +41,7 @@ export default function WebSocketTest() {
     if (!user?.username || !chatPartner) return;
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.0.105:8000/ws/private/${user.username}/${chatPartner}/`;
+    const wsUrl = `ws://localhost:8000/ws/private/${user.username}/${chatPartner}/`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {

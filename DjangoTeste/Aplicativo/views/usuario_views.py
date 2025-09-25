@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
+from datetime import datetime
 from Aplicativo.models.user_models import Usuario
 from Aplicativo.models.publication_models import Loan, BookCareRating, Publication
 from rest_framework.permissions import IsAuthenticated
@@ -181,18 +182,20 @@ class CreateLoan(APIView):
     
     def post(self, request):
         publication_id = request.data.get('publication_id')
-        borrower_id = request.data.get('borrower_id')
+        borrower_username = request.data.get('borrower_username')
         expected_return_date = request.data.get('expected_return_date')
+        meeting_location = request.data.get('meeting_location', '')
         
         try:
             publication = Publication.objects.get(id=publication_id)
-            borrower = Usuario.objects.get(id=borrower_id)
+            borrower = Usuario.objects.get(username=borrower_username)
             
             loan = Loan.objects.create(
                 publication=publication,
                 lender=request.user,
                 borrower=borrower,
-                expected_return_date=expected_return_date
+                expected_return_date=expected_return_date,
+                notes=meeting_location
             )
             
             return Response({
@@ -224,7 +227,29 @@ class CompleteLoan(APIView):
                 comments=comments
             )
             
-            return Response({'message': 'Empréstimo finalizado e avaliado!'}, status=200)
+            # Sistema de pontos baseado no tipo de publicação
+            post_type = loan.publication.post_type
+            
+            if post_type == 'doacao':
+                loan.lender.points += 150  # Dono ganha 150 pontos
+                loan.borrower.points += 50  # Quem recebe ganha 50 pontos
+            elif post_type == 'emprestimo':
+                # Calcular dias de empréstimo
+                days = (loan.actual_return_date.date() - loan.loan_date.date()).days
+                loan.lender.points += days * 10  # 10 pontos por dia
+                loan.borrower.points += 5  # 5 pontos fixos
+            elif post_type == 'troca':
+                loan.lender.points += 150  # Ambos ganham 150 pontos
+                loan.borrower.points += 150
+            
+            loan.lender.save()
+            loan.borrower.save()
+            
+            return Response({
+                'message': f'Empréstimo finalizado! Pontos concedidos ({post_type}).',
+                'lender_points': loan.lender.points,
+                'borrower_points': loan.borrower.points
+            }, status=200)
             
         except Exception as e:
             return Response({'error': str(e)}, status=400)
@@ -275,3 +300,151 @@ class GenerateChatLink(APIView):
             
         except Usuario.DoesNotExist:
             return Response({'error': 'Usuário não encontrado'}, status=404)
+
+
+class RateLoanCare(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        loan_id = request.data.get('loan_id')
+        care_rating = request.data.get('care_rating')
+        comments = request.data.get('comments', '')
+        
+        try:
+            loan = Loan.objects.get(id=loan_id, lender=request.user)
+            
+            rating, created = BookCareRating.objects.get_or_create(
+                loan=loan,
+                defaults={
+                    'care_rating': care_rating,
+                    'comments': comments
+                }
+            )
+            
+            if not created:
+                rating.care_rating = care_rating
+                rating.comments = comments
+                rating.save()
+            
+            return Response({'message': 'Avaliação salva com sucesso!'}, status=200)
+            
+        except Loan.DoesNotExist:
+            return Response({'error': 'Empréstimo não encontrado'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+
+class RequestLoan(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        publication_id = request.data.get('publication_id')
+        owner_username = request.data.get('owner_username')
+        expected_return_date = request.data.get('expected_return_date')
+        meeting_location = request.data.get('meeting_location', '')
+        meeting_date = request.data.get('meeting_date', '')
+        
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            
+            publication = Publication.objects.get(id=publication_id)
+            owner = Usuario.objects.get(username=owner_username)
+            
+            loan = Loan.objects.create(
+                publication=publication,
+                lender=owner,
+                borrower=request.user,
+                expected_return_date=expected_return_date,
+                notes=meeting_location,
+                status='pending'
+            )
+            
+            # Enviar mensagem automática no chat
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                users = sorted([request.user.username, owner_username])
+                room_group_name = f'private_chat_{users[0]}_{users[1]}'
+                
+                message = f"📚 Solicitação de empréstimo para '{publication.book_title}'. Encontro: {meeting_date or 'Não informado'} em {meeting_location or 'Local não informado'}. Devolução: {expected_return_date}. ID: {loan.id}"
+                
+                async_to_sync(channel_layer.group_send)(
+                    room_group_name,
+                    {
+                        'type': 'private_message',
+                        'message': message,
+                        'sender': request.user.username,
+                        'loan_id': loan.id
+                    }
+                )
+            
+            return Response({
+                'message': 'Solicitação enviada com sucesso!',
+                'loan_id': loan.id,
+                'redirect_to_chat': True,
+                'chat_partner': owner_username
+            }, status=201)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+
+class GetUserBooks(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, username):
+        try:
+            user = Usuario.objects.get(username=username)
+            publications = Publication.objects.filter(post_creator=user)
+            
+            books_data = []
+            for pub in publications:
+                books_data.append({
+                    'id': pub.id,
+                    'book_title': pub.book_title,
+                    'book_author': pub.book_author,
+                    'book_description': pub.book_description,
+                    'post_type': pub.post_type
+                })
+            
+            return Response({
+                'results': books_data,
+                'count': len(books_data)
+            })
+            
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=404)
+
+
+class AcceptLoan(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        loan_id = request.data.get('loan_id')
+        
+        try:
+            loan = Loan.objects.get(id=loan_id, lender=request.user, status='pending')
+            loan.status = 'accepted'
+            loan.save()
+            
+            return Response({'message': 'Empréstimo aceito!'}, status=200)
+            
+        except Loan.DoesNotExist:
+            return Response({'error': 'Empréstimo não encontrado'}, status=404)
+
+
+class RejectLoan(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        loan_id = request.data.get('loan_id')
+        
+        try:
+            loan = Loan.objects.get(id=loan_id, lender=request.user, status='pending')
+            loan.status = 'rejected'
+            loan.save()
+            
+            return Response({'message': 'Empréstimo rejeitado!'}, status=200)
+            
+        except Loan.DoesNotExist:
+            return Response({'error': 'Empréstimo não encontrado'}, status=404)
