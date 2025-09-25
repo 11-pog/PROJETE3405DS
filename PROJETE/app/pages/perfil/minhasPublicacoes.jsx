@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   FlatList,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import api from '../../functions/api';
 
 export default function MinhasPublicacoes() {
@@ -21,13 +21,15 @@ export default function MinhasPublicacoes() {
   const [nextPage, setNextPage] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
 
+  const path_back = usePathname()
+
   const fetchMinhasPublicacoes = useCallback(async (url = 'usuario/publicacoes/') => {
     try {
       console.log("requisitando pata", url);
       const response = await api.get(url);
       console.log("resposta da api", response.data);
       if (response.data && response.data.results) {
-          console.log('Publicações encontradas:', response.data.results.length);
+        console.log('Publicações encontradas:', response.data.results.length);
         // Se é a primeira página, substitui. Se não, adiciona (paginação)
         if (url === 'usuario/publicacoes/') {
           setPublicacoes(response.data.results); // Substitui completamente
@@ -81,7 +83,7 @@ export default function MinhasPublicacoes() {
     console.log('Título do livro:', item.book_title);
     console.log('Criador da publicação:', item.post_creator);
     console.log('ID do criador:', item.post_creator_id);
-    
+
     Alert.alert(
       'Confirmar Exclusão',
       `Tem certeza que deseja excluir "${item.book_title}"?`,
@@ -118,10 +120,7 @@ export default function MinhasPublicacoes() {
                 pathname: '/pages/infoIsolado/infoisolado',
                 params: {
                   id: item.id,
-                  title: item.book_title,
-                  author: item.book_author,
-                  description: item.book_description,
-                  cover: item.post_cover,
+                  path_back: path_back
                 },
               })
             }
@@ -141,7 +140,7 @@ export default function MinhasPublicacoes() {
             <Ionicons name="create" size={22} color="#9e2a2b" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => handleDelete(item)}
             style={{ padding: 5 }}
           >
