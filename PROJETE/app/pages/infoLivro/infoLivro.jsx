@@ -1,17 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  StatusBar,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Platform,
-  ActionSheetIOS,
-} from "react-native";
+import { View,Text, TouchableOpacity,StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS,} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -19,7 +7,7 @@ import BarraInicial from "../../functions/barra_inicial";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import api from "../../functions/api";
+import api from '../../functions/api';
 
 export default function CadastroLivro() {
   const router = useRouter();
@@ -50,7 +38,7 @@ export default function CadastroLivro() {
   // salva livro no backend
   const SalvarLivro = async () => {
     try {
-      const response = await api.post("livros/cadastrar/", {
+      const response = await api.post('livros/cadastrar/', {
         book_title: titulo,
         book_author: autor,
         book_publisher: editora,
@@ -70,7 +58,7 @@ export default function CadastroLivro() {
         );
       }, 2000);
 
-      router.push("/pages/principal/principal");
+      router.push('/pages/principal/principal');
     } catch (error) {
       console.log("Erro completo:", error);
       if (error.response) {
