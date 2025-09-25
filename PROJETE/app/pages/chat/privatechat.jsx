@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useUser } from '../../hooks/useUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../functions/api';
 
 export default function PrivateChat() {
   const [messages, setMessages] = useState([]);
@@ -59,7 +60,7 @@ export default function PrivateChat() {
     loadMessages();
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.0.200:8001/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://localhost:8001/ws/private/${currentUser}/${chatPartner}/`;
     console.log('Tentando conectar WebSocket:', wsUrl);
     console.log('Usuários:', { currentUser, chatPartner });
     
@@ -73,7 +74,8 @@ export default function PrivateChat() {
           text: data.message,
           sender: data.sender,
           isMe: data.sender === currentUser,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          loanId: data.loan_id || null
         };
         
         setMessages(prev => {
@@ -126,6 +128,20 @@ export default function PrivateChat() {
     }
   };
 
+  const handleLoanResponse = async (loanId, action) => {
+    try {
+      const endpoint = action === 'accept' ? 'emprestimos/aceitar/' : 'emprestimos/rejeitar/';
+      await api.post(endpoint, { loan_id: loanId });
+      
+      const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
+      Alert.alert('Sucesso', message);
+      
+    } catch (error) {
+      console.error('Erro ao responder empréstimo:', error);
+      Alert.alert('Erro', 'Não foi possível processar a resposta');
+    }
+  };
+
   if (!user) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -173,27 +189,66 @@ export default function PrivateChat() {
           >
             <Text style={styles.senderName}>{msg.sender}</Text>
             <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
+            {msg.loanId && !msg.isMe && (
+              <View style={styles.loanButtons}>
+                <TouchableOpacity 
+                  style={styles.acceptButton}
+                  onPress={() => handleLoanResponse(msg.loanId, 'accept')}
+                >
+                  <Text style={styles.buttonText}>✓ Aceitar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.rejectButton}
+                  onPress={() => handleLoanResponse(msg.loanId, 'reject')}
+                >
+                  <Text style={styles.buttonText}>✗ Rejeitar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
 
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          value={inputMessage}
-          onChangeText={setInputMessage}
-          placeholder="Digite sua mensagem..."
-          multiline
-        />
         <TouchableOpacity 
-          style={[styles.sendButton, !isConnected && styles.sendButtonDisabled]} 
-          onPress={sendMessage}
-          disabled={!isConnected}
+          style={styles.loanButton}
+          onPress={() => {
+            console.log('Botão de empréstimo clicado!');
+            console.log('chatPartner:', chatPartner);
+            try {
+              router.push({
+                pathname: '/pages/emprestimo/criar',
+                params: {
+                  chatPartner: chatPartner
+                }
+              });
+              console.log('Navegação executada');
+            } catch (error) {
+              console.error('Erro na navegação:', error);
+            }
+          }}
         >
-          <Text style={styles.sendButtonText}>
-            {isConnected ? 'Enviar' : 'Conectando...'}
-          </Text>
+          <Text style={styles.loanButtonText}>📚 Solicitar Livro</Text>
         </TouchableOpacity>
+        
+        <View style={styles.messageInputRow}>
+          <TextInput
+            style={styles.textInput}
+            value={inputMessage}
+            onChangeText={setInputMessage}
+            placeholder="Digite sua mensagem..."
+            multiline
+          />
+          <TouchableOpacity 
+            style={[styles.sendButton, !isConnected && styles.sendButtonDisabled]} 
+            onPress={sendMessage}
+            disabled={!isConnected}
+          >
+            <Text style={styles.sendButtonText}>
+              {isConnected ? 'Enviar' : 'Conectando...'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -244,9 +299,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputContainer: {
-    flexDirection: 'row',
     padding: 10,
     backgroundColor: 'white',
+  },
+  loanButton: {
+    backgroundColor: '#E09F3E',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginBottom: 10,
+    alignSelf: 'center',
+  },
+  loanButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  messageInputRow: {
+    flexDirection: 'row',
     alignItems: 'flex-end',
   },
   textInput: {
@@ -270,6 +340,28 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  loanButtons: {
+    flexDirection: 'row',
+    marginTop: 8,
+    gap: 8,
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  rejectButton: {
+    backgroundColor: '#f44336',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
   },
 });

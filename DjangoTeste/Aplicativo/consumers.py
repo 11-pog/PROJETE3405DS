@@ -38,11 +38,17 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def private_message(self, event):
-        await self.send(text_data=json.dumps({
+        message_data = {
             'type': 'private_message',
             'message': event['message'],
             'sender': event['sender']
-        }))
+        }
+        
+        # Adicionar loan_id se existir
+        if 'loan_id' in event:
+            message_data['loan_id'] = event['loan_id']
+            
+        await self.send(text_data=json.dumps(message_data))
 
 class PublicationConsumer(AsyncWebsocketConsumer):
     async def connect(self):

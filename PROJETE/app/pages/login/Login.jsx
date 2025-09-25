@@ -5,6 +5,7 @@ import Botao from '../../functions/botoes'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import api from '../../functions/api'
+import axios from 'axios';
 
 export default function Login () {
   const [email, setEmail] = useState('')
@@ -12,12 +13,6 @@ export default function Login () {
   const [erro, setErro] = useState('')
   const [tentouLogin, setTentouLogin] = useState(false)
 
-  const limparTokens = async () => {
-    await AsyncStorage.removeItem('access')
-    await AsyncStorage.removeItem('refresh')
-    setErro('')
-    console.log('Tokens limpos')
-  }
 
   const fazerLogin = async () => {
     setTentouLogin(true)
@@ -109,18 +104,7 @@ label='Senha:'
         </Text>
       </Pressable>
 
-      <Pressable onPress={limparTokens}>
-        <Text
-          style={{
-            fontSize: 14,
-            color: '#666',
-            textAlign: 'center',
-            marginTop: 10
-          }}
-        >
-          Limpar dados salvos
-        </Text>
-      </Pressable>
+     
     </View>
   )
 }

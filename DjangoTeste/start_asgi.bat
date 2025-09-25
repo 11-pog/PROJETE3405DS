@@ -1,0 +1,3 @@
+@echo off
+echo Iniciando Django com suporte a WebSocket (ASGI)...
+daphne -b 0.0.0.0 -p 8000 SiteTeste.asgi:application

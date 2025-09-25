@@ -12,7 +12,7 @@ class PrivateChatService {
     this.chatPartner = chatPartner;
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.0.200:8001/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://localhost:8000/ws/private/${currentUser}/${chatPartner}/`;
     console.log('URL tentada:', wsUrl);
     this.ws = new WebSocket(wsUrl);
 

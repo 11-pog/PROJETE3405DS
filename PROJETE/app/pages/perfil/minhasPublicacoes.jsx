@@ -23,8 +23,11 @@ export default function MinhasPublicacoes() {
 
   const fetchMinhasPublicacoes = useCallback(async (url = 'usuario/publicacoes/') => {
     try {
+      console.log("requisitando pata", url);
       const response = await api.get(url);
+      console.log("resposta da api", response.data);
       if (response.data && response.data.results) {
+          console.log('Publicações encontradas:', response.data.results.length);
         // Se é a primeira página, substitui. Se não, adiciona (paginação)
         if (url === 'usuario/publicacoes/') {
           setPublicacoes(response.data.results); // Substitui completamente
@@ -56,19 +59,26 @@ export default function MinhasPublicacoes() {
     setExcluindo(true);
     try {
       console.log('Fazendo requisição DELETE para:', `usuario/publicacoes/${item.id}/delete/`);
-      await api.delete(`usuario/publicacoes/${item.id}/delete/`);
+      const response = await api.delete(`usuario/publicacoes/${item.id}/delete/`);
+      console.log('Resposta da API:', response.data);
       setPublicacoes((prev) => prev.filter((pub) => pub.id !== item.id));
       console.log('Publicação excluída com sucesso');
+      Alert.alert('Sucesso', 'Publicação excluída com sucesso!');
     } catch (error) {
-      console.error('Erro ao excluir publicação:', error.response?.data || error);
-      Alert.alert('Erro', 'Não foi possível excluir esta publicação.');
+      console.error('Erro ao excluir publicação:', error);
+      console.error('Detalhes do erro:', error.response?.data);
+      console.error('Status do erro:', error.response?.status);
+      Alert.alert('Erro', `Não foi possível excluir esta publicação. ${error.response?.data?.error || error.message}`);
     } finally {
       setExcluindo(false);
     }
   }
 
   function handleDelete(item) {
+    console.log('=== HANDLE DELETE INICIADO ===');
     console.log('handleDelete chamado para item:', item);
+    console.log('ID do item:', item.id);
+    console.log('Título do livro:', item.book_title);
     console.log('Criador da publicação:', item.post_creator);
     console.log('ID do criador:', item.post_creator_id);
     
@@ -78,16 +88,12 @@ export default function MinhasPublicacoes() {
       [
         {
           text: 'Cancelar',
-          style: 'cancel',
-          onPress: () => console.log('Usuário cancelou exclusão')
+          style: 'cancel'
         },
         {
           text: 'Excluir',
           style: 'destructive',
-          onPress: () => {
-            console.log('Usuário confirmou exclusão');
-            confirmDelete(item);
-          }
+          onPress: () => confirmDelete(item)
         }
       ]
     );
@@ -96,7 +102,7 @@ export default function MinhasPublicacoes() {
   function handleEdit(item) {
     router.push({
       pathname: '/pages/perfil/editarPublicacao',
-      params: { id: item.id },
+      params: { bookId: item.id },
     });
   }
 
@@ -135,10 +141,10 @@ export default function MinhasPublicacoes() {
             <Ionicons name="create" size={22} color="#9e2a2b" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => {
-            console.log('Botão de lixeira clicado');
-            handleDelete(item);
-          }}>
+          <TouchableOpacity 
+            onPress={() => handleDelete(item)}
+            style={{ padding: 5 }}
+          >
             <Ionicons name="trash" size={22} color="#9e2a2b" />
           </TouchableOpacity>
         </View>
