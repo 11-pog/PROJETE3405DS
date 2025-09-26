@@ -188,10 +188,13 @@ export default function InfoIsolado() {
             <Text style={{ color: "#9e2a2b", marginBottom: 4 }}>
               {creator.username}
             </Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-              <Text style={{ backgroundColor: "#e09f3e", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, margin: 4 }}>
-                {book.post_type}
-              </Text>
+            <View style={{ flexDirection: "column", flexWrap: "wrap" }}>
+              <Text style={{ fontWeight: "bold", color: "#335c67" }}>
+              Disponível para:
+            </Text>
+            <Text style={{ color: "#9e2a2b", marginBottom: 4 }}>
+             {book.post_type}
+            </Text>   
             </View>
           </View>
         </View>
@@ -201,10 +204,12 @@ export default function InfoIsolado() {
               fontWeight: "bold",
               fontSize: 16,
               color: "#335c67",
-              marginBottom: 6,
+              marginBottom: 5,
+              alignSelf: "center",
+              marginVertical: 10
             }}
           >
-            Avalie:
+            Avalie esta publicação:
           </Text>
           <View style={{ flexDirection: "row", marginVertical: 10, justifyContent: "center", }}>
             {[1, 2, 3, 4, 5].map((star) => (

@@ -35,7 +35,7 @@ export default function Perfil() {
       allowsEditing: true,
       aspect: [1, 1], // square crop
       quality: 1
-    })
+    }) //essa parte aqui abre a galeria no celular e o explorador de arquivos no pc
 
     if (pickerResult.canceled) return
 
@@ -120,7 +120,6 @@ export default function Perfil() {
       <Botao
         texto='Meus pontos'
         aoApertar={() => {
-          console.log('Clicou em Meus pontos');
           router.push('/pages/perfil/meusPontos');
         }} />
       <Botao
