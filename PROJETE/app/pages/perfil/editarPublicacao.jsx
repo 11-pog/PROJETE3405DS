@@ -61,7 +61,6 @@ export default function EditarPublicacao() {
       setLoading(false);
     }
 
-    router.push("pages/perfil/minhasPublicacoes")
   };
 
   return (

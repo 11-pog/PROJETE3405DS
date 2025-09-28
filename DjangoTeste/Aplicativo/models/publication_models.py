@@ -38,7 +38,7 @@ class Publication(models.Model):
     # Book stuff
     book_title = models.CharField(max_length=255, verbose_name= "Book Title")
     book_author = models.CharField(max_length=255, verbose_name= "Book Author", blank=True, null=True)
-    book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank= True)
+    book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank=True, null=True)
     book_publication_date = models.DateField(blank=True, null=True, verbose_name="Book Publication Year")
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
     book_genre = models.CharField(

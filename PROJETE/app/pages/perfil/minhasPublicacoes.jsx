@@ -60,8 +60,10 @@ export default function MinhasPublicacoes() {
     }
     setExcluindo(true);
     try {
-      console.log('Fazendo requisição DELETE para:', `usuario/publicacoes/${item.id}/delete/`);
-      const response = await api.delete(`usuario/publicacoes/${item.id}/delete/`);
+      const deleteUrl = `usuario/publicacoes/${item.id}/delete/`;
+      console.log('Fazendo requisição DELETE para:', deleteUrl);
+      console.log('URL completa será:', api.defaults.baseURL + deleteUrl);
+      const response = await api.delete(deleteUrl);
       console.log('Resposta da API:', response.data);
       setPublicacoes((prev) => prev.filter((pub) => pub.id !== item.id));
       console.log('Publicação excluída com sucesso');
@@ -77,28 +79,9 @@ export default function MinhasPublicacoes() {
   }
 
   function handleDelete(item) {
-    console.log('=== HANDLE DELETE INICIADO ===');
-    console.log('handleDelete chamado para item:', item);
-    console.log('ID do item:', item.id);
-    console.log('Título do livro:', item.book_title);
-    console.log('Criador da publicação:', item.post_creator);
-    console.log('ID do criador:', item.post_creator_id);
-
-    Alert.alert(
-      'Confirmar Exclusão',
-      `Tem certeza que deseja excluir "${item.book_title}"?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel'
-        },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: () => confirmDelete(item)
-        }
-      ]
-    );
+    if (confirm(`Excluir "${item.book_title}"?`)) {
+      confirmDelete(item);
+    }
   }
   
   function handleEdit(item) {

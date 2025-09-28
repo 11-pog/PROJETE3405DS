@@ -362,6 +362,41 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     textAlign: "center",
   },
+  tipoContainer: {
+    marginVertical: 15,
+    paddingHorizontal: 20,
+  },
+  tipoLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  tipoButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  tipoButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E09F3E',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  tipoButtonSelected: {
+    backgroundColor: '#E09F3E',
+  },
+  tipoButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E09F3E',
+  },
+  tipoButtonTextSelected: {
+    color: '#fff',
+  },
   captureButton: {
     position: "absolute",
     bottom: 40,
