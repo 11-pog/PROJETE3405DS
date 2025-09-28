@@ -36,16 +36,23 @@ class PublicationSerializer(serializers.ModelSerializer):
 class CreatePublicationSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Publication
+        #removido o post creator pois no front não estamos enviando, isso que estava dando erro de badrequest#
         fields = [
             "book_title",
             "book_author",
             "book_publisher",
             "book_publication_date",
             "book_description",
-            "post_creator",
             "post_location_city",
             "post_type",
         ]
+    
+    def to_internal_value(self, data):
+        # Limpa campos vazios antes da validação
+        data = data.copy()
+        if 'book_publication_date' in data and data['book_publication_date'] == '':
+            del data['book_publication_date']
+        return super().to_internal_value(data)
     
     def create(self, validated_data):
         user = self.context['request'].user

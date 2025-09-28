@@ -18,7 +18,7 @@ export default function CadastroLivro() {
   const [editora, setEditora] = useState("");
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [tipo, setTipo] = useState("troca");
+  const [tipo, setTipo] = useState("emprestimo");
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
@@ -257,11 +257,40 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
 
-      
-          <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
-          <Picker.Item label="Troca" value="troca" />
-          <Picker.Item label="Empréstimo" value="emprestimo" />
-          </Picker>
+        <View style={styles.tipoContainer}>
+          <Text style={styles.tipoLabel}>Tipo de Publicação:</Text>
+          <View style={styles.tipoButtons}>
+            <TouchableOpacity
+              style={[
+                styles.tipoButton,
+                tipo === "emprestimo" && styles.tipoButtonSelected
+              ]}
+              onPress={() => setTipo("emprestimo")}
+            >
+              <Text style={[
+                styles.tipoButtonText,
+                tipo === "emprestimo" && styles.tipoButtonTextSelected
+              ]}>
+                Empréstimo
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.tipoButton,
+                tipo === "troca" && styles.tipoButtonSelected
+              ]}
+              onPress={() => setTipo("troca")}
+            >
+              <Text style={[
+                styles.tipoButtonText,
+                tipo === "troca" && styles.tipoButtonTextSelected
+              ]}>
+                Troca
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
 
         <View style={styles.starsContainer}>
@@ -331,6 +360,41 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 5,
     textAlign: "center",
+  },
+  tipoContainer: {
+    marginVertical: 15,
+    paddingHorizontal: 20,
+  },
+  tipoLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  tipoButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  tipoButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E09F3E',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  tipoButtonSelected: {
+    backgroundColor: '#E09F3E',
+  },
+  tipoButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E09F3E',
+  },
+  tipoButtonTextSelected: {
+    color: '#fff',
   },
   captureButton: {
     position: "absolute",
