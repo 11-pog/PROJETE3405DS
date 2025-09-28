@@ -345,6 +345,9 @@ class RequestLoan(APIView):
         expected_return_date = request.data.get('expected_return_date')
         meeting_location = request.data.get('meeting_location', '')
         meeting_date = request.data.get('meeting_date', '')
+        request_type = request.data.get('request_type', 'emprestimo')
+        
+        print(f"🔍 DEBUG - Tipo de solicitação recebido: {request_type}")
         
         try:
             from channels.layers import get_channel_layer
@@ -353,14 +356,18 @@ class RequestLoan(APIView):
             publication = Publication.objects.get(id=publication_id)
             owner = Usuario.objects.get(username=owner_username)
             
+            # Salvar o tipo de solicitação no campo notes
             loan = Loan.objects.create(
                 publication=publication,
                 lender=owner,
                 borrower=request.user,
                 expected_return_date=expected_return_date,
-                notes=meeting_location,
+                notes=f"Local: {meeting_location} | Tipo: {request_type}",
                 status='pending'
             )
+            
+            # Adicionar o tipo como atributo temporário
+            loan.request_type = request_type
             
             # Enviar mensagem automática no chat
             channel_layer = get_channel_layer()
@@ -368,7 +375,15 @@ class RequestLoan(APIView):
                 users = sorted([request.user.username, owner_username])
                 room_group_name = f'private_chat_{users[0]}_{users[1]}'
                 
-                message = f"📚 Solicitação de empréstimo para '{publication.book_title}'. Encontro: {meeting_date or 'Não informado'} em {meeting_location or 'Local não informado'}. Devolução: {expected_return_date}. ID: {loan.id}"
+                # Forçar o tipo baseado no request_type
+                if request_type == 'troca':
+                    tipo_texto = 'TROCA'
+                    emoji_tipo = '🔄'
+                else:
+                    tipo_texto = 'EMPRÉSTIMO'
+                    emoji_tipo = '📚'
+                
+                message = f"{emoji_tipo} SOLICITAÇÃO DE {tipo_texto}\n\n📖 Livro: {publication.book_title}\n👤 Autor: {publication.book_author or 'Não informado'}\n📍 Local de encontro: {meeting_location or 'Não informado'}\n📅 Data do encontro: {meeting_date or 'Não informado'}\n🔄 Data de devolução: {expected_return_date}\n\nTipo: {request_type.upper()}\n\n💬 Clique nos botões abaixo para responder:"
                 
                 async_to_sync(channel_layer.group_send)(
                     room_group_name,
@@ -429,7 +444,56 @@ class AcceptLoan(APIView):
             loan.status = 'accepted'
             loan.save()
             
-            return Response({'message': 'Empréstimo aceito!'}, status=200)
+            # Sistema de gamificação - pontos por aceitar empréstimo
+            post_type = loan.publication.post_type
+            lender_points = 0
+            borrower_points = 0
+            
+            if post_type == 'emprestimo':
+                lender_points = 50  # Quem empresta ganha 50 pontos
+                borrower_points = 25  # Quem pega emprestado ganha 25 pontos
+            elif post_type == 'troca':
+                lender_points = 75  # Ambos ganham 75 pontos na troca
+                borrower_points = 75
+            
+            # Adicionar pontos aos usuários
+            loan.lender.points += lender_points
+            loan.borrower.points += borrower_points
+            loan.lender.save()
+            loan.borrower.save()
+            
+            # Enviar mensagem automática no chat sobre os pontos
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                users = sorted([loan.lender.username, loan.borrower.username])
+                room_group_name = f'private_chat_{users[0]}_{users[1]}'
+                
+                points_message = f"🎉 EMPRÉSTIMO ACEITO!\n\n🎯 Pontos ganhos:\n• {loan.lender.username}: +{lender_points} pontos\n• {loan.borrower.username}: +{borrower_points} pontos"
+                
+                async_to_sync(channel_layer.group_send)(
+                    room_group_name,
+                    {
+                        'type': 'private_message',
+                        'message': points_message,
+                        'sender': 'Sistema'
+                    }
+                )
+            
+            return Response({
+                'message': f'Empréstimo aceito! 🎉',
+                'points_earned': {
+                    'lender': lender_points,
+                    'borrower': borrower_points
+                },
+                'total_points': {
+                    'lender': loan.lender.points,
+                    'borrower': loan.borrower.points
+                },
+                'post_type': post_type
+            }, status=200)
             
         except Loan.DoesNotExist:
             return Response({'error': 'Empréstimo não encontrado'}, status=404)
@@ -446,7 +510,10 @@ class RejectLoan(APIView):
             loan.status = 'rejected'
             loan.save()
             
-            return Response({'message': 'Empréstimo rejeitado!'}, status=200)
+            return Response({
+                'message': 'Empréstimo rejeitado! ❌',
+                'status': 'rejected'
+            }, status=200)
             
         except Loan.DoesNotExist:
             return Response({'error': 'Empréstimo não encontrado'}, status=404)

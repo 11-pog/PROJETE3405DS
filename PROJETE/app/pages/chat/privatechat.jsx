@@ -9,6 +9,8 @@ export default function PrivateChat() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [respondedLoans, setRespondedLoans] = useState(new Set());
+  const [loanResponses, setLoanResponses] = useState(new Map()); // Map para guardar accept/reject
   const scrollViewRef = useRef();
   const socketRef = useRef(null);
   const params = useLocalSearchParams();
@@ -60,7 +62,7 @@ export default function PrivateChat() {
     loadMessages();
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://localhost:8001/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.0.105:8000/ws/private/${currentUser}/${chatPartner}/`;
     console.log('Tentando conectar WebSocket:', wsUrl);
     console.log('Usuários:', { currentUser, chatPartner });
     
@@ -131,10 +133,20 @@ export default function PrivateChat() {
   const handleLoanResponse = async (loanId, action) => {
     try {
       const endpoint = action === 'accept' ? 'emprestimos/aceitar/' : 'emprestimos/rejeitar/';
-      await api.post(endpoint, { loan_id: loanId });
+      const response = await api.post(endpoint, { loan_id: loanId });
       
-      const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
-      Alert.alert('Sucesso', message);
+      // Marcar como respondido e salvar o tipo de resposta
+      setRespondedLoans(prev => new Set([...prev, loanId]));
+      setLoanResponses(prev => new Map([...prev, [loanId, action]]));
+      
+      if (action === 'accept' && response.data.points_earned) {
+        const { points_earned } = response.data;
+        const message = `🎉 Empréstimo aceito!\n\n🎯 Pontos ganhos:\n• Você: +${points_earned.lender} pontos\n• Solicitante: +${points_earned.borrower} pontos`;
+        Alert.alert('🎉 Sucesso!', message);
+      } else {
+        const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
+        Alert.alert('Sucesso', message);
+      }
       
     } catch (error) {
       console.error('Erro ao responder empréstimo:', error);
@@ -189,7 +201,7 @@ export default function PrivateChat() {
           >
             <Text style={styles.senderName}>{msg.sender}</Text>
             <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
-            {msg.loanId && !msg.isMe && (
+            {msg.loanId && !msg.isMe && !respondedLoans.has(msg.loanId) && (
               <View style={styles.loanButtons}>
                 <TouchableOpacity 
                   style={styles.acceptButton}
@@ -203,6 +215,19 @@ export default function PrivateChat() {
                 >
                   <Text style={styles.buttonText}>✗ Rejeitar</Text>
                 </TouchableOpacity>
+              </View>
+            )}
+            {msg.loanId && !msg.isMe && respondedLoans.has(msg.loanId) && (
+              <View style={[
+                styles.respondedContainer,
+                loanResponses.get(msg.loanId) === 'reject' && styles.rejectedContainer
+              ]}>
+                <Text style={[
+                  styles.respondedText,
+                  loanResponses.get(msg.loanId) === 'reject' && styles.rejectedText
+                ]}>
+                  {loanResponses.get(msg.loanId) === 'accept' ? '✓ Solicitação aceita' : '✗ Solicitação rejeitada'}
+                </Text>
               </View>
             )}
           </View>
@@ -363,5 +388,23 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  respondedContainer: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#e8f5e8',
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  respondedText: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  rejectedContainer: {
+    backgroundColor: '#ffeaea',
+  },
+  rejectedText: {
+    color: '#f44336',
   },
 });

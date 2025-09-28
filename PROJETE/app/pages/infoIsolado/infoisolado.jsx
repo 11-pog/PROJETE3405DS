@@ -193,7 +193,7 @@ export default function InfoIsolado() {
               Disponível para:
             </Text>
             <Text style={{ color: "#9e2a2b", marginBottom: 4 }}>
-             {book.post_type}
+             {book.post_type === 'emprestimo' ? 'Empréstimo' : book.post_type === 'troca' ? 'Troca' : book.post_type}
             </Text>   
             </View>
           </View>

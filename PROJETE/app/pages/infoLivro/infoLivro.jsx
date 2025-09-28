@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS, Picker} from "react-native";
+import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -18,7 +18,7 @@ export default function CadastroLivro() {
   const [editora, setEditora] = useState("");
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [tipo, setTipo] = useState("troca");
+  const [tipo, setTipo] = useState("emprestimo");
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
@@ -37,16 +37,19 @@ export default function CadastroLivro() {
 
   // salva livro no backend
   const SalvarLivro = async () => {
+    const dados = {
+      book_title: titulo,
+      book_author: autor,
+      book_publisher: editora,
+      book_description: descricao,
+      post_type: tipo,
+      post_location_city: "São Paulo",
+    };
+    
+    console.log('📝 Dados sendo enviados:', dados);
+    
     try {
-      const response = await api.post('livros/cadastrar/', {
-        book_title: titulo,
-        book_author: autor,
-        book_publisher: editora,
-        book_publication_date: data,
-        book_description: descricao,
-        post_type: tipo,
-        post_location_city: "São Paulo",
-      });
+      const response = await api.post('livros/cadastrar/', dados);
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
 
@@ -61,6 +64,10 @@ export default function CadastroLivro() {
       router.push('/pages/principal/principal');
     } catch (error) {
       console.log("Erro completo:", error);
+      console.log('❌ Erro response.data:', error.response?.data);
+      console.log('❌ Erro post_creator:', error.response?.data?.post_creator);
+      console.log('❌ Erro status:', error.response?.status);
+      
       if (error.response) {
         let errorMessage = "Erro desconhecido";
         if (error.response.status === 500) {
@@ -257,11 +264,34 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
 
-      
-          <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
-          <Picker.Item label="Troca" value="troca" />
-          <Picker.Item label="Empréstimo" value="emprestimo" />
-          </Picker>
+        <Text style={styles.sectionTitle}>Tipo de publicação:</Text>
+        <View style={styles.typeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              tipo === 'emprestimo' && styles.selectedType
+            ]}
+            onPress={() => setTipo('emprestimo')}
+          >
+            <Text style={[
+              styles.typeText,
+              tipo === 'emprestimo' && styles.selectedTypeText
+            ]}>Empréstimo</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              tipo === 'troca' && styles.selectedType
+            ]}
+            onPress={() => setTipo('troca')}
+          >
+            <Text style={[
+              styles.typeText,
+              tipo === 'troca' && styles.selectedTypeText
+            ]}>Troca</Text>
+          </TouchableOpacity>
+        </View>
 
 
         <View style={styles.starsContainer}>
@@ -345,6 +375,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#335c67",
+    marginTop: 15,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  typeContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 15,
+    paddingHorizontal: 20,
+  },
+  typeButton: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    alignItems: "center",
+  },
+  selectedType: {
+    borderColor: "#E09F3E",
+    backgroundColor: "#E09F3E",
+  },
+  typeText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#666",
+  },
+  selectedTypeText: {
+    color: "white",
   },
   closeButton: {
     position: "absolute",

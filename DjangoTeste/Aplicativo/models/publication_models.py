@@ -10,6 +10,13 @@ class Publication(models.Model):
         EMPRESTIMO = "emprestimo", "Empréstimo"
         TROCA = "troca", "Troca"
     
+    class BookGenre(models.TextChoices):
+        ROMANCE_NARRATIVA = "romance_narrativa", "Romance/Narrativa"
+        POESIA = "poesia", "Poesia"
+        PECA_TEATRAL = "peca_teatral", "Peça Teatral"
+        DIDATICO = "didatico", "Didático"
+        NAO_FICCAO = "nao_ficcao", "Não-ficção"
+    
     post_type = models.CharField(
         max_length=10,
         choices=PostType.choices,
@@ -34,6 +41,13 @@ class Publication(models.Model):
     book_publisher = models.CharField(max_length=255, verbose_name= "Book Publisher", blank= True)
     book_publication_date = models.DateField(blank=True, null=True, verbose_name="Book Publication Year")
     book_description = models.TextField(blank=True, null=True, verbose_name= "Book Description")
+    book_genre = models.CharField(
+        max_length=20,
+        choices=BookGenre.choices,
+        blank=True,
+        null=True,
+        verbose_name="Gênero do Livro"
+    )
     
     # Post Stuff
     post_cover = models.ImageField(

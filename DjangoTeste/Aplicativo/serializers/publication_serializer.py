@@ -42,7 +42,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_publisher",
             "book_publication_date",
             "book_description",
-            "post_creator",
+            "book_genre",
             "post_location_city",
             "post_type",
         ]

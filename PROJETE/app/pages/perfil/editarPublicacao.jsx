@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Picker } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import api from '../../functions/api';
 import MeuInput from '../../functions/textBox'
@@ -10,7 +10,7 @@ export default function EditarPublicacao() {
   const [bookPublisher, setBookPublisher] = useState('');
   const [bookDescription, setBookDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  
+  const [tipo, setTipo] = useState('troca');
   const params = useLocalSearchParams();
   const bookId = params.bookId;
 
@@ -24,7 +24,7 @@ export default function EditarPublicacao() {
     try {
       const response = await api.get(`livros/${bookId}/`);
       const book = response.data.book;
-      
+
       setBookTitle(book.book_title || '');
       setBookAuthor(book.book_author || '');
       setBookPublisher(book.book_publisher || '');
@@ -83,6 +83,11 @@ export default function EditarPublicacao() {
         onChangeText={setBookAuthor}
         placeholder="Digite o nome do autor"
       />
+      <Text style={styles.label}>Tipo</Text>
+      <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
+        <Picker.Item label="Troca" value="troca" />
+        <Picker.Item label="Empréstimo" value="emprestimo" />
+      </Picker>
 
       <Text style={styles.label}>Editora</Text>
       <MeuInput
@@ -140,7 +145,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   saveButton: {
-   backgroundColor: "#335C67",
+    backgroundColor: "#335C67",
     borderRadius: 50,
     paddingVertical: 10,
     paddingHorizontal: 30,
