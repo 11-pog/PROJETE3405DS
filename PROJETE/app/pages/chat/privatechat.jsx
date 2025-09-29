@@ -62,7 +62,7 @@ export default function PrivateChat() {
     loadMessages();
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.0.105:8000/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
     console.log('Tentando conectar WebSocket:', wsUrl);
     console.log('Usuários:', { currentUser, chatPartner });
     
@@ -182,6 +182,7 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
+ 
       <Pressable  >
       <Text style={styles.header}>Chat com {chatPartner}</Text>
       </Pressable>

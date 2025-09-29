@@ -30,6 +30,8 @@ class Publication(models.Model):
         verbose_name= "Post Author"
     )
     
+    cluster_label = models.IntegerField(null=True, blank=True)
+    
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
     # Você consegue pegar todos post feito por esse usuário.
