@@ -8,7 +8,7 @@ class WebSocketService {
   connect() {
     try {
       // Substitua pelo IP do seu servidor
-      this.ws = new WebSocket('ws://192.168.0.200:8001/ws/publications/');
+      this.ws = new WebSocket('ws://localhost:8001/ws/publications/');
 
       this.ws.onopen = () => console.log('WebSocket conectado!');
       

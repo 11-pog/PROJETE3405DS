@@ -428,7 +428,8 @@ const styles = StyleSheet.create({
   typeButton: {
     flex: 1,
     backgroundColor: "white",
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#ddd",

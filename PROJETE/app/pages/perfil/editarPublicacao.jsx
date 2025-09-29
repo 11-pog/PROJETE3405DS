@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Picker } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import api from '../../functions/api';
 import MeuInput from '../../functions/textBox'
@@ -29,6 +29,7 @@ export default function EditarPublicacao() {
       setBookAuthor(book.book_author || '');
       setBookPublisher(book.book_publisher || '');
       setBookDescription(book.book_description || '');
+      setTipo(book.post_type || 'emprestimo');
     } catch (error) {
       console.error('Erro ao carregar dados do livro:', error);
       Alert.alert('Erro', 'Não foi possível carregar os dados do livro');
@@ -47,20 +48,25 @@ export default function EditarPublicacao() {
         book_title: bookTitle,
         book_author: bookAuthor,
         book_publisher: bookPublisher,
-        book_description: bookDescription
+        book_description: bookDescription,
+        post_type: tipo
       };
 
-      await api.put(`livros/${bookId}/editar/`, updateData);
+      console.log('[EDITAR_FRONTEND] Enviando dados:', updateData);
+      console.log('[EDITAR_FRONTEND] Para livro ID:', bookId);
+      
+      const response = await api.put(`livros/${bookId}/editar/`, updateData);
+      console.log('[EDITAR_FRONTEND] Resposta recebida:', response.data);
+      
       Alert.alert('Sucesso!', 'Livro atualizado com sucesso!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
-      console.error('Erro ao atualizar livro:', error);
+      console.error('[EDITAR_FRONTEND] Erro ao atualizar livro:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o livro');
     } finally {
       setLoading(false);
     }
-
   };
 
   return (
@@ -82,11 +88,34 @@ export default function EditarPublicacao() {
         onChangeText={setBookAuthor}
         placeholder="Digite o nome do autor"
       />
-      <Text style={styles.label}>Tipo</Text>
-      <Picker selectedValue={tipo} onValueChange={(value) => setTipo(value)}>
-        <Picker.Item label="Troca" value="troca" />
-        <Picker.Item label="Empréstimo" value="emprestimo" />
-      </Picker>
+      <Text style={styles.label}>Tipo de Publicação</Text>
+      <View style={styles.typeContainer}>
+        <TouchableOpacity
+          style={[
+            styles.typeButton,
+            tipo === 'emprestimo' && styles.selectedType
+          ]}
+          onPress={() => setTipo('emprestimo')}
+        >
+          <Text style={[
+            styles.typeText,
+            tipo === 'emprestimo' && styles.selectedTypeText
+          ]}>Empréstimo</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.typeButton,
+            tipo === 'troca' && styles.selectedType
+          ]}
+          onPress={() => setTipo('troca')}
+        >
+          <Text style={[
+            styles.typeText,
+            tipo === 'troca' && styles.selectedTypeText
+          ]}>Troca</Text>
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.label}>Editora</Text>
       <MeuInput
@@ -158,5 +187,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  typeContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 15,
+  },
+  typeButton: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingVertical: 15,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    alignItems: 'center',
+  },
+  selectedType: {
+    borderColor: '#E09F3E',
+    backgroundColor: '#E09F3E',
+  },
+  typeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#666',
+  },
+  selectedTypeText: {
+    color: 'white',
   },
 });

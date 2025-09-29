@@ -54,7 +54,9 @@ class BookDetailView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, book_id):
+        print(f"[BOOK_DETAIL] Buscando detalhes do livro ID: {book_id}")
         p = get_object_or_404(Publication, id=book_id)
+        print(f"[BOOK_DETAIL] Livro encontrado: {p.book_title}, Tipo: {p.post_type}")
         
         p_serializer = PublicationFeedSerializer(p,
             context = {
@@ -69,6 +71,8 @@ class BookDetailView(APIView):
             request.user,
             p
         )
+        
+        print(f"[BOOK_DETAIL] Retornando dados: Título={p_serializer.data.get('book_title')}, Tipo={p_serializer.data.get('post_type')}")
         
         return Response(
             {
@@ -199,19 +203,27 @@ class EditarLivro(APIView):
     
     def put(self, request, book_id):
         try:
+            print(f"[EDITAR] Tentando editar livro ID: {book_id}")
+            print(f"[EDITAR] Dados recebidos: {request.data}")
+            
             publication = get_object_or_404(Publication, id=book_id)
+            print(f"[EDITAR] Livro encontrado: {publication.book_title}")
             
             if publication.post_creator != request.user:
                 return Response({"error": "Você não pode editar este livro"}, status=403)
             
             serializer = CreatePublicationSerializer(publication, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
-                serializer.save()
+                updated_publication = serializer.save()
+                print(f"[EDITAR] Livro atualizado com sucesso!")
+                print(f"[EDITAR] Novos dados: Título={updated_publication.book_title}, Tipo={updated_publication.post_type}")
                 return Response({"mensagem": "Livro atualizado com sucesso!"}, status=200)
             
+            print(f"[EDITAR] Erros de validação: {serializer.errors}")
             return Response(serializer.errors, status=400)
             
         except Exception as e:
+            print(f"[EDITAR] Exceção: {str(e)}")
             return Response({"error": str(e)}, status=500)
 
 
