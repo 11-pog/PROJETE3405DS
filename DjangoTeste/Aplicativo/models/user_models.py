@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser , PermissionsMixin, BaseUserManager
+from Aplicativo.models.publication_models import BookCareRating, Loan
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -50,22 +51,22 @@ class Usuario(AbstractUser):
         upload_to='profiles/',
         default='defaults/default_user.png',  # default inside media
     )
+    
     city = models.CharField(max_length=100, blank=True, null=True)
     points = models.IntegerField(default=0)  
     
+    cluster_label = models.IntegerField(null=True, blank=True)
+    
     def get_care_rating_average(self):
-        from .publication_models import BookCareRating, Loan
         ratings = BookCareRating.objects.filter(loan__borrower=self)
         if ratings.exists():
             return round(ratings.aggregate(models.Avg('care_rating'))['care_rating__avg'], 2)
         return None
     
     def get_total_loans_count(self):
-        from .publication_models import Loan
         return Loan.objects.filter(borrower=self).count()
     
     def get_completed_loans_count(self):
-        from .publication_models import Loan
         return Loan.objects.filter(borrower=self, status='completed').count()
     
     def __str__(self):
