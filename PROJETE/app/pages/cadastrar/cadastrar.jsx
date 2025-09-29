@@ -62,7 +62,7 @@ function Cadastrar() {
       await AsyncStorage.setItem('refresh', refresh)
       
       router.push({
-        pathname: "/pages/principal/principal"
+        pathname: "/pages/cadastrar/preferencias"
       });
     } catch (error) {
       if (error.response) {
@@ -110,7 +110,7 @@ function Cadastrar() {
       
       <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
       
-      <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
+      <Botao aoApertar={enviarUsuario} texto={'Continuar'} />
     </View>
   )
 }
