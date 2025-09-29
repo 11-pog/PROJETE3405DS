@@ -1,28 +1,42 @@
 import numpy as np
 from sklearn.cluster import KMeans
-from Aplicativo.ml.features import get_publication_features
+from DjangoTeste.Aplicativo.ml.vector import get_publication_vector, get_user_vector
+from Aplicativo.models.publication_models import Publication
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 def cluster_publications():
-    data = list(get_publication_features())
-    if not data:
-        return []
+    data = get_publication_vector()
     
-    features = np.array([
-        [
-            d['avg_rating'] or 0,
-            d['total_views'] or 0,
-            d['save_count'],
-            d['trade_count'],
-            d['message_count'],
-        ]
-        for d in data
-    ])
+    X = np.array([d['vector'] for d in data])
+    kmeans = KMeans(n_clusters=20, random_state=42)
+    labels = kmeans.fit_predict(X)
     
-    kmeans = KMeans(n_clusters=5, random_state=42)
-    labels = kmeans.fit_predict(features)
-    
-    # attach labels to publications
     for d, label in zip(data, labels):
-        d['cluster'] = int(label)
+        pub = Publication.objects.get(id=d['id'])
+        pub.cluster_label = int(label)
+        pub.save()
+
+def cluster_users():
+    users = User.objects.all()
     
-    return data
+    user_vectors = []
+    user_ids = []
+    
+    for user in users:
+        vec = get_user_vector(user)
+        user_vectors.append(vec)
+        user_ids.append(user.id)
+    
+    X = np.array(user_vectors)
+    
+    kmeans = KMeans(n_clusters=20, random_state=42)
+    labels = kmeans.fit_predict(X)
+    
+    for uid, label in zip(user_ids, labels):
+        user = User.objects.get(id=uid)
+        
+        user.userprofile.cluster_label = int(label)
+        user.userprofile.save()
