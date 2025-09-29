@@ -358,9 +358,10 @@ export default function CadastroLivro() {
           </View>
         )}
 
+<Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
         <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
-        <Text style={styles.ouTexto}>ou</Text>
-        <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
+       
+        
         <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
       </ScrollView>
       <BarraInicial />
