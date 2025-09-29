@@ -4,5 +4,9 @@
     "@react-native-picker/picker": "^2.11.2",
     "axios": "^1.11.0",
     "expo-camera": "~17.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
   }
 }
