@@ -19,6 +19,7 @@ export default function CadastroLivro() {
   const [data, setData] = useState("");
   const [descricao, setDescricao] = useState("");
   const [tipo, setTipo] = useState("emprestimo");
+  const [genero, setGenero] = useState("");
 
   // estados para a câmera
   const [permission, requestPermission] = useCameraPermissions();
@@ -37,16 +38,20 @@ export default function CadastroLivro() {
 
   // salva livro no backend
   const SalvarLivro = async () => {
+    console.log('🔴 FUNÇÃO SALVAR EXECUTADA!');
+    console.log('🔴 GÊNERO ATUAL:', genero);
     const dados = {
       book_title: titulo,
       book_author: autor,
       book_publisher: editora,
       book_description: descricao,
+      book_genre: genero,
       post_type: tipo,
       post_location_city: "São Paulo",
     };
     
     console.log('📝 Dados sendo enviados:', dados);
+    console.log('🎭 Gênero selecionado:', genero);
     
     try {
       const response = await api.post('livros/cadastrar/', dados);
@@ -293,6 +298,32 @@ export default function CadastroLivro() {
           </TouchableOpacity>
         </View>
 
+        <Text style={styles.sectionTitle}>Gênero do livro:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScrollContainer}>
+          <View style={styles.genreContainer}>
+            {[
+              { key: 'romance_narrativa', label: 'Romance/Narrativa' },
+              { key: 'poesia', label: 'Poesia' },
+              { key: 'peca_teatral', label: 'Peça Teatral' },
+              { key: 'didatico', label: 'Didático' },
+              { key: 'nao_ficcao', label: 'Não-ficção' }
+            ].map((genre) => (
+              <TouchableOpacity
+                key={genre.key}
+                style={[
+                  styles.genreButton,
+                  genero === genre.key && styles.selectedGenre
+                ]}
+                onPress={() => setGenero(genero === genre.key ? '' : genre.key)}
+              >
+                <Text style={[
+                  styles.genreText,
+                  genero === genre.key && styles.selectedGenreText
+                ]}>{genre.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
 
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
@@ -444,6 +475,36 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   selectedTypeText: {
+    color: "white",
+  },
+  genreScrollContainer: {
+    marginBottom: 15,
+  },
+  genreContainer: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  genreButton: {
+    backgroundColor: "white",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    minWidth: 100,
+    alignItems: "center",
+  },
+  selectedGenre: {
+    borderColor: "#335c67",
+    backgroundColor: "#335c67",
+  },
+  genreText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#666",
+  },
+  selectedGenreText: {
     color: "white",
   },
   closeButton: {

@@ -100,12 +100,37 @@ export default function InfoIsolado() {
           style={{
             fontSize: 16,
             color: "#1b2c31ff",
-            marginBottom: 16,
+            marginBottom: 8,
             textAlign: "center",
           }}
         >
           {book.book_author}
         </Text>
+        
+        {book.book_genre && (
+          <View style={{
+            backgroundColor: "#335c67",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 15,
+            marginBottom: 16,
+          }}>
+            <Text style={{
+              fontSize: 12,
+              color: "white",
+              fontWeight: "bold",
+              textAlign: "center",
+            }}>
+              📚 {{
+                'romance_narrativa': 'Romance/Narrativa',
+                'poesia': 'Poesia',
+                'peca_teatral': 'Peça Teatral',
+                'didatico': 'Didático',
+                'nao_ficcao': 'Não-ficção'
+              }[book.book_genre] || book.book_genre}
+            </Text>
+          </View>
+        )}
 
         <View style={{ width: "90%", marginBottom: 20 }}>
           <Text

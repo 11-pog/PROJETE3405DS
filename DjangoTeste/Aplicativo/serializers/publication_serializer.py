@@ -79,6 +79,7 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "book_title",
             "book_author",
             "book_description",
+            "book_genre",
             "post_type",
             "post_cover",
             "is_saved",
