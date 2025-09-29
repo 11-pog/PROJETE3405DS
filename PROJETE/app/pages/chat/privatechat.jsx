@@ -182,6 +182,7 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
+ 
       <Pressable  >
       <Text style={styles.header}>Chat com {chatPartner}</Text>
       </Pressable>
