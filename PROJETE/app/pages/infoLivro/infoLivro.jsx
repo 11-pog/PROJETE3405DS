@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS} from "react-native";
+import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS, Modal} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -8,6 +8,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import api from '../../functions/api';
+
 
 export default function CadastroLivro() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function CadastroLivro() {
   const [cameraMode, setCameraMode] = useState("isbn"); // "isbn" ou "foto"
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState(false);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
   const cameraRef = useRef(null);
 
   // estados auxiliares
@@ -49,10 +51,10 @@ export default function CadastroLivro() {
       post_type: tipo,
       post_location_city: "São Paulo",
     };
-    
+
     console.log('📝 Dados sendo enviados:', dados);
     console.log('🎭 Gênero selecionado:', genero);
-    
+
     try {
       const response = await api.post('livros/cadastrar/', dados);
 
@@ -72,7 +74,7 @@ export default function CadastroLivro() {
       console.log('❌ Erro response.data:', error.response?.data);
       console.log('❌ Erro post_creator:', error.response?.data?.post_creator);
       console.log('❌ Erro status:', error.response?.status);
-      
+
       if (error.response) {
         let errorMessage = "Erro desconhecido";
         if (error.response.status === 500) {
@@ -203,7 +205,7 @@ export default function CadastroLivro() {
   };
 
   // Tela da câmera
-  if (showCamera) {
+  /*if (showCamera) {
     return (
       <View style={{ flex: 1 }}>
         {!cameraError ? (
@@ -255,7 +257,7 @@ export default function CadastroLivro() {
         )}
       </View>
     );
-  }
+  }*/
 
   // Tela principal
   return (
@@ -283,7 +285,7 @@ export default function CadastroLivro() {
               tipo === 'emprestimo' && styles.selectedTypeText
             ]}>Empréstimo</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.typeButton,
@@ -358,12 +360,26 @@ export default function CadastroLivro() {
           </View>
         )}
 
-<Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
-        <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
-       
-        
-        <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
-      </ScrollView>
+      <Botao texto="Ler ISBN" aoApertar={() => setModalIsVisible(true)} />
+        <Modal visible={modalIsVisible} animationType="slide">
+          <View style={{ flex: 1 }}>
+            <CameraView 
+              style={{ flex: 1 }} 
+              facing="back"
+              onBarcodeScanned={handleBarCodeScanned}
+              barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8"] }}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalIsVisible(false)}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
+      <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
+    </ScrollView>
       <BarraInicial />
     </View>
   );
@@ -460,7 +476,8 @@ const styles = StyleSheet.create({
   typeButton: {
     flex: 1,
     backgroundColor: "white",
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#ddd",

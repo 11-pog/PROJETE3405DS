@@ -79,9 +79,21 @@ export default function MinhasPublicacoes() {
   }
 
   function handleDelete(item) {
-    if (confirm(`Excluir "${item.book_title}"?`)) {
-      confirmDelete(item);
-    }
+    Alert.alert(
+      'Confirmar Exclusão',
+      `Tem certeza que deseja excluir "${item.book_title}"?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: () => confirmDelete(item)
+        }
+      ]
+    );
   }
   
   function handleEdit(item) {

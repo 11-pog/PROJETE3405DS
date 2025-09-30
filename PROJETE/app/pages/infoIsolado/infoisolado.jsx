@@ -109,7 +109,6 @@ export default function InfoIsolado() {
         
         {book.book_genre && (
           <View style={{
-            backgroundColor: "#335c67",
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 15,
@@ -120,6 +119,7 @@ export default function InfoIsolado() {
               color: "white",
               fontWeight: "bold",
               textAlign: "center",
+              color: "#000",
             }}>
               📚 {{
                 'romance_narrativa': 'Romance/Narrativa',

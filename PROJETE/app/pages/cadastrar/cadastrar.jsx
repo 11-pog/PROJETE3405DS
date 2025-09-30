@@ -60,7 +60,7 @@ function Cadastrar() {
 
       const refresh = response.data.refresh;
       await AsyncStorage.setItem('refresh', refresh)
-      
+
       router.push({
         pathname: "/pages/principal/principal"
       });
@@ -101,16 +101,15 @@ function Cadastrar() {
       </Text>
 
       <MeuInput label={'Nome de usuário: '} valor={usuario} onChange={setUsuario} />
-      
+
       <MeuInput label={'Email: '} valor={email} onChange={setEmail} />
-      {emailErr && <Text style={{color: 'red'}}>Digite um email válido!</Text>}
-      
+      {emailErr && <Text style={{ color: 'red' }}>Digite um email válido!</Text>}
+
       <MeuInput label={'Senha: '} valor={senha} onChange={setSenha} />
-      {senhaErr && <Text style={{color: 'red'}}>Digite uma senha mais segura!</Text>}
-      
+      {senhaErr && <Text style={{ color: 'red' }}>Digite uma senha mais segura!</Text>}
+
       <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
-      
-      <Botao aoApertar={enviarUsuario} texto={'Cadastrar'} />
+      <Botao aoApertar={enviarUsuario} texto={'Continuar'} />
     </View>
   )
 }

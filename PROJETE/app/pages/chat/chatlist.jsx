@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native
 import { useRouter } from 'expo-router';
 import api from '../../functions/api';
 import { useUser } from '../../hooks/useUser';
+import BarraInicial from "../../functions/barra_inicial";
 
 export default function ChatList() {
   const [users, setUsers] = useState([]);
@@ -68,6 +69,7 @@ export default function ChatList() {
             {item.is_active ? '• Online' : '• Offline'}
           </Text>
         </View>
+        
       </TouchableOpacity>
     );
   };
@@ -89,6 +91,7 @@ export default function ChatList() {
         keyExtractor={(item) => item.id.toString()}
         style={styles.usersList}
       />
+      <BarraInicial />
     </View>
   );
 }

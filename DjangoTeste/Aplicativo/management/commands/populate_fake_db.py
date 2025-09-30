@@ -23,8 +23,8 @@ class Command(BaseCommand):
             default=50,
             help='Number of fake publications to create'
         )
-
-
+    
+    
     def handle(self, *args, **options):
         num_users = options['users']
         num_publications = options['publications']
@@ -38,15 +38,18 @@ class Command(BaseCommand):
             email = fake.email()
             password = "testpassword123"
             user, created = User.objects.get_or_create(
-                username=username,
-                defaults={"email": email}
+                email=email,
+                defaults={
+                    "username": username,
+                    "is_fake": True,
+                    }
             )
             if created:
                 user.set_password(password)
                 user.save()
             users.append(user)
             self.stdout.write(self.style.SUCCESS(f"Created user: {username}"))
-
+        
         # --- Create publications ---
         for _ in range(num_publications):
             creator = random.choice(users)
@@ -62,13 +65,14 @@ class Command(BaseCommand):
                 post_type=random.choice([Publication.PostType.EMPRESTIMO, Publication.PostType.TROCA]),
                 book_rating=random.randint(0, 5),
                 tags=random.sample(
-                    ["fantasy", "mystery", "romance", "sci-fi", "adventure", "horror"],
+                    list(Publication.BookGenre.values()),
                     k=random.randint(1, 3)
                 ),
                 isbn=fake.isbn13(separator="-"),
+                is_fake=True,
                 language=random.choice(["English", "Portuguese", "Spanish", "German"]),
                 full_text_excerpt=fake.paragraph(nb_sentences=5),
             )
             self.stdout.write(self.style.SUCCESS(f"Created publication: {pub.book_title}"))
-
+        
         self.stdout.write(self.style.SUCCESS("FAKE DB POPULATION COMPLETE!"))
