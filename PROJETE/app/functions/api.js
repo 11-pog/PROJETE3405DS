@@ -2,7 +2,7 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://192.168.0.105:8000/api/"
+export const BASE_API_URL = "http://127.0.0.1:8000/api/"
 axios.defaults.baseURL = BASE_API_URL
 
 const api = axios.create({
@@ -13,12 +13,12 @@ api.interceptors.request.use(
     async config => {
         console.log(`[API] Fazendo requisição ${config.method?.toUpperCase()} para: ${config.url}`);
         console.log(`[API] URL completa: ${config.baseURL}${config.url}`);
-        
+
         // Não exigir token para login e cadastro de usuário
         if (config.url?.includes('login/') || config.url?.includes('usuarios/cadastrar/')) {
             return config;
         }
-        
+
         const token = await AsyncStorage.getItem("access");
 
         if (!token) {
