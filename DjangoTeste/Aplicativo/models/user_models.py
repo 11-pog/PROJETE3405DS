@@ -56,6 +56,7 @@ class Usuario(AbstractUser):
     points = models.IntegerField(default=0)  
     
     cluster_label = models.IntegerField(null=True, blank=True)
+    is_fake = models.BooleanField(default=False) # determina se a conta é verdadeira ou foi criada pelo comando
     
     def get_care_rating_average(self):
         ratings = BookCareRating.objects.filter(loan__borrower=self)
