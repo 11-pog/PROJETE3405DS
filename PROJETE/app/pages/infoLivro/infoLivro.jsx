@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View,Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator, Alert, ScrollView, Platform, ActionSheetIOS } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Botao from "../../functions/botoes";
 import MeuInput from "../../functions/textBox";
@@ -49,10 +49,10 @@ export default function CadastroLivro() {
       post_type: tipo,
       post_location_city: "São Paulo",
     };
-    
+
     console.log('📝 Dados sendo enviados:', dados);
     console.log('🎭 Gênero selecionado:', genero);
-    
+
     try {
       const response = await api.post('livros/cadastrar/', dados);
 
@@ -72,7 +72,7 @@ export default function CadastroLivro() {
       console.log('❌ Erro response.data:', error.response?.data);
       console.log('❌ Erro post_creator:', error.response?.data?.post_creator);
       console.log('❌ Erro status:', error.response?.status);
-      
+
       if (error.response) {
         let errorMessage = "Erro desconhecido";
         if (error.response.status === 500) {
@@ -283,7 +283,7 @@ export default function CadastroLivro() {
               tipo === 'emprestimo' && styles.selectedTypeText
             ]}>Empréstimo</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.typeButton,
@@ -358,10 +358,10 @@ export default function CadastroLivro() {
           </View>
         )}
 
-<Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
+        <Botao texto="Ler ISBN" aoApertar={() => handleOpenCamera("isbn")} />
         <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
-       
-        
+
+
         <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
       </ScrollView>
       <BarraInicial />
