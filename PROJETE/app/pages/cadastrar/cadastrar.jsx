@@ -62,7 +62,7 @@ function Cadastrar() {
       await AsyncStorage.setItem('refresh', refresh)
 
       router.push({
-        pathname: "/pages/cadastrar/preferencias"
+        pathname: "/pages/principal/principal"
       });
     } catch (error) {
       if (error.response) {
@@ -109,7 +109,6 @@ function Cadastrar() {
       {senhaErr && <Text style={{ color: 'red' }}>Digite uma senha mais segura!</Text>}
 
       <MeuInput label={'Cidade: '} valor={cidade} onChange={setCidade} />
-
       <Botao aoApertar={enviarUsuario} texto={'Continuar'} />
     </View>
   )

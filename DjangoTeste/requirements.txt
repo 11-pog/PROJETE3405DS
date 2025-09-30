@@ -12,3 +12,5 @@ django-allauth==65.11.2
 django-htmx==1.24.1
 faker==37.8.0
 channels==4.3.1
+scikit-learn==1.7.2
+sentence-transformers==5.1.1

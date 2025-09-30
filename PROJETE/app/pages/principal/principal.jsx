@@ -237,6 +237,8 @@ export default function FeedLivros() {
   }
 
   function renderBook({ item }) {
+    console.log('📚 Item do livro:', item);
+    console.log('🎭 Gênero do item:', item.book_genre);
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
@@ -272,6 +274,18 @@ export default function FeedLivros() {
               })()
             }
           </Text>
+          
+          {item.book_genre && (
+            <Text style={styles.genreText}>
+              📚 {{
+                'romance_narrativa': 'Romance/Narrativa',
+                'poesia': 'Poesia',
+                'peca_teatral': 'Peça Teatral',
+                'didatico': 'Didático',
+                'nao_ficcao': 'Não-ficção'
+              }[item.book_genre] || item.book_genre}
+            </Text>
+          )}
         </View>
 
         {/* Botões de interação */}
@@ -422,6 +436,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     color: '#888',
+  },
+  genreText: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#335c67',
+    fontWeight: '500',
   },
   actions: {
     alignItems: 'flex-end',

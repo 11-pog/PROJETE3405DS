@@ -79,9 +79,21 @@ export default function MinhasPublicacoes() {
   }
 
   function handleDelete(item) {
-    if (confirm(`Excluir "${item.book_title}"?`)) {
-      confirmDelete(item);
-    }
+    Alert.alert(
+      'Confirmar Exclusão',
+      `Tem certeza que deseja excluir "${item.book_title}"?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: () => confirmDelete(item)
+        }
+      ]
+    );
   }
   
   function handleEdit(item) {
@@ -116,6 +128,18 @@ export default function MinhasPublicacoes() {
           <Text style={styles.tipoAcao}>
             {item.post_type === 'troca' ? 'Troca' : 'Empréstimo'}
           </Text>
+          
+          {item.book_genre && (
+            <Text style={styles.genreText}>
+              📚 {{
+                'romance_narrativa': 'Romance/Narrativa',
+                'poesia': 'Poesia',
+                'peca_teatral': 'Peça Teatral',
+                'didatico': 'Didático',
+                'nao_ficcao': 'Não-ficção'
+              }[item.book_genre] || item.book_genre}
+            </Text>
+          )}
         </View>
 
         <View style={styles.actions}>
@@ -203,5 +227,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 12,
+  },
+  genreText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
 });
