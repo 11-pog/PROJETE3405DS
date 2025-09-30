@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Botao from '../../functions/botoes';
+import Botao from "../../functions/botoes";
 
 export default function Categorias() {
   const [selected, setSelected] = useState({});
-  const router = useRouter(); 
+  const router = useRouter();
 
   const categorias = [
     { id: "1", nome: "Romance", descricao: "Histórias contadas em prosa, com personagens e enredo. Não é só romance amoroso, mas também aventura, policial, fantasia, etc." },
