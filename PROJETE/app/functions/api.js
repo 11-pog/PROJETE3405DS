@@ -13,12 +13,12 @@ api.interceptors.request.use(
     async config => {
         console.log(`[API] Fazendo requisição ${config.method?.toUpperCase()} para: ${config.url}`);
         console.log(`[API] URL completa: ${config.baseURL}${config.url}`);
-        
+
         // Não exigir token para login e cadastro de usuário
         if (config.url?.includes('login/') || config.url?.includes('usuarios/cadastrar/')) {
             return config;
         }
-        
+
         const token = await AsyncStorage.getItem("access");
 
         if (!token) {

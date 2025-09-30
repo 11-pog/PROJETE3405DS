@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import api from '../../functions/api';
-import MeuInput from '../../functions/textBox'
+import MeuInput from '../../functions/textBox';
 
 export default function EditarPublicacao() {
   const [bookTitle, setBookTitle] = useState('');
@@ -30,11 +30,12 @@ export default function EditarPublicacao() {
       setBookAuthor(book.book_author || '');
       setBookPublisher(book.book_publisher || '');
       setBookDescription(book.book_description || '');
-      setTipo(book.post_type || 'emprestimo');
-      
-      console.log('Dados carregados:', book);
+      setTipo(book.post_type || 'troca');
+      setGenero(book.book_genre || '');
+
+      console.log('[EDITAR_FRONTEND] Dados carregados:', book);
     } catch (error) {
-      console.error('Erro ao carregar dados do livro:', error);
+      console.error('[EDITAR_FRONTEND] Erro ao carregar dados do livro:', error);
       Alert.alert('Erro', 'Não foi possível carregar os dados do livro');
     }
   };
@@ -52,21 +53,27 @@ export default function EditarPublicacao() {
         book_author: bookAuthor,
         book_publisher: bookPublisher,
         book_description: bookDescription,
-        post_type: tipo
+        post_type: tipo,
+        book_genre: genero,
       };
-      
+
       console.log('[EDITAR_FRONTEND] Enviando dados:', updateData);
       console.log('[EDITAR_FRONTEND] Para livro ID:', bookId);
-      
+
       const response = await api.put(`livros/${bookId}/editar/`, updateData);
       console.log('[EDITAR_FRONTEND] Resposta recebida:', response.data);
-      
+
+      await loadBookData();
+
       Alert.alert('Sucesso!', 'Livro atualizado com sucesso!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
       console.error('[EDITAR_FRONTEND] Erro ao atualizar livro:', error);
-      Alert.alert('Erro', 'Não foi possível atualizar o livro');
+      Alert.alert(
+        'Erro',
+        `Não foi possível atualizar o livro: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -93,29 +100,21 @@ export default function EditarPublicacao() {
       <Text style={styles.label}>Tipo de Publicação</Text>
       <View style={styles.typeContainer}>
         <TouchableOpacity
-          style={[
-            styles.typeButton,
-            tipo === 'emprestimo' && styles.selectedType
-          ]}
+          style={[styles.typeButton, tipo === 'emprestimo' && styles.selectedType]}
           onPress={() => setTipo('emprestimo')}
         >
-          <Text style={[
-            styles.typeText,
-            tipo === 'emprestimo' && styles.selectedTypeText
-          ]}>Empréstimo</Text>
+          <Text style={[styles.typeText, tipo === 'emprestimo' && styles.selectedTypeText]}>
+            Empréstimo
+          </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
-          style={[
-            styles.typeButton,
-            tipo === 'troca' && styles.selectedType
-          ]}
+          style={[styles.typeButton, tipo === 'troca' && styles.selectedType]}
           onPress={() => setTipo('troca')}
         >
-          <Text style={[
-            styles.typeText,
-            tipo === 'troca' && styles.selectedTypeText
-          ]}>Troca</Text>
+          <Text style={[styles.typeText, tipo === 'troca' && styles.selectedTypeText]}>
+            Troca
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -135,6 +134,29 @@ export default function EditarPublicacao() {
         multiline
         numberOfLines={4}
       />
+
+      <Text style={styles.sectionTitle}>Gênero do livro:</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScrollContainer}>
+        <View style={styles.genreContainer}>
+          {[
+            { key: 'romance_narrativa', label: 'Romance/Narrativa' },
+            { key: 'poesia', label: 'Poesia' },
+            { key: 'peca_teatral', label: 'Peça Teatral' },
+            { key: 'didatico', label: 'Didático' },
+            { key: 'nao_ficcao', label: 'Não-ficção' }
+          ].map((genre) => (
+            <TouchableOpacity
+              key={genre.key}
+              style={[styles.genreButton, genero === genre.key && styles.selectedGenre]}
+              onPress={() => setGenero(genero === genre.key ? '' : genre.key)}
+            >
+              <Text style={[styles.genreText, genero === genre.key && styles.selectedGenreText]}>
+                {genre.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
       <TouchableOpacity
         style={[styles.saveButton, loading && styles.disabledButton]}
@@ -169,6 +191,13 @@ const styles = StyleSheet.create({
     marginTop: 15,
     color: '#333',
   },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 10,
+  },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
@@ -178,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    marginVertical: 10,
+    marginVertical: 20,
   },
   disabledButton: {
     backgroundColor: '#ccc',
@@ -189,31 +218,69 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#335c67",
+    marginTop: 15,
+    marginBottom: 10,
+    textAlign: "center",
+  },
   typeContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
     marginBottom: 15,
+    paddingHorizontal: 20,
   },
   typeButton: {
     flex: 1,
-    backgroundColor: 'white',
-    paddingVertical: 15,
-    paddingHorizontal: 12,
+    backgroundColor: "white",
+    padding: 15,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ddd',
-    alignItems: 'center',
+    borderColor: "#ddd",
+    alignItems: "center",
   },
   selectedType: {
-    borderColor: '#E09F3E',
-    backgroundColor: '#E09F3E',
+    borderColor: "#E09F3E",
+    backgroundColor: "#E09F3E",
   },
   typeText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
+    fontWeight: "bold",
+    color: "#666",
   },
   selectedTypeText: {
-    color: 'white',
+    color: "white",
+  },
+  genreScrollContainer: {
+    marginBottom: 15,
+  },
+  genreContainer: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  genreButton: {
+    backgroundColor: "white",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    minWidth: 100,
+    alignItems: "center",
+  },
+  selectedGenre: {
+    borderColor: "#335c67",
+    backgroundColor: "#335c67",
+  },
+  genreText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#666",
+  },
+  selectedGenreText: {
+    color: "white",
   },
 });

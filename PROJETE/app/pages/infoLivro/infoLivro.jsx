@@ -51,10 +51,10 @@ export default function CadastroLivro() {
       post_type: tipo,
       post_location_city: "São Paulo",
     };
-    
+
     console.log('📝 Dados sendo enviados:', dados);
     console.log('🎭 Gênero selecionado:', genero);
-    
+
     try {
       const response = await api.post('livros/cadastrar/', dados);
 
@@ -74,7 +74,7 @@ export default function CadastroLivro() {
       console.log('❌ Erro response.data:', error.response?.data);
       console.log('❌ Erro post_creator:', error.response?.data?.post_creator);
       console.log('❌ Erro status:', error.response?.status);
-      
+
       if (error.response) {
         let errorMessage = "Erro desconhecido";
         if (error.response.status === 500) {
@@ -285,7 +285,7 @@ export default function CadastroLivro() {
               tipo === 'emprestimo' && styles.selectedTypeText
             ]}>Empréstimo</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.typeButton,
