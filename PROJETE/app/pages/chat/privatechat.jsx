@@ -143,6 +143,17 @@ export default function PrivateChat() {
         const { points_earned } = response.data;
         const message = `🎉 Empréstimo aceito!\n\n🎯 Pontos ganhos:\n• Você: +${points_earned.lender} pontos\n• Solicitante: +${points_earned.borrower} pontos`;
         Alert.alert('🎉 Sucesso!', message);
+        let segundos = 10;
+        const timer = document.getElementById('timer');
+        const intervalo = setInterval(() => {
+          setTimer.textContent = (`${segundos} segundos restantes`);
+          segundos--;
+          if (segundos < 0 ){
+            clearInterval(intervalo);
+            setTimer.textContent ( "tempo esgotado");
+
+          }
+        },1000);
       } else {
         const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
         Alert.alert('Sucesso', message);
