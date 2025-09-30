@@ -9,11 +9,11 @@ export default function Categorias() {
   const router = useRouter();
 
   const categorias = [
-    { id: "1", nome: "Romance", descricao: "Livros de romance (não necessariamente românticos) e narrativa." },
-    { id: "2", nome: "Poesia", descricao: "Versos e poemas." },
-    { id: "3", nome: "Peça Teatral", descricao: "Textos de teatro e roteiros." },
-    { id: "4", nome: "Didático", descricao: "Materiais educativos e escolares." },
-    { id: "5", nome: "Não-ficção", descricao: "Biografias, história e ciência." },
+    { id: "1", nome: "Romance", descricao: "Histórias contadas em prosa, com personagens e enredo. Não é só romance amoroso, mas também aventura, policial, fantasia, etc." },
+    { id: "2", nome: "Poesia", descricao: "Textos que expressam sentimentos e ideias em forma artística, geralmente em versos." },
+    { id: "3", nome: "Peça Teatral", descricao: "Escritos para serem representados no palco, com falas e diálogos entre personagens." },
+    { id: "4", nome: "Didático", descricao: "Textos feitos para ensinar ou transmitir uma ideia. Inclui ensaios, sermões, discursos." },
+    { id: "5", nome: "Não-ficção", descricao: "Relatos de fatos reais, memórias, biografias, diários, crônicas de acontecimentos, livros de viagem." },
   ];
 
   function toggleCategoria(id) {
