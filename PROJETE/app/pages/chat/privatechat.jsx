@@ -73,6 +73,30 @@ export default function PrivateChat() {
 
     socketRef.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
+      
+      if (data.type === 'loan_response') {
+        setRespondedLoans(prev => new Set([...prev, data.loan_id]));
+        setLoanResponses(prev => new Map([...prev, [data.loan_id, data.action]]));
+        return;
+      }
+      
+      if (data.type === 'start_countdown') {
+        setCountdownLoanId(data.loan_id);
+        setCountdown(10);
+        const intervalo = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(intervalo);
+              setCountdown(null);
+              setCountdownLoanId(null);
+              return null;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return;
+      }
+      
       if (data.type === 'private_message') {
         const newMessage = {
           id: Date.now(),
@@ -82,8 +106,6 @@ export default function PrivateChat() {
           timestamp: new Date().toISOString(),
           loanId: data.loan_id || null
         };
-        
-
         
         setMessages(prev => {
           const updatedMessages = [...prev, newMessage];
@@ -148,10 +170,28 @@ export default function PrivateChat() {
       setRespondedLoans(prev => new Set([...prev, loanId]));
       setLoanResponses(prev => new Map([...prev, [loanId, action]]));
       
+      // Enviar resposta via WebSocket para sincronizar
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify({
+          type: 'loan_response',
+          loan_id: loanId,
+          action: action,
+          sender: currentUser
+        }));
+      }
+      
       if (action === 'accept' && response.data.points_earned) {
         const { points_earned } = response.data;
-        const message = `🎉 Empréstimo aceito!\n\n🎯 Pontos ganhos:\n• Você: +${points_earned.lender} pontos\n• Solicitante: +${points_earned.borrower} pontos`;
-        Alert.alert('🎉 Sucesso!', message);
+        Alert.alert('🎉 Sucesso!', 'Empréstimo aceito!');
+        
+        // Enviar início da contagem regressiva para ambos
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+          socketRef.current.send(JSON.stringify({
+            type: 'start_countdown',
+            loan_id: loanId,
+            sender: currentUser
+          }));
+        }
         
         // Iniciar contagem regressiva
         setCountdownLoanId(loanId);
@@ -229,20 +269,32 @@ export default function PrivateChat() {
           >
             <Text style={styles.senderName}>{msg.sender}</Text>
             <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
+            {msg.text.includes('EMPRÉSTIMO ACEITO') && countdown && (
+              <Text style={styles.countdownText}>
+                ⏱️ {countdown} segundos restantes
+              </Text>
+            )}
+            {msg.text.includes('EMPRÉSTIMO ACEITO') && !countdown && (
+              <TouchableOpacity 
+                style={styles.confirmButton}
+                onPress={handleFinalizePeriod}
+              >
+                <Text style={styles.confirmButtonText}>
+                  ✅ Finalizar Período
+                </Text>
+              </TouchableOpacity>
+            )}
             {msg.loanId && msg.isMe && (
               <View style={styles.waitingContainer}>
-                <View style={styles.waitingBubble}>
-                  <Text style={styles.waitingText}>Aguardando resposta...</Text>
-                </View>
-                {respondedLoans.has(msg.loanId) && loanResponses.get(msg.loanId) === 'accept' && (
-                  <TouchableOpacity 
-                    style={styles.confirmButton}
-                    onPress={handleFinalizePeriod}
-                  >
-                    <Text style={styles.confirmButtonText}>
-                      ✅ Finalizar Período
-                    </Text>
-                  </TouchableOpacity>
+                {!respondedLoans.has(msg.loanId) && (
+                  <View style={styles.waitingBubble}>
+                    <Text style={styles.waitingText}>Aguardando resposta...</Text>
+                  </View>
+                )}
+                {respondedLoans.has(msg.loanId) && loanResponses.get(msg.loanId) === 'reject' && (
+                  <View style={styles.waitingBubble}>
+                    <Text style={styles.waitingText}>Solicitação rejeitada</Text>
+                  </View>
                 )}
               </View>
             )}
@@ -273,21 +325,9 @@ export default function PrivateChat() {
                 ]}>
                   {loanResponses.get(msg.loanId) === 'accept' ? '✓ Solicitação aceita' : '✗ Solicitação rejeitada'}
                 </Text>
-                {countdown && countdownLoanId === msg.loanId && (
-                  <Text style={styles.countdownText}>
-                    ⏱️ {countdown} segundos restantes
-                  </Text>
-                )}
-                {msg.loanId && (
-                  <TouchableOpacity 
-                    style={styles.confirmButton}
-                    onPress={handleFinalizePeriod}
-                  >
-                    <Text style={styles.confirmButtonText}>
-                      ✅ Finalizar Período
-                    </Text>
-                  </TouchableOpacity>
-                )}
+
+
+
               </View>
             )}
           </View>
