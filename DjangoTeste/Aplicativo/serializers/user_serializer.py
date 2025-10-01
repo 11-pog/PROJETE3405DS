@@ -7,6 +7,7 @@ from Aplicativo.models.user_models import Usuario
 
 class UserSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    preferred_genres = serializers.SerializerMethodField()
     
     class Meta:
         model = Usuario
@@ -15,14 +16,18 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'image_url',
-            'points'
+            'points',
+            'preferred_genres'
             ]
     
     def get_image_url(self, obj):
         request = self.context.get('request')
-        if obj.profile_picture:
+        if obj.profile_picture and request:
             return request.build_absolute_uri(obj.profile_picture.url)
         return None
+    
+    def get_preferred_genres(self, obj):
+        return obj.preferred_genres or ''
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -32,7 +37,8 @@ class UpdateUserSerializer(serializers.ModelSerializer):
             'username',
             'password',
             'email',
-            'city'
+            'city',
+            'preferred_genres'
         ]
     
     def update(self, instance, validated_data):

@@ -62,7 +62,7 @@ function Cadastrar() {
       await AsyncStorage.setItem('refresh', refresh)
 
       router.push({
-        pathname: "/pages/principal/principal"
+        pathname: "/pages/cadastrar/preferencias"
       });
     } catch (error) {
       if (error.response) {

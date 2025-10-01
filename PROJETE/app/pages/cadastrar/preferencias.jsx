@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Botao from "../../functions/botoes";
+import api from "../../functions/api";
 
 export default function Categorias() {
   const [selected, setSelected] = useState({});
@@ -22,6 +23,23 @@ export default function Categorias() {
       [id]: !prev[id], // alterna true/false
     }));
   }
+
+  const salvarPreferencias = async () => {
+    try {
+      const generosSelecionados = categorias
+        .filter(cat => selected[cat.id])
+        .map(cat => cat.nome)
+        .join(", ");
+
+      await api.patch("usuario/", {
+        preferred_genres: generosSelecionados
+      });
+
+      router.push("/pages/principal/principal");
+    } catch (error) {
+      Alert.alert("Erro", "Erro ao salvar preferências");
+    }
+  };
 
   function renderCategoria({ item }) {
     const marcado = selected[item.id] || false;
@@ -58,7 +76,7 @@ export default function Categorias() {
       <View style={{ padding: 20 }}>
         <Botao
           texto="Cadastrar"
-          aoApertar={() => router.push("/pages/principal/principal")}
+          aoApertar={salvarPreferencias}
         />
       </View>
     </View>

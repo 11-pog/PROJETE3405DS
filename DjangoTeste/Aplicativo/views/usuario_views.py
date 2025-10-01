@@ -90,6 +90,11 @@ class UserView(APIView):
     # Eu uni a logica de edição de usuario aqui pra GetUser
     # PATCH -> parcialmente atualiza algum objeto
     def patch(self, request):
+        # Salvar preferred_genres diretamente
+        if 'preferred_genres' in request.data:
+            request.user.preferred_genres = request.data['preferred_genres']
+            request.user.save()
+        
         serializer = UpdateUserSerializer(
             request.user,
             data=request.data,
@@ -347,7 +352,7 @@ class RequestLoan(APIView):
         meeting_date = request.data.get('meeting_date', '')
         request_type = request.data.get('request_type', 'emprestimo')
         
-        print(f"🔍 DEBUG - Tipo de solicitação recebido: {request_type}")
+
         
         try:
             from channels.layers import get_channel_layer
@@ -374,7 +379,6 @@ class RequestLoan(APIView):
             if channel_layer:
                 users = sorted([request.user.username, owner_username])
                 room_group_name = f'private_chat_{users[0]}_{users[1]}'
-                
                 # Forçar o tipo baseado no request_type
                 if request_type == 'troca':
                     tipo_texto = 'TROCA'
