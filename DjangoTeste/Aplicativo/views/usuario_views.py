@@ -90,6 +90,11 @@ class UserView(APIView):
     # Eu uni a logica de edição de usuario aqui pra GetUser
     # PATCH -> parcialmente atualiza algum objeto
     def patch(self, request):
+        # Salvar preferred_genres diretamente
+        if 'preferred_genres' in request.data:
+            request.user.preferred_genres = request.data['preferred_genres']
+            request.user.save()
+        
         serializer = UpdateUserSerializer(
             request.user,
             data=request.data,
