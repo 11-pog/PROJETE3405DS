@@ -51,7 +51,7 @@ class Publication(models.Model):
         verbose_name="Gênero do Livro"
     )
     
-    # Post Stuff
+    
     post_cover = models.ImageField(
         upload_to='thumbnails/',
         default='defaults/default_thumbnail.png'
@@ -64,6 +64,8 @@ class Publication(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(5),],
         default=3
     )
+    
+    is_fake = models.BooleanField(default=False) # determina se a postagem é verdadeira ou foi criada pelo comando
     
     tags = models.JSONField(blank=True, null=True) # Store genre tags, themes
     isbn = models.CharField(max_length=15, blank=True, null=True)

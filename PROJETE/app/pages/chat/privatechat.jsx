@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useUser } from '../../hooks/useUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../functions/api';
+import { Ionicons } from "@expo/vector-icons";
 
 export default function PrivateChat() {
   const [messages, setMessages] = useState([]);
@@ -143,6 +144,17 @@ export default function PrivateChat() {
         const { points_earned } = response.data;
         const message = `🎉 Empréstimo aceito!\n\n🎯 Pontos ganhos:\n• Você: +${points_earned.lender} pontos\n• Solicitante: +${points_earned.borrower} pontos`;
         Alert.alert('🎉 Sucesso!', message);
+        let segundos = 10;
+        const timer = document.getElementById('timer');
+        const intervalo = setInterval(() => {
+          setTimer.textContent = (`${segundos} segundos restantes`);
+          segundos--;
+          if (segundos < 0 ){
+            clearInterval(intervalo);
+            setTimer.textContent ( "tempo esgotado");
+
+          }
+        },1000);
       } else {
         const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
         Alert.alert('Sucesso', message);
@@ -182,10 +194,13 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
- 
-      <Pressable  >
-      <Text style={styles.header}>Chat com {chatPartner}</Text>
-      </Pressable>
+      <Pressable>
+  <View style={styles.headerContainer}>
+    <Ionicons name="arrow-back" size={28} color="#fff" />
+    <Text style={styles.header}>Chat com {chatPartner}</Text>
+  </View>
+</Pressable>
+
       
       <ScrollView 
         ref={scrollViewRef}
