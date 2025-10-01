@@ -12,6 +12,8 @@ export default function PrivateChat() {
   const [isConnected, setIsConnected] = useState(false);
   const [respondedLoans, setRespondedLoans] = useState(new Set());
   const [loanResponses, setLoanResponses] = useState(new Map()); // Map para guardar accept/reject
+  const [countdown, setCountdown] = useState(null);
+  const [countdownLoanId, setCountdownLoanId] = useState(null);
   const scrollViewRef = useRef();
   const socketRef = useRef(null);
   const params = useLocalSearchParams();
@@ -63,7 +65,7 @@ export default function PrivateChat() {
     loadMessages();
     
     // Conecta no WebSocket do chat privado
-    const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://192.168.0.105:8000/ws/private/${currentUser}/${chatPartner}/`;
     console.log('Tentando conectar WebSocket:', wsUrl);
     console.log('Usuários:', { currentUser, chatPartner });
     
@@ -144,17 +146,21 @@ export default function PrivateChat() {
         const { points_earned } = response.data;
         const message = `🎉 Empréstimo aceito!\n\n🎯 Pontos ganhos:\n• Você: +${points_earned.lender} pontos\n• Solicitante: +${points_earned.borrower} pontos`;
         Alert.alert('🎉 Sucesso!', message);
-        let segundos = 10;
-        const timer = document.getElementById('timer');
+        
+        // Iniciar contagem regressiva
+        setCountdownLoanId(loanId);
+        setCountdown(10);
         const intervalo = setInterval(() => {
-          setTimer.textContent = (`${segundos} segundos restantes`);
-          segundos--;
-          if (segundos < 0 ){
-            clearInterval(intervalo);
-            setTimer.textContent ( "tempo esgotado");
-
-          }
-        },1000);
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(intervalo);
+              setCountdown(null);
+              setCountdownLoanId(null);
+              return null;
+            }
+            return prev - 1;
+          });
+        }, 1000);
       } else {
         const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
         Alert.alert('Sucesso', message);
@@ -244,6 +250,11 @@ export default function PrivateChat() {
                 ]}>
                   {loanResponses.get(msg.loanId) === 'accept' ? '✓ Solicitação aceita' : '✗ Solicitação rejeitada'}
                 </Text>
+                {countdown && countdownLoanId === msg.loanId && (
+                  <Text style={styles.countdownText}>
+                    ⏱️ {countdown} segundos restantes
+                  </Text>
+                )}
               </View>
             )}
           </View>
@@ -422,5 +433,12 @@ const styles = StyleSheet.create({
   },
   rejectedText: {
     color: '#f44336',
+  },
+  countdownText: {
+    color: '#FF6B35',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 4,
+    textAlign: 'center'
   },
 });
