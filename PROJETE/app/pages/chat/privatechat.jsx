@@ -83,6 +83,8 @@ export default function PrivateChat() {
           loanId: data.loan_id || null
         };
         
+
+        
         setMessages(prev => {
           const updatedMessages = [...prev, newMessage];
           saveMessages(updatedMessages);
@@ -115,6 +117,10 @@ export default function PrivateChat() {
       setIsConnected(false);
     };
   }, [currentUser, chatPartner]);
+
+  const handleFinalizePeriod = () => {
+    Alert.alert('Sucesso', 'Período finalizado!');
+  };
 
   const sendMessage = () => {
     if (!inputMessage.trim() || !currentUser || !isConnected) {
@@ -223,6 +229,23 @@ export default function PrivateChat() {
           >
             <Text style={styles.senderName}>{msg.sender}</Text>
             <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
+            {msg.loanId && msg.isMe && (
+              <View style={styles.waitingContainer}>
+                <View style={styles.waitingBubble}>
+                  <Text style={styles.waitingText}>Aguardando resposta...</Text>
+                </View>
+                {respondedLoans.has(msg.loanId) && loanResponses.get(msg.loanId) === 'accept' && (
+                  <TouchableOpacity 
+                    style={styles.confirmButton}
+                    onPress={handleFinalizePeriod}
+                  >
+                    <Text style={styles.confirmButtonText}>
+                      ✅ Finalizar Período
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
             {msg.loanId && !msg.isMe && !respondedLoans.has(msg.loanId) && (
               <View style={styles.loanButtons}>
                 <TouchableOpacity 
@@ -254,6 +277,16 @@ export default function PrivateChat() {
                   <Text style={styles.countdownText}>
                     ⏱️ {countdown} segundos restantes
                   </Text>
+                )}
+                {msg.loanId && (
+                  <TouchableOpacity 
+                    style={styles.confirmButton}
+                    onPress={handleFinalizePeriod}
+                  >
+                    <Text style={styles.confirmButtonText}>
+                      ✅ Finalizar Período
+                    </Text>
+                  </TouchableOpacity>
                 )}
               </View>
             )}
@@ -440,5 +473,51 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 4,
     textAlign: 'center'
+  },
+  confirmSection: {
+    marginTop: 10,
+    alignItems: 'center'
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 5
+  },
+  confirmButtonPressed: {
+    backgroundColor: '#2E7D32'
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold'
+  },
+  confirmStatus: {
+    fontSize: 10,
+    color: '#666',
+    marginBottom: 5
+  },
+  allConfirmed: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  waitingContainer: {
+    marginTop: 8,
+    alignItems: 'center'
+  },
+  waitingBubble: {
+    backgroundColor: '#666',
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginBottom: 8
+  },
+  waitingText: {
+    fontSize: 12,
+    color: 'white',
+    fontStyle: 'italic'
   },
 });
