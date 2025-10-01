@@ -163,7 +163,12 @@ export default function CadastroLivro() {
   };
 
   // quando ISBN é escaneado
-  const handleBarCodeScanned = ({ data }) => {
+  const [scanned, setScanned] = useState(false);
+
+  function handleBarCodeScanned({ type, data }) {
+    setScanned(true); // bloqueia novas leituras
+    console.log("Código lido:", type, data);
+    alert(`ISBN detectado: ${data}`);
     setIsbn(data);
     setShowCamera(false);
     buscarLivro(data);
@@ -367,7 +372,7 @@ export default function CadastroLivro() {
               style={{ flex: 1 }} 
               facing="back"
               onBarcodeScanned={handleBarCodeScanned}
-              barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8"] }}
+              barcodeScannerSettings={{ barcodeTypes: ["ean13"] }}
             />
             <TouchableOpacity
               style={styles.closeButton}
