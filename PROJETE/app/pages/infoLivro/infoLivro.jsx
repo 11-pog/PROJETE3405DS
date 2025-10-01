@@ -162,7 +162,7 @@ export default function CadastroLivro() {
     }
   };
 
-  // quando ISBN é escaneado
+  // QUANDO O ISBN FOR ESCANEADO
   const [scanned, setScanned] = useState(false);
 
   function handleBarCodeScanned({ type, data }) {
@@ -177,20 +177,26 @@ export default function CadastroLivro() {
   const buscarLivro = async (isbn) => {
     setLoadingLivro(true);
     try {
-      const response = api.get("isbn/", { params: { isbn } });
-      const data = await response.data;
+      const response = await api.get("isbn/", { params: { isbn } });
+      const data = response.data;
+
       if (data) {
+        setTitulo(data.title || "");
+        setAutor(data.author || "");
+        setEditora(data.publisher || "");
+        setDescricao(data.description || "");
+        
         setLivro({
-          titulo: data.title || "Título desconhecido",
-          autor: data.authors
-            ? data.authors.map((a) => a.name).join(", ")
-            : "Autor desconhecido",
-          capa: data.cover?.medium || null,
+          titulo: data.title || "Título não encontrado",
+          autor: data.author || "Autor não encontrado",
         });
+
+        Alert.alert("Livro encontrado!","Aperte em Fechar para continuar e preencha as informações restantes.");
       } else {
         Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
     } catch (error) {
+      console.log("Erro ao buscar livro:", error);
       Alert.alert("Erro", "Falha ao buscar dados do livro.");
     } finally {
       setLoadingLivro(false);
@@ -208,61 +214,7 @@ export default function CadastroLivro() {
       }
     }
   };
-
-  // Tela da câmera
-  /*if (showCamera) {
-    return (
-      <View style={{ flex: 1 }}>
-        {!cameraError ? (
-          <>
-            <CameraView
-              style={{ flex: 1, width: "100%" }}
-              ref={cameraRef}
-              facing="back"
-              onCameraReady={() => setCameraReady(true)}
-              onMountError={() => setCameraError(true)}
-              onBarcodeScanned={cameraMode === "isbn" ? handleBarCodeScanned : undefined}
-              barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8"] }}
-            />
-
-            {!cameraReady && (
-              <ActivityIndicator
-                size="large"
-                color="#E09F3E"
-                style={{ position: "absolute", top: "50%", alignSelf: "center" }}
-              />
-            )}
-
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowCamera(false)}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
-            </TouchableOpacity>
-
-            {cameraMode === "foto" && cameraReady && (
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={handleTakePicture}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>📸 Capturar</Text>
-              </TouchableOpacity>
-            )}
-          </>
-        ) : (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ marginBottom: 10 }}>Câmera não disponível.</Text>
-            <TouchableOpacity
-              style={styles.errorButton}
-              onPress={() => setShowCamera(false)}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Voltar</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  }*/
+ 
 
   // Tela principal
   return (
@@ -275,6 +227,15 @@ export default function CadastroLivro() {
         <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
         <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
         <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+
+        {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
+        {livro && (
+          <View style={{ marginTop: 20, alignItems: "center", backgroundColor: "#fff", padding: 15, borderRadius: 10, marginHorizontal: 20 }}>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#E09F3E", marginBottom: 10 }}>Livro encontrado:</Text>
+            <Text style={{ fontSize: 14, fontWeight: "bold" }}>{livro.titulo}</Text>
+            <Text style={{ fontSize: 12, color: "#666" }}>{livro.autor}</Text>
+          </View>
+        )}
 
         <Text style={styles.sectionTitle}>Tipo de publicação:</Text>
         <View style={styles.typeContainer}>
@@ -349,20 +310,6 @@ export default function CadastroLivro() {
             source={{ uri: fotoLivro }}
             style={{ width: 150, height: 200, borderRadius: 8, marginTop: 10 }}
           />
-        )}
-
-        {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
-        {livro && (
-          <View style={{ marginTop: 20, alignItems: "center" }}>
-            {livro.capa && (
-              <Image
-                source={{ uri: livro.capa }}
-                style={{ width: 100, height: 150, borderRadius: 8, marginBottom: 10 }}
-              />
-            )}
-            <Text style={{ fontSize: 16, fontWeight: "bold" }}>{livro.titulo}</Text>
-            <Text>{livro.autor}</Text>
-          </View>
         )}
 
       <Botao texto="Ler ISBN" aoApertar={() => setModalIsVisible(true)} />
