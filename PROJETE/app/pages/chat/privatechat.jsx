@@ -141,7 +141,12 @@ export default function PrivateChat() {
   }, [currentUser, chatPartner]);
 
   const handleFinalizePeriod = () => {
-    Alert.alert('Sucesso', 'Período finalizado!');
+    router.push({
+      pathname: '/pages/avaliacao/avaliar',
+      params: {
+        chatPartner: chatPartner
+      }
+    });
   };
 
   const sendMessage = () => {

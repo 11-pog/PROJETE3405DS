@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import datetime
 from Aplicativo.models.user_models import Usuario
 from Aplicativo.models.publication_models import Loan, BookCareRating, Publication
+from Aplicativo.models.rating_models import UserRating, UserStats
 from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -521,3 +522,47 @@ class RejectLoan(APIView):
             
         except Loan.DoesNotExist:
             return Response({'error': 'Empréstimo não encontrado'}, status=404)
+
+
+class RateUser(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        rated_user_id = request.data.get('rated_user_id')
+        person_rating = request.data.get('person_rating')
+        book_care_rating = request.data.get('book_care_rating')
+        
+        try:
+            rated_user = Usuario.objects.get(id=rated_user_id)
+            
+            rating, created = UserRating.objects.get_or_create(
+                rated_user=rated_user,
+                rater=request.user,
+                defaults={
+                    'person_rating': person_rating,
+                    'book_care_rating': book_care_rating
+                }
+            )
+            
+            stats, _ = UserStats.objects.get_or_create(user=rated_user)
+            
+            if not created:
+                stats.total_person_rating -= rating.person_rating
+                stats.total_book_care_rating -= rating.book_care_rating
+                rating.person_rating = person_rating
+                rating.book_care_rating = book_care_rating
+                rating.save()
+            else:
+                stats.person_rating_count += 1
+                stats.book_care_rating_count += 1
+            
+            stats.total_person_rating += person_rating
+            stats.total_book_care_rating += book_care_rating
+            stats.save()
+            
+            return Response({
+                'message': 'Avaliação enviada com sucesso!'
+            }, status=200)
+            
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=404)
