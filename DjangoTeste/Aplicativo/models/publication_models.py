@@ -155,21 +155,4 @@ class Loan(models.Model):
         ordering = ['-start_date']
 
 
-class BookCareRating(models.Model):
-    loan = models.OneToOneField(
-        Loan,
-        on_delete=models.CASCADE,
-        related_name='care_rating'
-    )
-    care_rating = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        verbose_name="Nota de cuidado (1-5)"
-    )
-    comments = models.TextField(
-        blank=True, null=True,
-        verbose_name="Comentários sobre o estado do livro"
-    )
-    rated_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"{self.loan.publication.book_title} - {self.care_rating} estrelas"
+

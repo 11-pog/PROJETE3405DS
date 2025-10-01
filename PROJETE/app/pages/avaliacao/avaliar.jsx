@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,26 @@ import api from '../../functions/api';
 export default function Avaliar() {
   const [avaliacaoPessoa, setAvaliacaoPessoa] = useState(0);
   const [avaliacaoCuidado, setAvaliacaoCuidado] = useState(0);
+  const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState(null);
   const params = useLocalSearchParams();
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const response = await api.get(`usuarios/`);
+        const user = response.data.find(u => u.username === params.chatPartner);
+        setUserName(user ? user.first_name || user.username : params.chatPartner);
+        setUserId(user ? user.id : null);
+      } catch (error) {
+        setUserName(params.chatPartner);
+      }
+    };
+    
+    if (params.chatPartner) {
+      fetchUserName();
+    }
+  }, [params.chatPartner]);
 
   const renderStars = (rating, setRating) => {
     return (
@@ -36,7 +55,7 @@ export default function Avaliar() {
 
     try {
       const response = await api.post('avaliar/', {
-        rated_user_id: params.chatPartner,
+        rated_user_id: userId,
         person_rating: avaliacaoPessoa,
         book_care_rating: avaliacaoCuidado
       });
@@ -55,6 +74,7 @@ export default function Avaliar() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Avaliar Empréstimo</Text>
+      <Text style={styles.userInfo}>Avaliando: {userName}</Text>
       
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Avaliar Pessoa</Text>
@@ -84,8 +104,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
     color: '#335c67'
+  },
+  userInfo: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 30,
+    color: '#666',
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 8
   },
   section: {
     marginBottom: 30,

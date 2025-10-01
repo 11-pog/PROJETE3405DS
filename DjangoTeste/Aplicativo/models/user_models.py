@@ -59,6 +59,14 @@ class Usuario(AbstractUser):
     is_fake = models.BooleanField(default=False) # determina se a conta é verdadeira ou foi criada pelo comando
     preferred_genres = models.CharField(max_length=500, blank=True, null=True, default='')
     
+    # Avaliações do usuário
+    total_person_rating = models.IntegerField(default=0)
+    person_rating_count = models.IntegerField(default=0)
+    total_book_care_rating = models.IntegerField(default=0)
+    book_care_rating_count = models.IntegerField(default=0)
+    total_user_rating = models.IntegerField(default=0)
+    user_rating_count = models.IntegerField(default=0)
+    
     def get_care_rating_average(self):
         ratings = BookCareRating.objects.filter(loan__borrower=self)
         if ratings.exists():
