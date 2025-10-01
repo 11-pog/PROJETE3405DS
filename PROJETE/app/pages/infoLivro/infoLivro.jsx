@@ -197,7 +197,9 @@ export default function CadastroLivro() {
       }
     } catch (error) {
       console.log("Erro ao buscar livro:", error);
-      Alert.alert("Erro", "Falha ao buscar dados do livro.");
+      Alert.alert("Erro", "Falha ao buscar dados do livro.", "Tente novamente. Se não der certo provavelmente seu livro não está em nossa API",
+        "Então você pode preencher os dados manualmente."
+      );
     } finally {
       setLoadingLivro(false);
     }
@@ -312,18 +314,24 @@ export default function CadastroLivro() {
           />
         )}
 
-      <Botao texto="Ler ISBN" aoApertar={() => setModalIsVisible(true)} />
+      <Botao texto="Ler ISBN" aoApertar={() => {
+        setModalIsVisible(true);
+        setScanned(false); // Reset antes de abrir
+      }} />
         <Modal visible={modalIsVisible} animationType="slide">
           <View style={{ flex: 1 }}>
             <CameraView 
               style={{ flex: 1 }} 
               facing="back"
-              onBarcodeScanned={handleBarCodeScanned}
+              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
               barcodeScannerSettings={{ barcodeTypes: ["ean13"] }}
             />
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setModalIsVisible(false)}
+              onPress={() => {
+                setModalIsVisible(false);
+                setScanned(false); // Reset para permitir nova leitura
+              }}
             >
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
