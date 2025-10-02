@@ -21,6 +21,11 @@ class ListUsers(APIView):
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
+                'image_url': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
+                'total_person_rating': user.total_person_rating,
+                'person_rating_count': user.person_rating_count,
+                'total_book_care_rating': user.total_book_care_rating,
+                'book_care_rating_count': user.book_care_rating_count,
                 'chat_url': f'/private/{min(request.user.id, user.id)}/{max(request.user.id, user.id)}/'
             })
         return Response(users_data)
@@ -521,6 +526,28 @@ class RejectLoan(APIView):
             
         except Loan.DoesNotExist:
             return Response({'error': 'Empréstimo não encontrado'}, status=404)
+
+
+class GetUserById(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, user_id):
+        try:
+            user = Usuario.objects.get(id=user_id)
+            
+            return Response({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'image_url': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
+                'total_person_rating': user.total_person_rating,
+                'person_rating_count': user.person_rating_count,
+                'total_book_care_rating': user.total_book_care_rating,
+                'book_care_rating_count': user.book_care_rating_count
+            })
+            
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=404)
 
 
 class RateUser(APIView):

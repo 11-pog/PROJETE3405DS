@@ -210,7 +210,11 @@ export default function InfoIsolado() {
             <Text style={{ fontWeight: "bold", color: "#335c67" }}>
               Livro adicionado por:
             </Text>
-            <TouchableOpacity onPress={() => router.push(`/pages/perfil/perfilUsuario?userId=${creator.id}`)}>
+            <TouchableOpacity onPress={() => {
+              console.log('Creator ID:', creator.id);
+              console.log('Creator data:', creator);
+              router.push(`/pages/perfil/perfilUsuario?userId=${creator.id}`);
+            }}>
               <Text style={{ color: "#9e2a2b", marginBottom: 4, textDecorationLine: "underline" }}>
                 {creator.username}
               </Text>
