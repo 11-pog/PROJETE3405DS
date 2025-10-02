@@ -11,6 +11,7 @@ export default function EditarPublicacao() {
   const [bookDescription, setBookDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [tipo, setTipo] = useState('emprestimo');
+  const [genero, setGenero] = useState('');
 
   const params = useLocalSearchParams();
   const bookId = params.bookId;

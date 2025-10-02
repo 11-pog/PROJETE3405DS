@@ -39,7 +39,7 @@ from Aplicativo.views.chat_views import PrivateChat
 from Aplicativo.views.chat_author_view import GetBookAuthor
 from Aplicativo.views.chat_message_view import SendChatMessage
 from Aplicativo.views.test_auth import TestAuth
-from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink, RateLoanCare, RequestLoan, GetUserBooks, AcceptLoan, RejectLoan, RateUser
+from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink, RateLoanCare, RequestLoan, GetUserBooks, AcceptLoan, RejectLoan, RateUser, GetUserById
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -79,6 +79,7 @@ urlpatterns = [
     path('api/chat/enviar-mensagem/', SendChatMessage.as_view(), name='send_chat_message'),
     path('api/test-auth/', TestAuth.as_view(), name='test_auth'),
     path('api/usuario/<int:user_id>/perfil/', UserProfile.as_view(), name='user_profile'),
+    path('api/usuario/<int:user_id>/', GetUserById.as_view(), name='get_user_by_id'),
     path('api/chat/gerar-link/', GenerateChatLink.as_view(), name='generate_chat_link'),
 
     # Outros

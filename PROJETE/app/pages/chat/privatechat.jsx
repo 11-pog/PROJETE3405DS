@@ -11,22 +11,17 @@ export default function PrivateChat() {
   const [inputMessage, setInputMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [respondedLoans, setRespondedLoans] = useState(new Set());
-  const [loanResponses, setLoanResponses] = useState(new Map()); // Map para guardar accept/reject
+  const [loanResponses, setLoanResponses] = useState(new Map());
   const [countdown, setCountdown] = useState(null);
   const [countdownLoanId, setCountdownLoanId] = useState(null);
   const scrollViewRef = useRef();
   const socketRef = useRef(null);
   const params = useLocalSearchParams();
   const { user } = useUser();
-  
+
   const currentUser = user?.username;
   const chatPartner = params.chatPartner;
   const chatKey = `chat_${[currentUser, chatPartner].sort().join('_')}`;
-  
-  console.log('PrivateChat - Params:', params);
-  console.log('PrivateChat - User:', user);
-  console.log('PrivateChat - CurrentUser:', currentUser);
-  console.log('PrivateChat - ChatPartner:', chatPartner);
 
   // Salvar mensagens no AsyncStorage
   const saveMessages = async (newMessages) => {
@@ -51,35 +46,29 @@ export default function PrivateChat() {
 
   useEffect(() => {
     if (!currentUser || !chatPartner) return;
-    
-    // Limpar estado anterior
+
     setMessages([]);
     setIsConnected(false);
-    
-    // Fechar conexão anterior se existir
+
     if (socketRef.current) {
       socketRef.current.close();
     }
-    
-    // Carregar mensagens salvas
+
     loadMessages();
-    
-    // Conecta no WebSocket do chat privado
+
     const wsUrl = `ws://192.168.18.39:8000/ws/private/${currentUser}/${chatPartner}/`;
-    console.log('Tentando conectar WebSocket:', wsUrl);
-    console.log('Usuários:', { currentUser, chatPartner });
-    
+
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      
+
       if (data.type === 'loan_response') {
         setRespondedLoans(prev => new Set([...prev, data.loan_id]));
         setLoanResponses(prev => new Map([...prev, [data.loan_id, data.action]]));
         return;
       }
-      
+
       if (data.type === 'start_countdown') {
         setCountdownLoanId(data.loan_id);
         setCountdown(10);
@@ -96,7 +85,7 @@ export default function PrivateChat() {
         }, 1000);
         return;
       }
-      
+
       if (data.type === 'private_message') {
         const newMessage = {
           id: Date.now(),
@@ -106,7 +95,7 @@ export default function PrivateChat() {
           timestamp: new Date().toISOString(),
           loanId: data.loan_id || null
         };
-        
+
         setMessages(prev => {
           const updatedMessages = [...prev, newMessage];
           saveMessages(updatedMessages);
@@ -116,19 +105,14 @@ export default function PrivateChat() {
     };
 
     socketRef.current.onopen = () => {
-      console.log(`✅ Chat conectado: ${currentUser} ↔ ${chatPartner}`);
       setIsConnected(true);
     };
-    
+
     socketRef.current.onclose = () => {
-      console.log('🔌 Chat desconectado');
       setIsConnected(false);
     };
-    
-    socketRef.current.onerror = (err) => {
-      console.error('❌ Erro no chat:', err);
-      console.error('URL tentada:', wsUrl);
-      console.error('Estado do WebSocket:', socketRef.current?.readyState);
+
+    socketRef.current.onerror = () => {
       setIsConnected(false);
     };
 
@@ -151,31 +135,32 @@ export default function PrivateChat() {
 
   const sendMessage = () => {
     if (!inputMessage.trim() || !currentUser || !isConnected) {
-      console.log('Não pode enviar:', { inputMessage: !!inputMessage.trim(), currentUser: !!currentUser, isConnected });
       return;
     }
-    
+
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({
         message: inputMessage,
         sender: currentUser
       }));
       setInputMessage('');
-    } else {
-      console.log('WebSocket não está pronto');
     }
   };
 
   const handleLoanResponse = async (loanId, action) => {
     try {
-      const endpoint = action === 'accept' ? 'emprestimos/aceitar/' : 'emprestimos/rejeitar/';
+      let endpoint = "";
+      if (action === "accept") {
+        endpoint = "emprestimos/aceitar/";
+      } else {
+        endpoint = "emprestimos/rejeitar/";
+      }
+
       const response = await api.post(endpoint, { loan_id: loanId });
-      
-      // Marcar como respondido e salvar o tipo de resposta
+
       setRespondedLoans(prev => new Set([...prev, loanId]));
       setLoanResponses(prev => new Map([...prev, [loanId, action]]));
-      
-      // Enviar resposta via WebSocket para sincronizar
+
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify({
           type: 'loan_response',
@@ -184,12 +169,9 @@ export default function PrivateChat() {
           sender: currentUser
         }));
       }
-      
+
       if (action === 'accept' && response.data.points_earned) {
-        const { points_earned } = response.data;
         Alert.alert('🎉 Sucesso!', 'Empréstimo aceito!');
-        
-        // Enviar início da contagem regressiva para ambos
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
           socketRef.current.send(JSON.stringify({
             type: 'start_countdown',
@@ -197,8 +179,7 @@ export default function PrivateChat() {
             sender: currentUser
           }));
         }
-        
-        // Iniciar contagem regressiva
+
         setCountdownLoanId(loanId);
         setCountdown(10);
         const intervalo = setInterval(() => {
@@ -213,12 +194,14 @@ export default function PrivateChat() {
           });
         }, 1000);
       } else {
-        const message = action === 'accept' ? 'Empréstimo aceito!' : 'Empréstimo rejeitado!';
-        Alert.alert('Sucesso', message);
+        if (action === 'accept') {
+          Alert.alert('Sucesso', 'Empréstimo aceito!');
+        } else {
+          Alert.alert('Sucesso', 'Empréstimo rejeitado!');
+        }
       }
-      
+
     } catch (error) {
-      console.error('Erro ao responder empréstimo:', error);
       Alert.alert('Erro', 'Não foi possível processar a resposta');
     }
   };
@@ -230,7 +213,7 @@ export default function PrivateChat() {
       </View>
     );
   }
-  
+
   if (!currentUser) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -239,7 +222,7 @@ export default function PrivateChat() {
       </View>
     );
   }
-  
+
   if (!chatPartner) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -251,108 +234,119 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
-      <Pressable>
-  <View style={styles.headerContainer}>
-    <Ionicons name="arrow-back" size={28} color="#fff" />
-    <Text style={styles.header}>Chat com {chatPartner}</Text>
-  </View>
-</Pressable>
+      <Pressable onPress={() => router.back()}>
+        <View style={styles.headerContainer}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+          <Text style={styles.header}>Conversando com {chatPartner}</Text>
+        </View>
+      </Pressable>
 
-      
       <ScrollView 
         ref={scrollViewRef}
         style={styles.messagesContainer}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd()}
       >
-        {messages.map((msg) => (
-          <View 
-            key={msg.id} 
-            style={[
-              styles.messageContainer,
-              msg.isMe ? styles.myMessage : styles.otherMessage
-            ]}
-          >
-            <Text style={styles.senderName}>{msg.sender}</Text>
-            <Text style={[styles.messageText, { color: msg.isMe ? 'white' : '#333' }]}>{msg.text}</Text>
-            {msg.text.includes('EMPRÉSTIMO ACEITO') && countdown && (
-              <Text style={styles.countdownText}>
-                ⏱️ {countdown} segundos restantes
-              </Text>
-            )}
-            {msg.text.includes('EMPRÉSTIMO ACEITO') && !countdown && (
-              <TouchableOpacity 
-                style={styles.confirmButton}
-                onPress={handleFinalizePeriod}
-              >
-                <Text style={styles.confirmButtonText}>
-                  ✅ Finalizar Período
+        {messages.map((msg) => {
+          let messageStyle = styles.otherMessage;
+          if (msg.isMe) {
+            messageStyle = styles.myMessage;
+          }
+
+          let textColor = "#333";
+          if (msg.isMe) {
+            textColor = "white";
+          }
+
+          let respondedText = "";
+          let containerRespondedStyle = styles.respondedContainer;
+          let textRespondedStyle = styles.respondedText;
+
+          if (msg.loanId && !msg.isMe && respondedLoans.has(msg.loanId)) {
+            if (loanResponses.get(msg.loanId) === 'accept') {
+              respondedText = "✓ Solicitação aceita";
+            } else {
+              respondedText = "✗ Solicitação rejeitada";
+              containerRespondedStyle = [styles.respondedContainer, styles.rejectedContainer];
+              textRespondedStyle = [styles.respondedText, styles.rejectedText];
+            }
+          }
+
+          return (
+            <View key={msg.id} style={[styles.messageContainer, messageStyle]}>
+              <Text style={styles.senderName}>{msg.sender}</Text>
+              <Text style={[styles.messageText, { color: textColor }]}>{msg.text}</Text>
+
+              {msg.text.includes('EMPRÉSTIMO ACEITO') && countdown && (
+                <Text style={styles.countdownText}>
+                  ⏱️ {countdown} segundos restantes
                 </Text>
-              </TouchableOpacity>
-            )}
-            {msg.loanId && msg.isMe && (
-              <View style={styles.waitingContainer}>
-                {!respondedLoans.has(msg.loanId) && (
-                  <View style={styles.waitingBubble}>
-                    <Text style={styles.waitingText}>Aguardando resposta...</Text>
-                  </View>
-                )}
-                {respondedLoans.has(msg.loanId) && loanResponses.get(msg.loanId) === 'reject' && (
-                  <View style={styles.waitingBubble}>
-                    <Text style={styles.waitingText}>Solicitação rejeitada</Text>
-                  </View>
-                )}
-              </View>
-            )}
-            {msg.loanId && !msg.isMe && !respondedLoans.has(msg.loanId) && (
-              <View style={styles.loanButtons}>
+              )}
+
+              {msg.text.includes('EMPRÉSTIMO ACEITO') && !countdown && (
                 <TouchableOpacity 
-                  style={styles.acceptButton}
-                  onPress={() => handleLoanResponse(msg.loanId, 'accept')}
+                  style={styles.confirmButton}
+                  onPress={handleFinalizePeriod}
                 >
-                  <Text style={styles.buttonText}>✓ Aceitar</Text>
+                  <Text style={styles.confirmButtonText}>
+                    ✅ Finalizar Período
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.rejectButton}
-                  onPress={() => handleLoanResponse(msg.loanId, 'reject')}
-                >
-                  <Text style={styles.buttonText}>✗ Rejeitar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {msg.loanId && !msg.isMe && respondedLoans.has(msg.loanId) && (
-              <View style={[
-                styles.respondedContainer,
-                loanResponses.get(msg.loanId) === 'reject' && styles.rejectedContainer
-              ]}>
-                <Text style={[
-                  styles.respondedText,
-                  loanResponses.get(msg.loanId) === 'reject' && styles.rejectedText
-                ]}>
-                  {loanResponses.get(msg.loanId) === 'accept' ? '✓ Solicitação aceita' : '✗ Solicitação rejeitada'}
-                </Text>
+              )}
 
+              {msg.loanId && msg.isMe && (
+                <View style={styles.waitingContainer}>
+                  {respondedLoans.has(msg.loanId) ? (
+                    loanResponses.get(msg.loanId) === 'reject' ? (
+                      <View style={styles.waitingBubble}>
+                        <Text style={styles.waitingText}>Solicitação rejeitada</Text>
+                      </View>
+                    ) : null
+                  ) : (
+                    <View style={styles.waitingBubble}>
+                      <Text style={styles.waitingText}>Aguardando resposta...</Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
+              {msg.loanId && !msg.isMe && !respondedLoans.has(msg.loanId) && (
+                <View style={styles.loanButtons}>
+                  <TouchableOpacity 
+                    style={styles.acceptButton}
+                    onPress={() => handleLoanResponse(msg.loanId, 'accept')}
+                  >
+                    <Text style={styles.buttonText}>✓ Aceitar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.rejectButton}
+                    onPress={() => handleLoanResponse(msg.loanId, 'reject')}
+                  >
+                    <Text style={styles.buttonText}>✗ Rejeitar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
-              </View>
-            )}
-          </View>
-        ))}
+              {msg.loanId && !msg.isMe && respondedLoans.has(msg.loanId) && (
+                <View style={containerRespondedStyle}>
+                  <Text style={textRespondedStyle}>
+                    {respondedText}
+                  </Text>
+                </View>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
 
       <View style={styles.inputContainer}>
         <TouchableOpacity 
           style={styles.loanButton}
           onPress={() => {
-            console.log('Botão de empréstimo clicado!');
-            console.log('chatPartner:', chatPartner);
             try {
               router.push({
                 pathname: '/pages/emprestimo/criar',
-                params: {
-                  chatPartner: chatPartner
-                }
+                params: { chatPartner: chatPartner }
               });
-              console.log('Navegação executada');
             } catch (error) {
               console.error('Erro na navegação:', error);
             }
@@ -375,7 +369,13 @@ export default function PrivateChat() {
             disabled={!isConnected}
           >
             <Text style={styles.sendButtonText}>
-              {isConnected ? 'Enviar' : 'Conectando...'}
+              {(() => {
+                if (isConnected) {
+                  return "Enviar";
+                } else {
+                  return "Conectando...";
+                }
+              })()}
             </Text>
           </TouchableOpacity>
         </View>
@@ -385,53 +385,34 @@ export default function PrivateChat() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#335c67',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
   },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 15,
-    backgroundColor: '#335c67',
     color: 'white',
+    marginLeft: 10,
+    textAlign: 'center'
   },
-  messagesContainer: {
-    flex: 1,
-    padding: 10,
-  },
+  messagesContainer: { flex: 1, padding: 10 },
   messageContainer: {
     marginVertical: 5,
     padding: 10,
     borderRadius: 10,
     maxWidth: '80%',
   },
-  myMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#335c67',
-  },
-  otherMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e0e0e0',
-  },
-  senderName: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    color: '#666',
-  },
-  messageText: {
-    fontSize: 16,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    padding: 10,
-    backgroundColor: 'white',
-  },
+  myMessage: { alignSelf: 'flex-end', backgroundColor: '#335c67' },
+  otherMessage: { alignSelf: 'flex-start', backgroundColor: '#e0e0e0' },
+  senderName: { fontSize: 12, fontWeight: 'bold', marginBottom: 2, color: '#666' },
+  messageText: { fontSize: 16 },
+  centered: { justifyContent: 'center', alignItems: 'center' },
+  inputContainer: { padding: 10, backgroundColor: 'white' },
   loanButton: {
     backgroundColor: '#E09F3E',
     borderRadius: 20,
@@ -440,15 +421,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignSelf: 'center',
   },
-  loanButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  messageInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
+  loanButtonText: { color: 'white', fontWeight: 'bold', fontSize: 14 },
+  messageInputRow: { flexDirection: 'row', alignItems: 'flex-end' },
   textInput: {
     flex: 1,
     borderWidth: 1,
@@ -465,35 +439,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  sendButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  loanButtons: {
-    flexDirection: 'row',
-    marginTop: 8,
-    gap: 8,
-  },
-  acceptButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  rejectButton: {
-    backgroundColor: '#f44336',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
+  sendButtonDisabled: { backgroundColor: '#ccc' },
+  sendButtonText: { color: 'white', fontWeight: 'bold' },
+  loanButtons: { flexDirection: 'row', marginTop: 8, gap: 8 },
+  acceptButton: { backgroundColor: '#4CAF50', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 },
+  rejectButton: { backgroundColor: '#f44336', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 },
+  buttonText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
   respondedContainer: {
     marginTop: 8,
     padding: 8,
@@ -501,68 +452,15 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
   },
-  respondedText: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  rejectedContainer: {
-    backgroundColor: '#ffeaea',
-  },
-  rejectedText: {
-    color: '#f44336',
-  },
-  countdownText: {
-    color: '#FF6B35',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 4,
-    textAlign: 'center'
-  },
-  confirmSection: {
-    marginTop: 10,
-    alignItems: 'center'
-  },
-  confirmButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 5
-  },
-  confirmButtonPressed: {
-    backgroundColor: '#2E7D32'
-  },
-  confirmButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold'
-  },
-  confirmStatus: {
-    fontSize: 10,
-    color: '#666',
-    marginBottom: 5
-  },
-  allConfirmed: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: 'bold',
-    textAlign: 'center'
-  },
-  waitingContainer: {
-    marginTop: 8,
-    alignItems: 'center'
-  },
-  waitingBubble: {
-    backgroundColor: '#666',
-    borderRadius: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginBottom: 8
-  },
-  waitingText: {
-    fontSize: 12,
-    color: 'white',
-    fontStyle: 'italic'
-  },
+  respondedText: { color: '#4CAF50', fontSize: 12, fontWeight: 'bold' },
+  rejectedContainer: { backgroundColor: '#ffeaea' },
+  rejectedText: { color: '#f44336' },
+  countdownText: { color: '#FF6B35', fontSize: 12, fontWeight: 'bold', marginTop: 4, textAlign: 'center' },
+  confirmButton: { backgroundColor: '#4CAF50', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20, marginBottom: 5 },
+  confirmButtonText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+  waitingContainer: { marginTop: 8, alignItems: 'center' },
+  waitingBubble: { backgroundColor: '#666', borderRadius: 15, paddingHorizontal: 12, paddingVertical: 6, marginBottom: 8 },
+  waitingText: { fontSize: 12, color: 'white', fontStyle: 'italic' },
 });
+
+
