@@ -38,6 +38,7 @@ export default function Pontos() {
   }
 
   return (
+    
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Meus Pontos</Text>
@@ -50,17 +51,13 @@ export default function Pontos() {
 
         <View style={styles.infoContainer}>
           <Text style={styles.infoTitle}>Como ganhar:</Text>
-          <Text style={styles.infoText}>• Doação: 150/50 pts</Text>
           <Text style={styles.infoText}>• Empréstimo: 10 pts/dia</Text>
           <Text style={styles.infoText}>• Troca: 150 pts cada</Text>
         </View>
 
         <View style={styles.rewardsContainer}>
           <Text style={styles.rewardsTitle}>Trocar por:</Text>
-          <View style={styles.rewardItem}>
-            <Text style={styles.rewardName}>Desconto 10%</Text>
-            <Text style={styles.rewardCost}>1500</Text>
-          </View>
+         
           <View style={styles.rewardItem}>
             <Text style={styles.rewardName}>Frete grátis</Text>
             <Text style={styles.rewardCost}>2000</Text>
@@ -70,11 +67,7 @@ export default function Pontos() {
             <Text style={styles.rewardCost}>3000</Text>
           </View>
           <View style={styles.rewardItem}>
-            <Text style={styles.rewardName}>Livro premium</Text>
-            <Text style={styles.rewardCost}>4000</Text>
-          </View>
-          <View style={styles.rewardItem}>
-            <Text style={styles.rewardName}>Assinatura</Text>
+            <Text style={styles.rewardName}>Assinatura Skeelo</Text>
             <Text style={styles.rewardCost}>5000</Text>
           </View>
         </View>
