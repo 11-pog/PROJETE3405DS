@@ -539,6 +539,8 @@ class RateUser(APIView):
             rated_user.person_rating_count += 1
             rated_user.total_book_care_rating += book_care_rating
             rated_user.book_care_rating_count += 1
+            rated_user.total_user_rating += 1
+            rated_user.user_rating_count += 1
             rated_user.save()
             
             return Response({

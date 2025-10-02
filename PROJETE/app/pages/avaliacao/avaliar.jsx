@@ -54,18 +54,13 @@ export default function Avaliar() {
     }
 
     try {
-      const response = await api.post('avaliar/', {
+      await api.post('avaliar/', {
         rated_user_id: userId,
         person_rating: avaliacaoPessoa,
         book_care_rating: avaliacaoCuidado
       });
 
-      Alert.alert('Sucesso', 'Avaliação enviada com sucesso!', [
-        {
-          text: 'OK',
-          onPress: () => router.push('/pages/feed')
-        }
-      ]);
+      router.push('/pages/principal/principal');
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível enviar a avaliação');
     }
