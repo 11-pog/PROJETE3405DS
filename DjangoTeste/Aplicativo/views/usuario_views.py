@@ -274,7 +274,7 @@ class UserProfile(APIView):
                 'username': user.username,
                 'email': user.email,
                 'city': user.city,
-                'care_rating_average': user.get_care_rating_average(),
+                # 'care_rating_average': user.get_care_rating_average(),
                 'total_loans': user.get_total_loans_count(),
                 'completed_loans': user.get_completed_loans_count(),
                 'chat_url': f'/private/{request.user.id}/{user.id}/'

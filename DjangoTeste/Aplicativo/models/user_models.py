@@ -1,6 +1,6 @@
 from django.db import models
-from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractUser , PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from Aplicativo.models.publication_models import Loan
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -65,8 +65,6 @@ class Usuario(AbstractUser):
     book_care_rating_count = models.IntegerField(default=0)
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
-    
-
     
     def __str__(self):
         return self.email
