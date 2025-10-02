@@ -13,14 +13,18 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--users',
+            '-u',
             type=int,
-            default=10,
+            default=0,
             help='Number of fake users to create'
         )
+        
         parser.add_argument(
             '--publications',
+            '--pubs',
+            '-p',
             type=int,
-            default=50,
+            default=0,
             help='Number of fake publications to create'
         )
     
@@ -31,29 +35,44 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.NOTICE(f"Creating {num_users} users and {num_publications} publications..."))
         
-        # --- Create users ---
-        users = []
+        if num_users > 0:
+            self.create_users(num_users)
+        
+        if num_publications > 0:
+            pubs = self.create_publications(num_publications)
+            Publication.objects.bulk_create(pubs)
+        
+        self.stdout.write(self.style.SUCCESS("FAKE DB POPULATION COMPLETE!"))
+    
+    
+    def create_users(self, num_users):
         for _ in range(num_users):
             username = fake.user_name()
             email = fake.email()
             password = "testpassword123"
+            
             user, created = User.objects.get_or_create(
-                email=email,
+                email = email,
                 defaults={
-                    "username": username,
-                    "is_fake": True,
+                    'username': username,
+                    'is_fake': True,
                     }
-            )
+                )
+            
             if created:
                 user.set_password(password)
                 user.save()
-            users.append(user)
+            
             self.stdout.write(self.style.SUCCESS(f"Created user: {username}"))
+    
+    
+    def create_publications(self, num_publications):
+        users = list(User.objects.filter(is_fake = True))
         
-        # --- Create publications ---
+        pubs = []
         for _ in range(num_publications):
             creator = random.choice(users)
-            pub = Publication.objects.create(
+            pub = Publication(
                 post_creator=creator,
                 book_title=fake.sentence(nb_words=4),
                 book_author=fake.name(),
@@ -65,7 +84,7 @@ class Command(BaseCommand):
                 post_type=random.choice([Publication.PostType.EMPRESTIMO, Publication.PostType.TROCA]),
                 book_rating=random.randint(0, 5),
                 tags=random.sample(
-                    list(Publication.BookGenre.values()),
+                    [genre[0] for genre in Publication.BookGenre.choices],
                     k=random.randint(1, 3)
                 ),
                 isbn=fake.isbn13(separator="-"),
@@ -73,6 +92,7 @@ class Command(BaseCommand):
                 language=random.choice(["English", "Portuguese", "Spanish", "German"]),
                 full_text_excerpt=fake.paragraph(nb_sentences=5),
             )
+            pubs.append(pub)
             self.stdout.write(self.style.SUCCESS(f"Created publication: {pub.book_title}"))
         
-        self.stdout.write(self.style.SUCCESS("FAKE DB POPULATION COMPLETE!"))
+        return pubs

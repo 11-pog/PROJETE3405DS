@@ -1,11 +1,9 @@
+from itertools import product
 import random
 from django.core.management.base import BaseCommand
-from faker import Faker
 from django.contrib.auth import get_user_model
 from Aplicativo.models.publication_models import Publication, Interaction
-from django.utils import timezone
 
-fake = Faker()
 User = get_user_model()
 
 class Command(BaseCommand):
@@ -19,32 +17,32 @@ class Command(BaseCommand):
         )
     
     def handle(self, *args, **options):
-        num_interactions = num_publications * 5  # ~5 per pub
+        num_interactions = options['interactions']
+        
+        users = User.objects.all().filter(is_fake = True)
+        pubs = Publication.objects.all().filter()
+        
+        if num_interactions > (len(users)*len(pubs)):
+            raise ValueError("Amount of interactions cannot be bigger than the number of unique combinations between posts and fake users")
+        
+        all_pairs = list(product(users, pubs))
+        
+        # Shuffle & cut down to desired number
+        random.shuffle(all_pairs)
+        selected_pairs = all_pairs[:num_interactions]
+        
         interactions = []
-
-        all_pubs = list(Publication.objects.all())
-
-        for _ in range(num_interactions):
-            user = random.choice(users)
-            pub = random.choice(all_pubs)
-            
-            # avoid duplicates
-            if Interaction.objects.filter(user=user, publication=pub).exists():
-                continue
-            
+        for user, pub in selected_pairs:
             interaction = Interaction(
                 user=user,
                 publication=pub,
-                book_rating=random.choice([None, random.randint(1, 5)]),  # sometimes None
+                book_rating=random.choice([None, random.randint(1, 5)]),
                 view_count=random.randint(1, 10),
-                is_saved=random.choice([True, False]),
-                messaged_author=random.choice([True, False, False]),  # bias to rare
-                verified_trade=random.choice([True, False, False, False]),  # rarer
-                last_viewed_at=timezone.now(),
+                is_saved = random.choices([True, False], weights=[0.05, 0.95], k=1)[0],
+                messaged_author = random.choices([True, False], weights=[0.03, 0.97], k=1)[0],
+                verified_trade = random.choices([True, False], weights=[0.01, 0.99], k=1)[0]
             )
             interactions.append(interaction)
-
-        # Bulk insert for speed
+        
         Interaction.objects.bulk_create(interactions, ignore_conflicts=True)
-
         self.stdout.write(self.style.SUCCESS(f"Created {len(interactions)} interactions"))

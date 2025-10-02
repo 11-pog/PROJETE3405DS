@@ -1,7 +1,6 @@
 from django.db import models
-from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractUser , PermissionsMixin, BaseUserManager
-from Aplicativo.models.publication_models import BookCareRating, Loan
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from Aplicativo.models.publication_models import Loan
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -67,11 +66,11 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
-    def get_care_rating_average(self):
-        ratings = BookCareRating.objects.filter(loan__borrower=self)
-        if ratings.exists():
-            return round(ratings.aggregate(models.Avg('care_rating'))['care_rating__avg'], 2)
-        return None
+    #def get_care_rating_average(self):
+    #    ratings = BookCareRating.objects.filter(loan__borrower=self)
+    #    if ratings.exists():
+    #        return round(ratings.aggregate(models.Avg('care_rating'))['care_rating__avg'], 2)
+    #    return None
     
     def get_total_loans_count(self):
         return Loan.objects.filter(borrower=self).count()
