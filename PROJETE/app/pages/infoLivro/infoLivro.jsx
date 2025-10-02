@@ -221,7 +221,7 @@ export default function CadastroLivro() {
   // Tela principal
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView style={{ paddingBottom: 80 }}>
         <StatusBar hidden />
         <Text style={styles.header}>Digite as informações do livro</Text>
 
@@ -336,9 +336,10 @@ export default function CadastroLivro() {
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
           </View>
-        </Modal>
+        </Modal
+        ><Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
       <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
-      <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
+      
     </ScrollView>
       <BarraInicial />
     </View>
