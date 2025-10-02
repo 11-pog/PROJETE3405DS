@@ -14,7 +14,9 @@ export default function PerfilUsuario() {
       try {
         const response = await api.get(`usuarios/`);
         const userData = response.data.find(u => u.id == userId);
-        setUser(userData);
+        if (userData) {
+          setUser(userData);
+        }
       } catch (error) {
         console.error('Erro ao buscar usuário:', error);
       } finally {
