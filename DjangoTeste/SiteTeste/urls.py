@@ -35,12 +35,13 @@ from Aplicativo.views.publication_views import (
     GetMinhasPublicacoes,  
 )
 from Aplicativo.views.usuario_views import UserView, UploadUserImage
-from Aplicativo.views.chat_views import PrivateChat
-from Aplicativo.views.chat_author_view import GetBookAuthor
-from Aplicativo.views.chat_message_view import SendChatMessage
+from Aplicativo.views.chat.chat_views import PrivateChat
+from Aplicativo.views.chat.chat_author_view import GetBookAuthor
+from Aplicativo.views.chat.chat_message_view import SendChatMessage
 from Aplicativo.views.test_auth import TestAuth
 from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink, RateLoanCare, RequestLoan, GetUserBooks, AcceptLoan, RejectLoan, RateUser, GetUserById
 from rest_framework_simplejwt.views import TokenRefreshView
+from Aplicativo.views.test_simple import test_view
 
 urlpatterns = [
     # Admin
@@ -83,6 +84,7 @@ urlpatterns = [
     path('api/chat/gerar-link/', GenerateChatLink.as_view(), name='generate_chat_link'),
 
     # Outros
+    path('api/test/', test_view, name="test"),
     path('api/isbn/', ISBNLookup.as_view(), name="isbn-lookup"),
     path('private/<int:user1_id>/<int:user2_id>/', PrivateChat.as_view(), name='private_chat'),
     path("api/usuario/publicacoes/<int:pk>/delete/", PublicationDeleteView, name="publication-delete"),

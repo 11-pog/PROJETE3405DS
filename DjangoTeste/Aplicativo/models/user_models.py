@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from Aplicativo.models.publication_models import Loan, Publication
-from pgvector.django import VectorField
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -67,8 +65,7 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
-    embedding_size = Publication.embedding_size
-    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+
     
     def __str__(self):
         return self.email

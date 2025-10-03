@@ -17,8 +17,7 @@ from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
 
 
 class GetMinhasPublicacoes(ListAPIView):

@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-from pgvector.django import VectorField
 
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
@@ -74,8 +73,7 @@ class Publication(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
-    embedding_size = 5 + len(PostType) + len(BookGenre) + 384
-    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+
     
     def __str__(self):
         return self.book_title
