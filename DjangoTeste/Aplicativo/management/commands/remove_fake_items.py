@@ -13,7 +13,7 @@ class Command(BaseCommand):
             '--users',
             dest='users',
             action='store_true',
-            help='Include fake users'
+            help='Delete fake users'
         )
         
         parser.add_argument(
@@ -22,23 +22,36 @@ class Command(BaseCommand):
             '--publications',
             dest='pubs',
             action='store_true',
-            help='Include fake publications'
+            help='Delete fake publications'
+        )
+        
+        parser.add_argument(
+            '-i',
+            '--interactions',
+            dest='interactions',
+            action='store_true',
+            help='Delete fake interactions'
         )
     
     def handle(self, *args, **options):
         del_pub = options['pubs']
         del_user = options['users']
+        del_inter = options['interactions']
         
-        if not (del_pub or del_user):
-            raise CommandError("Please specify --users (-u) or --publications (-p), keep in mind that deleting fake users will cascade into deleting fake publications as well")
+        if not (del_pub or del_user or del_inter):
+            raise CommandError("Please specify --users (-u), --publications (-p), or --interactions (-i). Note: deleting fake users will also delete their fake publications and interactions.")
         
         if del_user:
             self.delete_fake(User)
-            self.stdout.write(self.style.SUCCESS(f"Django automatically deletes all fake posts as well"))
+            self.stdout.write(self.style.SUCCESS(f"Django automatically deletes all fake posts and interactions as well"))
             return
         
         if del_pub:
             self.delete_fake(Publication)
+        
+        if del_inter:
+            deleted, _ = Interaction.objects.filter(user__is_fake=True).delete()
+            self.stdout.write(self.style.SUCCESS(f"Deleted {deleted} fake Interactions"))
     
     
     def delete_fake(self, model):

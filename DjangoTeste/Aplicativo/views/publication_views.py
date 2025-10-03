@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-created_at"
+        ordering = "-similarity"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -52,24 +52,14 @@ class GetBookList(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_vec = user.embedding
         
-        if user_vec is None:
-            return Publication.objects.filter(cluster_label = 3).order_by('-created_at')
-        user_vec = np.array(user.embedding, dtype=np.float32).reshape(1, -1)
+        user_vec = user.embedding  # store as a vector in DB
+        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(embedding=None)
+        qs_sorted = qs_sorted.annotate(
+            similarity=-CosineDistance(F("embedding"), user_vec)
+        )
         
-        pubs = Publication.objects.exclude(post_creator=user).exclude(embedding=None)
-        
-        X = np.array([pub.embedding for pub in pubs], dtype=np.float32)
-        
-        sims = cosine_similarity(user_vec, X)[0]
-        
-        for pub, score in zip(pubs, sims):
-            pub.similarity_score = score
-        
-        pubs_sorted = sorted(pubs, key=lambda p: p.similarity_score, reverse=True)
-        
-        return pubs_sorted
+        return qs_sorted.order_by('-similarity', 'id')
 
 
 
@@ -273,7 +263,7 @@ class pesquisadelivro(APIView):
             Q(post_type__icontains=busca) |
             Q(book_author__icontains=busca)
         )
-
+        
         if not livros.exists():
             return Response({'message': 'Nenhum livro encontrado com esse título'}, status=404)
         
