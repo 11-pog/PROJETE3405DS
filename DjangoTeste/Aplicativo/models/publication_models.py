@@ -3,6 +3,9 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+# se der erro tenta instalar pgvector ao inves de deletar ele xd (ta em requirements.txt)
+from pgvector.django import VectorField
+
 # Modelo de banco de dados de Postagem/Publicação
 class Publication(models.Model):
     class PostType(models.TextChoices):
@@ -29,7 +32,6 @@ class Publication(models.Model):
         verbose_name= "Post Author"
     )
     
-    cluster_label = models.IntegerField(null=True, blank=True)
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
@@ -73,7 +75,13 @@ class Publication(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
-
+    # Isso aqui é de extrema importancia pra ia de recomendação
+    # por favor, NAO TIRAR
+    
+    # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA 
+    embedding_size = 5 + len(PostType) + len(BookGenre) + 384
+    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+    cluster_label = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
         return self.book_title

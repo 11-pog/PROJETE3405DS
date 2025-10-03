@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from pgvector.django import VectorField
+from Aplicativo.models.publication_models import Publication
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -53,7 +55,6 @@ class Usuario(AbstractUser):
     city = models.CharField(max_length=100, blank=True, null=True)
     points = models.IntegerField(default=0)  
     
-    cluster_label = models.IntegerField(null=True, blank=True)
     is_fake = models.BooleanField(default=False) # determina se a conta é verdadeira ou foi criada pelo comando
     preferred_genres = models.JSONField(default=list, blank=True)
     
@@ -65,7 +66,14 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
-
+    
+    # Isso aqui é de extrema importancia pra ia de recomendação
+    # por favor, NAO TIRAR
+    
+    # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA
+    cluster_label = models.IntegerField(null=True, blank=True)
+    embedding_size = Publication.embedding_size
+    embedding = VectorField(dimensions=embedding_size, null=True, blank=True)
     
     def __str__(self):
         return self.email
