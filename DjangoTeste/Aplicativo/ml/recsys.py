@@ -1,12 +1,12 @@
 from sklearn.metrics.pairwise import cosine_similarity
-from Aplicativo.ml.vector import get_publication_vector, get_user_vector
+from Aplicativo.ml.vector import get_all_publication_vector, get_all_user_vector
 from Aplicativo.models.publication_models import Publication
 import numpy as np
 
 def recommend_publications_for_user(user, top_n=10):
-    user_vec = get_user_vector(user).reshape(1, -1)
+    user_vec = get_all_user_vector(user).reshape(1, -1)
     
-    publications = get_publication_vector()
+    publications = get_all_publication_vector()
     pub_vectors = np.array([p['vector'] for p in publications])
     pub_ids = [p['id'] for p in publications]
     

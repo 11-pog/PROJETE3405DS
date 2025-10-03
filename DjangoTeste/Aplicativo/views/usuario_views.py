@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from Aplicativo.ml.vector import get_user_vector
+
 class ListUsers(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -74,8 +76,6 @@ class UserView(APIView):
     # POST -> cria um objeto, eis o nome, post
     # Vulgo CadastrarUsuario
     def post(self, request):
-        print('oi')
-        
         usuario = request.data.get('usuario')
         senha = request.data.get('senha')
         email = request.data.get('email')
@@ -84,6 +84,8 @@ class UserView(APIView):
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
         user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
+        user.embedding = get_user_vector(user)
+        user.save()
         
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -98,6 +100,7 @@ class UserView(APIView):
         # Salvar preferred_genres diretamente
         if 'preferred_genres' in request.data:
             request.user.preferred_genres = request.data['preferred_genres']
+            request.user.embedding = get_user_vector(request.user)
             request.user.save()
         
         serializer = UpdateUserSerializer(
