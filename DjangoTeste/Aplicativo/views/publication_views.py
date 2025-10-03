@@ -17,6 +17,9 @@ from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
 
 class GetMinhasPublicacoes(ListAPIView):
     """
@@ -45,9 +48,35 @@ class GetBookList(ListAPIView):
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
-    
+    """
     def get_queryset(self):
-        return Publication.objects.select_related('post_creator').all().order_by('-created_at', 'id')
+        
+        
+        user = self.request.user
+        
+        # 1. Grab user embedding
+        if user.embedding is None:
+            return Publication.objects.none()
+        user_vec = np.array(user.embedding, dtype=np.float32).reshape(1, -1)
+        
+        # 2. Grab candidate publications (you can filter, e.g. exclude user’s own posts)
+        pubs = Publication.objects.exclude(post_creator=user).exclude(embedding=None)
+        
+        # 3. Build matrix of pub embeddings
+        X = np.array([pub.embedding for pub in pubs], dtype=np.float32)
+        
+        # 4. Compute similarity
+        sims = cosine_similarity(user_vec, X)[0]
+        
+        # 5. Attach similarity scores back
+        for pub, score in zip(pubs, sims):
+            pub.similarity_score = score
+        
+        # 6. Sort by similarity
+        pubs_sorted = sorted(pubs, key=lambda p: p.similarity_score, reverse=True)
+        
+        return pubs_sorted"""
+
 
 
 class BookDetailView(APIView):
