@@ -98,18 +98,26 @@ class GetFavoriteBooks(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
+        
+        # Busca apenas as interações salvas do usuário com suas datas
         saved_interactions = Interaction.objects.filter(
             user=user,
             is_saved=True
-        ).select_related('publication')
+        ).values('publication_id', 'saved_at')
         
+        # Cria um dicionário para mapear publication_id -> saved_at
+        saved_dates = {item['publication_id']: item['saved_at'] for item in saved_interactions}
+        
+        # Busca as publicações e adiciona a data de salvamento
         publications = Publication.objects.filter(
-            id__in=saved_interactions.values_list('publication_id', flat=True)
-        ).annotate(
-            saved_at=F('interactions__saved_at')
-        ).order_by('-saved_at', 'id')
+            id__in=saved_dates.keys()
+        ).distinct()
         
-        return publications
+        # Ordena manualmente usando as datas do dicionário
+        publications_list = list(publications)
+        publications_list.sort(key=lambda p: saved_dates.get(p.id), reverse=True)
+        
+        return publications_list
 
 
 class FavoritePostView(APIView):

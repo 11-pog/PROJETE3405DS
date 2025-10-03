@@ -191,7 +191,11 @@ export default function CadastroLivro() {
           autor: data.author || "Autor não encontrado",
         });
 
-        Alert.alert("Livro encontrado!","Aperte em Fechar para continuar e preencha as informações restantes.");
+        // Fecha automaticamente a câmera quando encontra o livro
+        setModalIsVisible(false);
+        setScanned(false);
+        
+        Alert.alert("Livro encontrado!", "As informações foram preenchidas automaticamente. Preencha as informações restantes e salve o livro.");
       } else {
         Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
@@ -225,10 +229,10 @@ export default function CadastroLivro() {
         <StatusBar hidden />
         <Text style={styles.header}>Digite as informações do livro</Text>
 
-        <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
-        <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
-        <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
-        <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+        <MeuInput width={80} label="Título do Livro:" valor={titulo} onChange={setTitulo} />
+        <MeuInput width={80} label="Autor(a):" valor={autor} onChange={setAutor} />
+        <MeuInput width={80} label="Editora" valor={editora} onChange={setEditora} />
+        <MeuInput width={80} label="Descrição" valor={descricao} onChange={setDescricao} />
 
         {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
         {livro && (

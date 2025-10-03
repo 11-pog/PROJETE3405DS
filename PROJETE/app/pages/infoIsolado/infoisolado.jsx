@@ -76,7 +76,7 @@ export default function InfoIsolado() {
             style={{
               width: 150,
               height: 220,
-              backgroundColor: "#e09f3e",
+              backgroundColor: "#e9f3e",
               borderRadius: 12,
               alignItems: "center",
               justifyContent: "center",
@@ -224,6 +224,20 @@ export default function InfoIsolado() {
             </Text>   
             </View>
           </View>
+
+          <TouchableOpacity
+            style={{ padding: 8, borderRadius: 8 }}
+            onPress={() => {
+              router.push({
+                pathname: '/pages/chat/privatechat',
+                params: {
+                  chatPartner: creator.username
+                }
+              });
+            }}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={30} color="#E09F3E" />
+          </TouchableOpacity>
         </View>
         <View style={{ width: "90%", marginBottom: 20 }}>
           <Text
