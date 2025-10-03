@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.cluster import KMeans
-from Aplicativo.ml.vector import get_publication_vector, get_user_vector
+from Aplicativo.ml.vector import get_all_publication_vector, get_all_user_vector
 from Aplicativo.models.publication_models import Publication
 from django.contrib.auth import get_user_model
 from sklearn.metrics import silhouette_score
@@ -27,7 +27,7 @@ def find_optimal_k_silhouette(X, k_min=2, k_max=30):
     return best_k, best_model
 
 def cluster_publications():
-    data = get_publication_vector()
+    data = get_all_publication_vector()
     X = np.array([d['vector'] for d in data])
     ids = [d['id'] for d in data]
     
@@ -42,7 +42,7 @@ def cluster_publications():
         Publication.objects.bulk_update(pubs.values(), ['cluster_label'])
 
 def cluster_users():
-    data = get_user_vector()
+    data = get_all_user_vector()
     X = np.array([d['vector'] for d in data])
     ids = [d['id'] for d in data]
     

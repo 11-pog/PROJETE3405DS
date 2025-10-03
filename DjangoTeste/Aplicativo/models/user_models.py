@@ -57,7 +57,7 @@ class Usuario(AbstractUser):
     
     cluster_label = models.IntegerField(null=True, blank=True)
     is_fake = models.BooleanField(default=False) # determina se a conta é verdadeira ou foi criada pelo comando
-    preferred_genres = models.CharField(max_length=500, blank=True, null=True, default='')
+    preferred_genres = models.JSONField(default=list, blank=True)
     
     # Avaliações do usuário
     total_person_rating = models.IntegerField(default=0)
