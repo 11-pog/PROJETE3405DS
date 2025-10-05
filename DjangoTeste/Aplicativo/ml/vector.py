@@ -47,8 +47,12 @@ def get_publication_vector(pub, **kwargs):
     
     return np.concatenate([behavior_vector, post_type_vector, genre_vector, text_vector])
 
-def get_all_publication_vector():
+def get_all_publication_vector(**kwargs):
+    stdout = kwargs.get('stdout')
     publications = Publication.objects.all()
+    
+    if stdout:
+        stdout.write(f"Generating vectors for {len(publications)} publications")
     
     features_list = []
     updt_pubs = []
@@ -65,7 +69,8 @@ def get_all_publication_vector():
     for pub in publications:
         full_vector = get_publication_vector(
             pub,
-            stats = stats_lookup.get(pub.id)
+            stats = stats_lookup.get(pub.id),
+            **kwargs
         )
         
         features_list.append({
@@ -77,6 +82,10 @@ def get_all_publication_vector():
         updt_pubs.append(pub)
     
     Publication.objects.bulk_update(updt_pubs, ['embedding'])
+    
+    if stdout:
+        stdout.write(f"Updated embeddings for {len(updt_pubs)} publications")
+    
     return features_list
 
 
@@ -146,30 +155,37 @@ def get_text_vector(user, **kwargs):
     text_vectors = []
     weights = []
     for pub in pubs:
-        vec = embeddings.get(pub.id) or zeros
+        vec = embeddings.get(pub.id)
+        if vec is None:
+            vec = zeros
         w = ratings_dict.get(pub.id) or 1
         text_vectors.append(vec)
         weights.append(w)
     return np.average(text_vectors, axis=0, weights=weights)
 
 
-def get_all_user_vector():
+def get_all_user_vector(**kwargs):
+    stdout = kwargs.get('stdout')
     users = User.objects.all()
+    
+    if stdout:
+        stdout.write(f"Generating vectors for {len(users)} users")
     
     features_list = []
     updt_users = []
     
-    kwargs = get_kwargs()
+    info_kwargs = get_kwargs()
     
     for user in users:
         full_vector = get_user_vector(
             user,
-            stats=kwargs['stats'].get(user.id, {}),
-            post_type_counts=kwargs['post_type_by_user'].get(user.id, []),
-            book_genre_counts=kwargs['genre_by_user'].get(user.id, []),
-            ratings_dict=kwargs['ratings_dict_by_user'].get(user.id, {}),
-            book_description_embeddings=kwargs['book_embeddings'],
-            interacted_pubs=kwargs['pubs_by_user'].get(user.id, []),
+            stats=info_kwargs['stats'].get(user.id, {}),
+            post_type_counts=info_kwargs['post_type_counts'].get(user.id, []),
+            book_genre_counts=info_kwargs['book_genre_counts'].get(user.id, []),
+            ratings_dict=info_kwargs['ratings_dict'].get(user.id, {}),
+            book_description_embeddings=info_kwargs['book_embeddings'],
+            interacted_pubs=info_kwargs['interacted_pubs'].get(user.id, []),
+            **kwargs
         )
         features_list.append({
             'id': user.id,
@@ -180,6 +196,10 @@ def get_all_user_vector():
         updt_users.append(user)
     
     User.objects.bulk_update(updt_users, ['embedding'])
+    
+    if stdout:
+        stdout.write(f"Updated embeddings for {len(updt_users)} users")
+    
     return features_list
 
 
@@ -197,7 +217,6 @@ def get_kwargs():
     ratings_dict_by_user = defaultdict(dict)
     for r in ratings:
         ratings_dict_by_user[r["user_id"]][r["publication_id"]] = r["weight"]
-    
     
     user_pubs = (
         Interaction.objects.values("user_id", "publication_id").distinct()
@@ -257,6 +276,6 @@ def get_kwargs():
         'post_type_counts':post_type_by_user,
         'book_genre_counts':genre_by_user,
         'ratings_dict':ratings_dict_by_user,
-        'book_description_embeddings':book_embeddings,
+        'book_embeddings':book_embeddings,
         'interacted_pubs':pubs_by_user,
     }

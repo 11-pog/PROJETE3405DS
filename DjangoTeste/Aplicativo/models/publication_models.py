@@ -18,6 +18,7 @@ class Publication(models.Model):
         PECA_TEATRAL = "peca_teatral", "Peça Teatral"
         DIDATICO = "didatico", "Didático"
         NAO_FICCAO = "nao_ficcao", "Não-ficção"
+        NAO_ESPECIFICADO = "nao_especificado", "Não especificado"
     
     post_type = models.CharField(
         max_length=10,
@@ -47,8 +48,7 @@ class Publication(models.Model):
     book_genre = models.CharField(
         max_length=20,
         choices=BookGenre.choices,
-        blank=True,
-        null=True,
+        default=BookGenre.NAO_ESPECIFICADO,
         verbose_name="Gênero do Livro"
     )
     
@@ -68,10 +68,8 @@ class Publication(models.Model):
     
     is_fake = models.BooleanField(default=False) # determina se a postagem é verdadeira ou foi criada pelo comando
     
-    tags = models.JSONField(blank=True, null=True) # Store genre tags, themes
-    isbn = models.CharField(max_length=15, blank=True, null=True)
+    isbn = models.CharField(max_length=20, blank=True, null=True)
     language = models.CharField(max_length=30, blank=True, null=True)
-    full_text_excerpt = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     

@@ -81,16 +81,14 @@ class Command(BaseCommand):
                 book_description=fake.paragraph(nb_sentences=3),
                 post_location_city=fake.city(),
                 post_description=fake.text(max_nb_chars=200),
-                post_type=random.choice([Publication.PostType.EMPRESTIMO, Publication.PostType.TROCA]),
+                post_type=random.choice([type[0] for type in Publication.PostType.choices]),
                 book_rating=random.randint(0, 5),
-                tags=random.sample(
-                    [genre[0] for genre in Publication.BookGenre.choices],
-                    k=random.randint(1, 3)
+                book_genre=random.choice(
+                    [genre[0] for genre in Publication.BookGenre.choices]
                 ),
                 isbn=fake.isbn13(separator="-"),
                 is_fake=True,
                 language=random.choice(["English", "Portuguese", "Spanish", "German"]),
-                full_text_excerpt=fake.paragraph(nb_sentences=5),
             )
             pubs.append(pub)
             self.stdout.write(self.style.SUCCESS(f"Created publication: {pub.book_title}"))
