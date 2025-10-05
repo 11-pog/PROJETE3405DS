@@ -56,9 +56,9 @@ export default function InfoIsolado() {
       {/* Container principal */}
       <View style={{ alignItems: "center", padding: 20 }}>
         {/* Capa */}
-        {book.post_cover ? (
+        {book.post_cover && !book.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: book.post_cover }}
+            source={{ uri: `http://192.168.0.200:8000${book.post_cover}` }}
             style={{
               width: 150,
               height: 220,
@@ -70,19 +70,27 @@ export default function InfoIsolado() {
               shadowRadius: 5,
               elevation: 5,
             }}
+            resizeMode="cover"
           />
         ) : (
           <View
             style={{
               width: 150,
               height: 220,
-              backgroundColor: "#e9f3e",
               borderRadius: 12,
-              alignItems: "center",
-              justifyContent: "center",
               marginBottom: 16,
+              backgroundColor: "#ddd",
+              shadowColor: "#000",
+              shadowOffset: { width: 4, height: 4 },
+              shadowOpacity: 1,
+              shadowRadius: 5,
+              elevation: 5,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-          />
+          >
+            <Ionicons name="book" size={40} color="#999" />
+          </View>
         )}
 
         <Text

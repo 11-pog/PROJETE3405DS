@@ -180,9 +180,33 @@ class CadastrarLivro(APIView):
     
     def post(self, request):
         try:
-            serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
+            print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
+            print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
+            if 'post_cover' in request.data:
+                print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
+                print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+            
+            # Separar a imagem dos outros dados
+            data_dict = {}
+            image_file = None
+            
+            for key, value in request.data.items():
+                if key == 'post_cover':
+                    image_file = value
+                else:
+                    data_dict[key] = value
+            
+            serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
             if serializer.is_valid():
                 publication = serializer.save()
+                
+                # Adicionar a imagem após salvar
+                if image_file:
+                    publication.post_cover = image_file
+                    publication.save()
+                    print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
+                
+                print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
                 
                 # Dispara notificação
                 channel_layer = get_channel_layer()
@@ -256,7 +280,8 @@ class pesquisadelivro(APIView):
             Q(book_title__icontains=busca) |
             Q(post_location_city__icontains=busca) |
             Q(post_type__icontains=busca) |
-            Q(book_author__icontains=busca)
+            Q(book_author__icontains=busca) |
+            Q(post_creator__username__icontains=busca)
         )
 
         if not livros.exists():

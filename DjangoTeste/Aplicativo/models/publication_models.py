@@ -53,7 +53,9 @@ class Publication(models.Model):
     
     
     post_cover = models.ImageField(
-        upload_to='thumbnails/',
+        upload_to='livros/',
+        null=True,
+        blank=True,
         default='defaults/default_thumbnail.png'
         )
     post_location_city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Post City")
