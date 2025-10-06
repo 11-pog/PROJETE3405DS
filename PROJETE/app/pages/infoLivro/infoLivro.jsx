@@ -336,9 +336,8 @@ export default function CadastroLivro() {
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
           </View>
-        </Modal
-        ><Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
-      <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
+        </Modal><Botao texto="Adicionar foto do livro" aoApertar={handleChoosePhoto} />
+      <Botao texto="Salvar livro" aoApertar={SalvarLivro} />
       
     </ScrollView>
       <BarraInicial />

@@ -101,9 +101,10 @@ class GetFavoriteBooks(ListAPIView):
     """
     Lista apenas os livros que o usuário marcou como favoritos.
     """
+    
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-saved_at"
+        ordering = "-id"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -111,18 +112,12 @@ class GetFavoriteBooks(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        saved_interactions = Interaction.objects.filter(
-            user=user,
-            is_saved=True
-        ).select_related('publication')
-        
-        publications = Publication.objects.filter(
-            id__in=saved_interactions.values_list('publication_id', flat=True)
-        ).annotate(
-            saved_at=F('interactions__saved_at')
-        ).order_by('-saved_at', 'id')
-        
-        return publications
+        return Publication.objects.filter(
+            interactions__user=user,
+            interactions__is_saved=True
+        ).distinct().order_by('-id')
+    
+    
 
 
 class FavoritePostView(APIView):

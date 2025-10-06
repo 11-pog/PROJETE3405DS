@@ -188,6 +188,7 @@ export default function FeedLivros() {
   };//fim const handleSearch
 
   function toggleSaved(item) {
+    console.log("SALVOUUU");
     let bookId = item.id
     const willBeSaved = !item.is_saved;
 

@@ -20,13 +20,19 @@ export default function Favoritos() {
   const [nextPage, setNextPage] = useState(null)
   const path_back = usePathname()
 
-  const fetchBooks = useCallback(async (url = "usuario/favoritos/") => {
+  const fetchBooks = useCallback(async (url = "usuario/favoritos/", isFirstLoad = false) => {
     if (loading) return;
     setLoading(true);
 
     try {
       const response = await api.get(url);
-      setBooks((prev) => [...prev, ...response.data.results]);
+      
+      if (isFirstLoad) {
+        setBooks(response.data.results);
+      } else {
+        setBooks((prev) => [...prev, ...response.data.results]);
+      }
+      
       setNextPage(response.data.next);
       console.log(response.data)
     } catch (error) {
@@ -43,7 +49,7 @@ export default function Favoritos() {
   }
 
   useEffect(() => {
-    fetchBooks()
+    fetchBooks("usuario/favoritos/", true)
   }, []);
 
   const removeFavorite = (id) => {

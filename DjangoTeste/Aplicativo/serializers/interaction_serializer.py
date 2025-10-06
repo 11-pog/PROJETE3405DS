@@ -26,7 +26,16 @@ class InteractionSerializer(serializers.ModelSerializer):
         if not self.instance:
             publication = self.validated_data.get("publication")
             
-            self.instance = Interaction.objects.filter(user=user, publication=publication).first()
+            self.instance, created = Interaction.objects.get_or_create(
+                user=user, 
+                publication=publication,
+                defaults=self.validated_data
+            )
+            if not created:
+                for attr, value in self.validated_data.items():
+                    setattr(self.instance, attr, value)
+                self.instance.save()
+                return self.instance
         print(self.validated_data)
         return super().save(**kwargs)
     
