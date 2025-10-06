@@ -27,11 +27,11 @@ E também as brincadeirinhas que precisa pra rodar o backend
 3. Use o diretório padrão.
 4. Configure a **senha do usuário `postgres`**: `PROJ3405` (igual ao `settings.py` do Django).
 
-    Durante a instalação, o assistente pedirá uma senha para o usuário administrador padrão do PostgreSQL.
+    - Durante a instalação, o assistente pedirá uma senha para o usuário administrador padrão do PostgreSQL (chamado `postgres`).
 
-    Defina a senha como: `PROJ3405`
+    - Defina a senha como: `PROJ3405`
 
-    (essa senha é a usanda em settings.py do backend django).
+    - Essa senha é a usanda em settings.py do backend django
 
 5. Porta padrão: `5432`.
 6. Continue até terminar a instalação.
