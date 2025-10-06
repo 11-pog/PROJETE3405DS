@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from Aplicativo.ml.vector import get_user_vector
+from Aplicativo.ml.vector.user_vector import get_user_vector
 
 class ListUsers(APIView):
     permission_classes = [IsAuthenticated]

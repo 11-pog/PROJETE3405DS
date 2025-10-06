@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
-from Aplicativo.ml.vector import get_all_publication_vector, get_all_user_vector
+from Aplicativo.ml.vector.pub_vector import get_all_publication_vector
+from Aplicativo.ml.vector.user_vector import get_all_user_vector
 from Aplicativo.models.publication_models import Publication
 from django.contrib.auth import get_user_model
 from sklearn.metrics import silhouette_score
@@ -32,7 +33,7 @@ def cluster_publications(**kwargs):
         stdout.write("Starting publication clustering")
     
     data = get_all_publication_vector(**kwargs)
-    X = np.array([d['vector'] for d in data])
+    X = np.array([d['full_vector'] for d in data])
     ids = [d['id'] for d in data]
     
     if stdout:
@@ -60,7 +61,7 @@ def cluster_users(**kwargs):
         stdout.write("Starting user clustering")
     
     data = get_all_user_vector(**kwargs)
-    X = np.array([d['vector'] for d in data])
+    X = np.array([d['full_vector'] for d in data])
     ids = [d['id'] for d in data]
     
     if stdout:

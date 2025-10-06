@@ -1,95 +1,17 @@
+from Aplicativo.ml.vector.shared import User, text_model, encode_all_texts
 from collections import defaultdict
 from django.db.models import Avg, Sum, Count, Q
 from Aplicativo.models.publication_models import Publication, Interaction
-from django.contrib.auth import get_user_model
-from sentence_transformers import SentenceTransformer
 import numpy as np
 
-text_model = SentenceTransformer('all-MiniLM-L6-v2')
-User = get_user_model()
-
-FRONTEND_ID_TO_BACKEND_GENRE = {
-    "1": Publication.BookGenre.ROMANCE_NARRATIVA,
-    "2": Publication.BookGenre.POESIA,
-    "3": Publication.BookGenre.PECA_TEATRAL,
-    "4": Publication.BookGenre.DIDATICO,
-    "5": Publication.BookGenre.NAO_FICCAO,
-}
-
-def encode_all_texts(publications: Publication):
-    texts = [pub.book_description or "" for pub in publications]
-    
-    text_vectors = text_model.encode(texts, batch_size=32)
-    
-    return text_vectors
-
-def get_publication_vector(pub, **kwargs):
-    stats = kwargs.get('stats') or Interaction.objects.filter(publication=pub).aggregate(
-        avg_rating=Avg('book_rating'),
-        total_views=Sum('view_count'),
-        save_count=Count('id', filter=Q(is_saved=True)),
-        trade_count=Count('id', filter=Q(verified_trade=True)),
-        message_count=Count('id', filter=Q(messaged_author=True)),
-    )
-    behavior_vector = [
-        stats['avg_rating'] or 0,
-        stats['total_views'] or 0,
-        stats['save_count'] or 0,
-        stats['trade_count'] or 0,
-        stats['message_count'] or 0
-    ]
-    
-    post_type_vector = [int(pub.post_type == t) for t in Publication.PostType.values]
-    genre_vector = [int(pub.book_genre == g) for g in Publication.BookGenre.values]
-    
-    text = pub.book_description or ""
-    text_vector = text_model.encode(text)
-    
-    return np.concatenate([behavior_vector, post_type_vector, genre_vector, text_vector])
-
-def get_all_publication_vector(**kwargs):
-    stdout = kwargs.get('stdout')
-    publications = Publication.objects.all()
-    
-    if stdout:
-        stdout.write(f"Generating vectors for {len(publications)} publications")
-    
-    features_list = []
-    updt_pubs = []
-    
-    all_stats = Interaction.objects.values('publication').annotate(
-        avg_rating=Avg('book_rating'),
-        total_views=Sum('view_count'),
-        save_count=Count('id', filter=Q(is_saved=True)),
-        trade_count=Count('id', filter=Q(verified_trade=True)),
-        message_count=Count('id', filter=Q(messaged_author=True)),
-    )
-    stats_lookup = {stat['publication']: stat for stat in all_stats}
-    
-    for pub in publications:
-        full_vector = get_publication_vector(
-            pub,
-            stats = stats_lookup.get(pub.id),
-            **kwargs
-        )
-        
-        features_list.append({
-            'id': pub.id,
-            'vector': full_vector
-        })
-        
-        pub.embedding = full_vector
-        updt_pubs.append(pub)
-    
-    Publication.objects.bulk_update(updt_pubs, ['embedding'])
-    
-    if stdout:
-        stdout.write(f"Updated embeddings for {len(updt_pubs)} publications")
-    
-    return features_list
-
-
 def get_user_vector(user, **kwargs):
+    feat_vector = get_user_feature_vec(user, **kwargs)
+    text_vector = get_text_vector(user, **kwargs)
+    
+    return feat_vector, text_vector, np.concatenate([feat_vector, text_vector])
+
+
+def get_user_feature_vec(user, **kwargs):
     stats = kwargs.get('stats') or user.interactions.aggregate(
         avg_rating=Avg('book_rating'),
         total_views=Sum('view_count'),
@@ -115,7 +37,6 @@ def get_user_vector(user, **kwargs):
     total = sum(post_type_vector) or 1
     post_type_vector = [g/total for g in post_type_vector]
     
-    
     genre_counts = kwargs.get('book_genre_counts') or user.interactions.values('publication__book_genre').annotate(count=Count('id'))
     genre_vector = [0] * len(Publication.BookGenre.values)
     
@@ -126,9 +47,7 @@ def get_user_vector(user, **kwargs):
     total = sum(genre_vector) or 1
     genre_vector = [g/total for g in genre_vector]
     
-    text_vector = get_text_vector(user, **kwargs)
-    
-    return np.concatenate([behavior_vector, post_type_vector, genre_vector, text_vector])
+    return np.concatenate([behavior_vector, post_type_vector, genre_vector])
 
 
 def get_text_vector(user, **kwargs):
@@ -147,15 +66,10 @@ def get_text_vector(user, **kwargs):
         )
         ratings_dict = {r["publication_id"]: r["weight"] for r in ratings}
     
-    embeddings = kwargs.get('book_description_embeddings')
-    if embeddings is None:
-        embeddings = encode_all_texts(pubs)
-        embeddings = {pub.id: embedding for pub, embedding in zip(pubs, embeddings)}
-    
     text_vectors = []
     weights = []
     for pub in pubs:
-        vec = embeddings.get(pub.id)
+        vec = pub.description_embedding
         if vec is None:
             vec = zeros
         w = ratings_dict.get(pub.id) or 1
@@ -174,10 +88,10 @@ def get_all_user_vector(**kwargs):
     features_list = []
     updt_users = []
     
-    info_kwargs = get_kwargs()
+    info_kwargs = _get_kwargs()
     
     for user in users:
-        full_vector = get_user_vector(
+        feat_vec, text_vec, full_vec = get_user_vector(
             user,
             stats=info_kwargs['stats'].get(user.id, {}),
             post_type_counts=info_kwargs['post_type_counts'].get(user.id, []),
@@ -189,13 +103,17 @@ def get_all_user_vector(**kwargs):
         )
         features_list.append({
             'id': user.id,
-            'vector': full_vector
+            'full_vector': full_vec,
+            'feature_vector': feat_vec,
+            'text_embedding': text_vec,
         })
         
-        user.embedding = full_vector
+        user.full_vector = full_vec
+        user.description_embedding = text_vec
+        user.features_embedding = feat_vec
         updt_users.append(user)
     
-    User.objects.bulk_update(updt_users, ['embedding'])
+    User.objects.bulk_update(updt_users, ['full_vector', 'features_embedding', 'description_embedding'])
     
     if stdout:
         stdout.write(f"Updated embeddings for {len(updt_users)} users")
@@ -203,11 +121,8 @@ def get_all_user_vector(**kwargs):
     return features_list
 
 
-def get_kwargs():
+def _get_kwargs():
     pubs = Publication.objects.all()
-    
-    book_embeddings = encode_all_texts(pubs)
-    book_embeddings = {pub.id: emb for pub, emb in zip(pubs, book_embeddings)}
     
     ratings = (
         Interaction.objects
@@ -227,7 +142,6 @@ def get_kwargs():
         pubs_by_user[rel["user_id"]].append(pub_map[rel["publication_id"]])
     
     
-    # 3) interacted publications per user (one query)
     user_pubs_qs = Interaction.objects.values('user_id', 'publication_id').distinct()
     pubs_by_user = defaultdict(list)
     for rel in user_pubs_qs:
@@ -244,6 +158,7 @@ def get_kwargs():
         message_count=Count('id', filter=Q(messaged_author=True)),
     )
     stats_by_user = {}
+    
     for s in stats_qs:
         stats_by_user[s['user_id']] = {
             'avg_rating': s.get('avg_rating'),
@@ -273,9 +188,9 @@ def get_kwargs():
     
     return {
         'stats': stats_by_user,
-        'post_type_counts':post_type_by_user,
-        'book_genre_counts':genre_by_user,
-        'ratings_dict':ratings_dict_by_user,
-        'book_embeddings':book_embeddings,
-        'interacted_pubs':pubs_by_user,
+        'post_type_counts': post_type_by_user,
+        'book_genre_counts': genre_by_user,
+        'ratings_dict': ratings_dict_by_user,
+        'book_embeddings': encode_all_texts(pubs),
+        'interacted_pubs': pubs_by_user,
     }
