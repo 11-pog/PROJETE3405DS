@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../../functions/api';
 import { useUser } from '../../hooks/useUser';
@@ -58,9 +58,16 @@ export default function ChatList() {
         onPress={() => startChat(item)}
       >
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.username.charAt(0).toUpperCase()}
-          </Text>
+          {item.image_url ? (
+            <Image 
+              source={{ uri: item.image_url }} 
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Text style={styles.avatarText}>
+              {item.username.charAt(0).toUpperCase()}
+            </Text>
+          )}
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item.username}</Text>
@@ -90,6 +97,7 @@ export default function ChatList() {
         renderItem={renderUser}
         keyExtractor={(item) => item.id.toString()}
         style={styles.usersList}
+        contentContainerStyle={styles.usersListContent}
       />
       <BarraInicial />
     </View>
@@ -133,6 +141,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   userInfo: {
     flex: 1,
   },
@@ -154,5 +167,8 @@ const styles = StyleSheet.create({
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  usersListContent: {
+    paddingBottom: 100,
   },
 });
