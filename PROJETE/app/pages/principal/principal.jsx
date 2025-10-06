@@ -3,7 +3,7 @@ import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOp
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router, usePathname } from 'expo-router'
-import api from '../../functions/api'
+import api, { BASE_URL } from '../../functions/api'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -242,8 +242,8 @@ export default function FeedLivros() {
       <View style={styles.card}>
         {/* Imagem do livro */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
-          <Image 
-            source={{ uri: `http://192.168.0.200:8000${item.post_cover}` }}
+          <Image
+            source={{ uri: BASE_URL + item.post_cover }}
             style={styles.image}
             resizeMode="cover"
           />
@@ -271,7 +271,7 @@ export default function FeedLivros() {
               {item.book_title} - {item.book_author}
             </Text>
           </Pressable>
-          
+
 
           <Text style={styles.tipoAcao}>
             {
@@ -284,7 +284,7 @@ export default function FeedLivros() {
               })()
             }
           </Text>
-          
+
           {item.book_genre && (
             <Text style={styles.genreText}>
               📚 {{
@@ -296,7 +296,7 @@ export default function FeedLivros() {
               }[item.book_genre] || item.book_genre}
             </Text>
           )}
-          
+
           {(item.post_creator_username || item.post_creator || item.username || item.author_username) && (
             <TouchableOpacity onPress={async () => {
               try {
