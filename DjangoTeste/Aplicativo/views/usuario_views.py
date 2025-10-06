@@ -172,6 +172,7 @@ class SearchUser(APIView):
                     'username': usuario.username,
                     'email': usuario.email,
                     'is_active': usuario.is_active,
+                    'is_online': usuario.is_online,
                     'image_url': request.build_absolute_uri(usuario.profile_picture.url) if usuario.profile_picture else None,
                     'date_joined': usuario.date_joined.strftime('%Y-%m-%d') if usuario.date_joined else None,
                     'chat_url': f'/private/{min(request.user.id, usuario.id)}/{max(request.user.id, usuario.id)}/'

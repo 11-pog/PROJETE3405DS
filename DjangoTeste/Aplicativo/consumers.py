@@ -1,10 +1,16 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from django.utils import timezone
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         user1 = self.scope['url_route']['kwargs']['user1']
         user2 = self.scope['url_route']['kwargs']['user2']
+        
+        # Identifica qual usuário está conectando (quem abriu o chat)
+        # Assume que user1 é sempre o usuário atual
+        self.current_user = user1
         
         # Cria sala única para os 2 usuários (ordem alfabética)
         users = sorted([user1, user2])
@@ -16,12 +22,20 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+        
+        # Marcar apenas o usuário atual como online
+        print(f"[ONLINE] Marcando {self.current_user} como online")
+        await self.set_user_online(self.current_user, True)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
+        
+        # Marcar apenas o usuário atual como offline
+        print(f"[OFFLINE] Marcando {self.current_user} como offline")
+        await self.set_user_online(self.current_user, False)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -85,6 +99,19 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             'loan_id': event['loan_id'],
             'sender': event['sender']
         }))
+    
+    @database_sync_to_async
+    def set_user_online(self, username, is_online):
+        from Aplicativo.models.user_models import Usuario
+        try:
+            user = Usuario.objects.get(username=username)
+            user.is_online = is_online
+            if not is_online:
+                user.last_seen = timezone.now()
+            user.save()
+            print(f"[DB] Usuário {username} atualizado: is_online={is_online}")
+        except Usuario.DoesNotExist:
+            print(f"[DB] Usuário {username} não encontrado")
 
 class PublicationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -122,3 +149,24 @@ class PublicationConsumer(AsyncWebsocketConsumer):
             'type': 'new_publication',
             'publication': publication
         }))
+
+class OnlineStatusConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.username = self.scope['url_route']['kwargs']['username']
+        await self.accept()
+        await self.set_user_online(True)
+
+    async def disconnect(self, close_code):
+        await self.set_user_online(False)
+
+    @database_sync_to_async
+    def set_user_online(self, is_online):
+        from Aplicativo.models.user_models import Usuario
+        try:
+            user = Usuario.objects.get(username=self.username)
+            user.is_online = is_online
+            if not is_online:
+                user.last_seen = timezone.now()
+            user.save()
+        except Usuario.DoesNotExist:
+            pass

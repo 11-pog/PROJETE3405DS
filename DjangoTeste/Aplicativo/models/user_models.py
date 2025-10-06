@@ -66,6 +66,9 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
+    
     
     # Isso aqui é de extrema importancia pra ia de recomendação
     # por favor, NAO TIRAR
