@@ -65,8 +65,8 @@ export default function ChatList() {
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item.username}</Text>
           <Text style={styles.userUsername}>{item.email}</Text>
-          <Text style={styles.status}>
-            {item.is_active ? '• Online' : '• Offline'}
+          <Text style={[styles.status, { color: '#dc3545' }]}>
+            • Offline
           </Text>
         </View>
         
