@@ -127,18 +127,26 @@ class GetFavoriteBooks(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
+        
+        # Busca apenas as interações salvas do usuário com suas datas
         saved_interactions = Interaction.objects.filter(
             user=user,
             is_saved=True
-        ).select_related('publication')
+        ).values('publication_id', 'saved_at')
         
+        # Cria um dicionário para mapear publication_id -> saved_at
+        saved_dates = {item['publication_id']: item['saved_at'] for item in saved_interactions}
+        
+        # Busca as publicações e adiciona a data de salvamento
         publications = Publication.objects.filter(
-            id__in=saved_interactions.values_list('publication_id', flat=True)
-        ).annotate(
-            saved_at=F('interactions__saved_at')
-        ).order_by('-saved_at', 'id')
+            id__in=saved_dates.keys()
+        ).distinct()
         
-        return publications
+        # Ordena manualmente usando as datas do dicionário
+        publications_list = list(publications)
+        publications_list.sort(key=lambda p: saved_dates.get(p.id), reverse=True)
+        
+        return publications_list
 
 
 class FavoritePostView(APIView):
@@ -201,9 +209,33 @@ class CadastrarLivro(APIView):
     
     def post(self, request):
         try:
-            serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
+            print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
+            print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
+            if 'post_cover' in request.data:
+                print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
+                print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+            
+            # Separar a imagem dos outros dados
+            data_dict = {}
+            image_file = None
+            
+            for key, value in request.data.items():
+                if key == 'post_cover':
+                    image_file = value
+                else:
+                    data_dict[key] = value
+            
+            serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
             if serializer.is_valid():
                 publication = serializer.save()
+                
+                # Adicionar a imagem após salvar
+                if image_file:
+                    publication.post_cover = image_file
+                    publication.save()
+                    print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
+                
+                print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
                 
                 # Dispara notificação
                 channel_layer = get_channel_layer()
@@ -277,7 +309,8 @@ class pesquisadelivro(APIView):
             Q(book_title__icontains=busca) |
             Q(post_location_city__icontains=busca) |
             Q(post_type__icontains=busca) |
-            Q(book_author__icontains=busca)
+            Q(book_author__icontains=busca) |
+            Q(post_creator__username__icontains=busca)
         )
 
         if not livros.exists():

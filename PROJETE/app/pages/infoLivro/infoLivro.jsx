@@ -40,23 +40,47 @@ export default function CadastroLivro() {
 
   // salva livro no backend
   const SalvarLivro = async () => {
-    console.log('🔴 FUNÇÃO SALVAR EXECUTADA!');
-    console.log('🔴 GÊNERO ATUAL:', genero);
-    const dados = {
-      book_title: titulo,
-      book_author: autor,
-      book_publisher: editora,
-      book_description: descricao,
-      book_genre: genero,
-      post_type: tipo,
-      post_location_city: "São Paulo",
-    };
+    const formData = new FormData();
+    formData.append("book_title", titulo);
+    formData.append("book_author", autor);
+    formData.append("book_publisher", editora);
+    formData.append("book_description", descricao);
+    formData.append("book_genre", genero);
+    formData.append("post_type", tipo);
+    formData.append("post_location_city", "São Paulo");
 
-    console.log('📝 Dados sendo enviados:', dados);
+    if (fotoLivro) {
+      console.log('📸 Anexando foto:', fotoLivro);
+      
+      if (Platform.OS === 'web') {
+        try {
+          const response = await fetch(fotoLivro);
+          const blob = await response.blob();
+          const file = new File([blob], 'livro.jpg', { type: 'image/jpeg' });
+          formData.append('post_cover', file);
+        } catch (error) {
+          console.error('Erro ao processar imagem web:', error);
+        }
+      } else {
+        // Android e iOS
+        formData.append('post_cover', {
+          uri: fotoLivro,
+          type: 'image/jpeg',
+          name: 'livro.jpg'
+        });
+      }
+    }
+
+    console.log('📝 Dados sendo enviados com imagem:', fotoLivro ? 'SIM' : 'NÃO');
     console.log('🎭 Gênero selecionado:', genero);
 
     try {
-      const response = await api.post('livros/cadastrar/', dados);
+      const response = await api.post('livros/cadastrar/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 30000,
+      });
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
 
@@ -191,7 +215,11 @@ export default function CadastroLivro() {
           autor: data.author || "Autor não encontrado",
         });
 
-        Alert.alert("Livro encontrado!","Aperte em Fechar para continuar e preencha as informações restantes.");
+        // Fecha automaticamente a câmera quando encontra o livro
+        setModalIsVisible(false);
+        setScanned(false);
+        
+        Alert.alert("Livro encontrado!", "As informações foram preenchidas automaticamente. Preencha as informações restantes e salve o livro.");
       } else {
         Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
@@ -221,14 +249,14 @@ export default function CadastroLivro() {
   // Tela principal
   return (
     <View style={styles.container}>
-      <ScrollView style={{ paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <StatusBar hidden />
         <Text style={styles.header}>Digite as informações do livro</Text>
 
-        <MeuInput width={80} label="Título do Livro:" value={titulo} onChange={setTitulo} />
-        <MeuInput width={80} label="Autor(a):" value={autor} onChange={setAutor} />
-        <MeuInput width={80} label="Editora" value={editora} onChange={setEditora} />
-        <MeuInput width={80} label="Descrição" value={descricao} onChange={setDescricao} />
+        <MeuInput width={80} label="Título do Livro:" valor={titulo} onChange={setTitulo} />
+        <MeuInput width={80} label="Autor(a):" valor={autor} onChange={setAutor} />
+        <MeuInput width={80} label="Editora" valor={editora} onChange={setEditora} />
+        <MeuInput width={80} label="Descrição" valor={descricao} onChange={setDescricao} />
 
         {loadingLivro && <ActivityIndicator size="large" color="#E09F3E" />}
         {livro && (
@@ -336,8 +364,8 @@ export default function CadastroLivro() {
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
           </View>
-        </Modal
-        ><Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
+        </Modal>
+        <Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
       <Botao texto="Salvar Livro" aoApertar={SalvarLivro} />
       
     </ScrollView>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert, RefreshControl } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Image, TouchableOpacity, TextInput, Pressable, Alert, RefreshControl, TextComponent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router, usePathname } from 'expo-router'
@@ -237,12 +237,21 @@ export default function FeedLivros() {
   }
 
   function renderBook({ item }) {
-    console.log('📚 Item do livro:', item);
-    console.log('🎭 Gênero do item:', item.book_genre);
+    console.log(`Livro: ${item.book_title}, post_cover: ${item.post_cover}`);
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
-        <Image source={{ uri: item.post_cover }} style={styles.image} />
+        {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
+          <Image 
+            source={{ uri: `http://192.168.0.200:8000${item.post_cover}` }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
+            <Ionicons name="book" size={24} color="#999" />
+          </View>
+        )}
 
         {/* Título e tipo */}
         <View style={styles.content}>
@@ -262,6 +271,7 @@ export default function FeedLivros() {
               {item.book_title} - {item.book_author}
             </Text>
           </Pressable>
+          
 
           <Text style={styles.tipoAcao}>
             {
@@ -286,6 +296,24 @@ export default function FeedLivros() {
               }[item.book_genre] || item.book_genre}
             </Text>
           )}
+          
+          {(item.post_creator_username || item.post_creator || item.username || item.author_username) && (
+            <TouchableOpacity onPress={async () => {
+              try {
+                const response = await api.get(`livros/${item.id}/author/`);
+                const creatorId = response.data.author_id;
+                if (creatorId) {
+                  router.push(`/pages/perfil/perfilUsuario?userId=${creatorId}`);
+                }
+              } catch (error) {
+                console.error('Erro ao buscar ID do autor:', error);
+              }
+            }}>
+              <Text style={styles.usernameText}>
+                Postado por: {item.post_creator_username || item.post_creator || item.username || item.author_username}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Botões de interação */}
@@ -302,9 +330,7 @@ export default function FeedLivros() {
             style={styles.commentBtn}
             onPress={async () => {
               try {
-                console.log('Buscando autor para livro ID:', item.id);
                 const response = await api.get(`livros/${item.id}/author/`);
-                console.log('Resposta da API:', response.data);
                 const authorUsername = response.data.author_username;
 
                 if (!authorUsername) {
@@ -442,6 +468,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#335c67',
     fontWeight: '500',
+  },
+  usernameText: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#9e2a2b',
   },
   actions: {
     alignItems: 'flex-end',

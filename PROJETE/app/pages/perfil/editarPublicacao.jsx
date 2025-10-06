@@ -86,15 +86,15 @@ export default function EditarPublicacao() {
 
       <Text style={styles.label}>Título do Livro</Text>
       <MeuInput
-        value={bookTitle}
-        onChangeText={setBookTitle}
+        valor={bookTitle}
+        onChange={setBookTitle}
         placeholder="Digite o título do livro"
       />
 
       <Text style={styles.label}>Autor</Text>
       <MeuInput
-        value={bookAuthor}
-        onChangeText={setBookAuthor}
+        valor={bookAuthor}
+        onChange={setBookAuthor}
         placeholder="Digite o nome do autor"
       />
 
@@ -121,16 +121,16 @@ export default function EditarPublicacao() {
 
       <Text style={styles.label}>Editora</Text>
       <MeuInput
-        value={bookPublisher}
-        onChangeText={setBookPublisher}
+        valor={bookPublisher}
+        onChange={setBookPublisher}
         placeholder="Digite o nome da editora"
       />
 
       <Text style={styles.label}>Descrição</Text>
       <MeuInput
         style={styles.textArea}
-        value={bookDescription}
-        onChangeText={setBookDescription}
+        valor={bookDescription}
+        onChange={setBookDescription}
         placeholder="Digite uma descrição do livro"
         multiline
         numberOfLines={4}
