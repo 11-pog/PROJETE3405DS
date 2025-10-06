@@ -2,13 +2,13 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://localhost:8000/api/"
+export const BASE_API_URL = "http://192.168.0.105:8000/api/"
 export const BASE_URL = BASE_API_URL.replace("api/", "")
 axios.defaults.baseURL = BASE_API_URL
 
 const api = axios.create({
     baseURL: BASE_API_URL,
-    timeout: 30000,
+    timeout: 60000,
     headers: {
         'Content-Type': 'application/json',
     }

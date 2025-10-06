@@ -69,6 +69,7 @@ class Publication(models.Model):
     )
     
     is_fake = models.BooleanField(default=False) # determina se a postagem é verdadeira ou foi criada pelo comando
+    is_available = models.BooleanField(default=True) # determina se o livro está disponível para empréstimo
     
     isbn = models.CharField(max_length=20, blank=True, null=True)
     language = models.CharField(max_length=30, blank=True, null=True)
