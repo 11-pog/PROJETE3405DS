@@ -57,7 +57,7 @@ export default function Pontos() {
 
         <View style={styles.rewardsContainer}>
           <Text style={styles.rewardsTitle}>Trocar por:</Text>
-         
+         \
           <View style={styles.rewardItem}>
             <Text style={styles.rewardName}>Frete grátis</Text>
             <Text style={styles.rewardCost}>2000</Text>

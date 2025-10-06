@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from Aplicativo.models.publication_models import Loan, Publication
 from pgvector.django import VectorField
+from Aplicativo.models.publication_models import Publication
 
 class UserManager(BaseUserManager):
     # criar usuário normal: agora usa email como identificador
@@ -55,9 +55,8 @@ class Usuario(AbstractUser):
     city = models.CharField(max_length=100, blank=True, null=True)
     points = models.IntegerField(default=0)  
     
-    cluster_label = models.IntegerField(null=True, blank=True)
     is_fake = models.BooleanField(default=False) # determina se a conta é verdadeira ou foi criada pelo comando
-    preferred_genres = models.CharField(max_length=500, blank=True, null=True, default='')
+    preferred_genres = models.JSONField(default=list, blank=True)
     
     # Avaliações do usuário
     total_person_rating = models.IntegerField(default=0)
@@ -67,8 +66,30 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
-    embedding_size = Publication.embedding_size
-    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
+    
+    
+    # Isso aqui é de extrema importancia pra ia de recomendação
+    # por favor, NAO TIRAR
+    
+    # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA
+    feature_embedding_size = Publication.feature_embedding_size
+    features_embedding = VectorField(
+        dimensions=feature_embedding_size,
+        null=True,
+        blank=True
+    )
+    
+    # Text embedding (heavy part)
+    text_embedding_size = Publication.text_embedding_size
+    description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    
+    # The full vector for pgvector search (indexed)
+    full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,
+                        null=True,
+                        blank=True)
+    cluster_label = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
         return self.email

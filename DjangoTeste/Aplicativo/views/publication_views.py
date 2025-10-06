@@ -17,8 +17,9 @@ from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
+
+from pgvector.django import CosineDistance
 
 
 class GetMinhasPublicacoes(ListAPIView):
@@ -43,39 +44,26 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-created_at"
+        ordering = "-similarity"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
-    """
+    
     def get_queryset(self):
-        
-        
         user = self.request.user
         
-        # 1. Grab user embedding
-        if user.embedding is None:
-            return Publication.objects.none()
-        user_vec = np.array(user.embedding, dtype=np.float32).reshape(1, -1)
+        user_vec = user.full_vector  # store as a vector in DB
+        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(full_vector=None)
         
-        # 2. Grab candidate publications (you can filter, e.g. exclude user’s own posts)
-        pubs = Publication.objects.exclude(post_creator=user).exclude(embedding=None)
+        #if user.cluster_label is not None:
+        #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
         
-        # 3. Build matrix of pub embeddings
-        X = np.array([pub.embedding for pub in pubs], dtype=np.float32)
+        qs_sorted = qs_sorted.annotate(
+            similarity=-CosineDistance(F("full_vector"), user_vec)
+        )
         
-        # 4. Compute similarity
-        sims = cosine_similarity(user_vec, X)[0]
-        
-        # 5. Attach similarity scores back
-        for pub, score in zip(pubs, sims):
-            pub.similarity_score = score
-        
-        # 6. Sort by similarity
-        pubs_sorted = sorted(pubs, key=lambda p: p.similarity_score, reverse=True)
-        
-        return pubs_sorted"""
+        return qs_sorted.order_by('-similarity', 'id')
 
 
 
@@ -312,7 +300,7 @@ class pesquisadelivro(APIView):
             Q(book_author__icontains=busca) |
             Q(post_creator__username__icontains=busca)
         )
-
+        
         if not livros.exists():
             return Response({'message': 'Nenhum livro encontrado com esse título'}, status=404)
         

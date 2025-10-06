@@ -28,8 +28,7 @@ export default function Categorias() {
     try {
       const generosSelecionados = categorias
         .filter(cat => selected[cat.id])
-        .map(cat => cat.nome)
-        .join(", ");
+        .map(cat => cat.id);
 
       await api.patch("usuario/", {
         preferred_genres: generosSelecionados

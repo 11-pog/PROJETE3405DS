@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'Aplicativo',
-    'channels',  
+    'channels',
+    'pgvector.django',
 ]
 ASGI_APPLICATION = 'SiteTeste.asgi.application'
 
@@ -57,6 +58,7 @@ CHANNEL_LAYERS = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -64,15 +66,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware'
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # this is fine alone
-CORS_ALLOW_CREDENTIALS = True  # if using cookies
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "Authorization",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS = [
@@ -80,8 +77,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8081",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.0.102:8000",
-    "http://192.168.0.102:8081",
+    "http://192.168.18.39:8000",
+    "http://192.168.18.39:8081",
+    "http://192.168.18.39:19006",
 ]
 
 ROOT_URLCONF = 'SiteTeste.urls'
@@ -136,11 +134,16 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "Projete",           # your database name
+        "USER": "postgres",          # your postgres user
+        "PASSWORD": "PROJ3405",      # your password
+        "HOST": "localhost",         # usually localhost
+        "PORT": "5432",              # default Postgres port
     }
 }
+
 
 
 # Password validation

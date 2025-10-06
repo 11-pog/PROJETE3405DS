@@ -123,6 +123,13 @@ export default function Perfil() {
           router.push('/pages/perfil/meusPontos');
         }} />
       <Botao
+        texto='Minhas avaliações'
+        aoApertar={() => {
+          console.log('Navegando para minhasAvaliacoes...');
+          router.push('/pages/perfil/minhasAvaliacoes');
+        }}
+      />
+      <Botao
         texto='Sair'
         aoApertar={() => router.push('/pages/login/Login')}
       />

@@ -17,7 +17,11 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'image_url',
             'points',
-            'preferred_genres'
+            'preferred_genres',
+            'total_person_rating',
+            'person_rating_count',
+            'total_book_care_rating',
+            'book_care_rating_count'
             ]
     
     def get_image_url(self, obj):

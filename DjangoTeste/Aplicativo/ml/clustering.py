@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
-from Aplicativo.ml.vector import get_publication_vector, get_user_vector
+from Aplicativo.ml.vector.pub_vector import get_all_publication_vector
+from Aplicativo.ml.vector.user_vector import get_all_user_vector
 from Aplicativo.models.publication_models import Publication
 from django.contrib.auth import get_user_model
 from sklearn.metrics import silhouette_score
@@ -26,13 +27,23 @@ def find_optimal_k_silhouette(X, k_min=2, k_max=30):
     
     return best_k, best_model
 
-def cluster_publications():
-    data = get_publication_vector()
-    X = np.array([d['vector'] for d in data])
+def cluster_publications(**kwargs):
+    stdout = kwargs.get('stdout')
+    if stdout:
+        stdout.write("Starting publication clustering")
+    
+    data = get_all_publication_vector(**kwargs)
+    X = np.array([d['full_vector'] for d in data])
     ids = [d['id'] for d in data]
+    
+    if stdout:
+        stdout.write(f"Clustering {len(data)} publications")
     
     _, kmeans = find_optimal_k_silhouette(X, 5, 40)
     labels = kmeans.labels_  # Already fitted
+    
+    if stdout:
+        stdout.write(f"Found {len(set(labels))} publication clusters")
     
     pubs = Publication.objects.in_bulk(ids)  # One query for all pubs
     with transaction.atomic():
@@ -40,14 +51,27 @@ def cluster_publications():
             pub = pubs[pub_id]
             pub.cluster_label = int(label)
         Publication.objects.bulk_update(pubs.values(), ['cluster_label'])
+    
+    if stdout:
+        stdout.write("Publication clustering completed")
 
-def cluster_users():
-    data = get_user_vector()
-    X = np.array([d['vector'] for d in data])
+def cluster_users(**kwargs):
+    stdout = kwargs.get('stdout')
+    if stdout:
+        stdout.write("Starting user clustering")
+    
+    data = get_all_user_vector(**kwargs)
+    X = np.array([d['full_vector'] for d in data])
     ids = [d['id'] for d in data]
+    
+    if stdout:
+        stdout.write(f"Clustering {len(data)} users")
     
     _, kmeans = find_optimal_k_silhouette(X, 5, 40)
     labels = kmeans.labels_
+    
+    if stdout:
+        stdout.write(f"Found {len(set(labels))} user clusters")
     
     users = User.objects.in_bulk(ids)
     with transaction.atomic():
@@ -55,3 +79,6 @@ def cluster_users():
             user = users[uid]
             user.cluster_label = int(label)
         User.objects.bulk_update(users.values(), ['cluster_label'])
+    
+    if stdout:
+        stdout.write("User clustering completed")

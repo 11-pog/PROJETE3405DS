@@ -19,8 +19,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         num_interactions = options['interactions']
         
+        self.stdout.write(self.style.SUCCESS(f"Creating {num_interactions} fake interactions..."))
+        
         users = User.objects.all().filter(is_fake = True)
         pubs = Publication.objects.all().filter()
+        
+        self.stdout.write(f"Found {len(users)} fake users and {len(pubs)} publications")
         
         if num_interactions > (len(users)*len(pubs)):
             raise ValueError("Amount of interactions cannot be bigger than the number of unique combinations between posts and fake users")
@@ -30,6 +34,8 @@ class Command(BaseCommand):
         # Shuffle & cut down to desired number
         random.shuffle(all_pairs)
         selected_pairs = all_pairs[:num_interactions]
+        
+        self.stdout.write("Generating interactions...")
         
         interactions = []
         for user, pub in selected_pairs:
@@ -43,6 +49,8 @@ class Command(BaseCommand):
                 verified_trade = random.choices([True, False], weights=[0.01, 0.99], k=1)[0]
             )
             interactions.append(interaction)
+        
+        self.stdout.write("Saving interactions to database...")
         
         Interaction.objects.bulk_create(interactions, ignore_conflicts=True)
         self.stdout.write(self.style.SUCCESS(f"Created {len(interactions)} interactions"))

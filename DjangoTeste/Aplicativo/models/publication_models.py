@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+
+# se der erro tenta instalar pgvector ao inves de deletar ele xd (ta em requirements.txt)
 from pgvector.django import VectorField
 
 # Modelo de banco de dados de Postagem/Publicação
@@ -16,6 +18,7 @@ class Publication(models.Model):
         PECA_TEATRAL = "peca_teatral", "Peça Teatral"
         DIDATICO = "didatico", "Didático"
         NAO_FICCAO = "nao_ficcao", "Não-ficção"
+        NAO_ESPECIFICADO = "nao_especificado", "Não especificado"
     
     post_type = models.CharField(
         max_length=10,
@@ -30,7 +33,6 @@ class Publication(models.Model):
         verbose_name= "Post Author"
     )
     
-    cluster_label = models.IntegerField(null=True, blank=True)
     
     # Dica: Aparentemente, feito desse jeito, se você, em um objeto de usuario, escrever:
     # [objeto do usuario].publications.all()
@@ -46,8 +48,7 @@ class Publication(models.Model):
     book_genre = models.CharField(
         max_length=20,
         choices=BookGenre.choices,
-        blank=True,
-        null=True,
+        default=BookGenre.NAO_ESPECIFICADO,
         verbose_name="Gênero do Livro"
     )
     
@@ -69,15 +70,32 @@ class Publication(models.Model):
     
     is_fake = models.BooleanField(default=False) # determina se a postagem é verdadeira ou foi criada pelo comando
     
-    tags = models.JSONField(blank=True, null=True) # Store genre tags, themes
-    isbn = models.CharField(max_length=15, blank=True, null=True)
+    isbn = models.CharField(max_length=20, blank=True, null=True)
     language = models.CharField(max_length=30, blank=True, null=True)
-    full_text_excerpt = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Post Creation Date")
     
-    embedding_size = 5 + len(PostType) + len(BookGenre) + 384
-    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+    # Isso aqui é de extrema importancia pra ia de recomendação
+    # por favor, NAO TIRAR
+    
+    # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA 
+    feature_embedding_size = 5 + len(PostType) + len(BookGenre)
+    features_embedding = VectorField(
+        dimensions=feature_embedding_size,
+        null=True,
+        blank=True
+    )
+    
+    # Text embedding (heavy part)
+    text_embedding_size = 384
+    description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    
+    # The full vector for pgvector search (indexed)
+    full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,
+                        null=True,
+                        blank=True)
+    
+    cluster_label = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
         return self.book_title
