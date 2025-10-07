@@ -108,7 +108,7 @@ export default function MinhasPublicacoes() {
       <View style={styles.card}>
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image 
-            source={{ uri: `http://192.168.0.200:8000${item.post_cover}` }}
+            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
             style={styles.image}
             resizeMode="cover"
           />

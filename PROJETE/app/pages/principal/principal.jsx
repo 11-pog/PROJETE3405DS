@@ -243,14 +243,16 @@ export default function FeedLivros() {
         {/* Imagem do livro */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image 
-            source={{ uri: `http://192.168.0.200:8000${item.post_cover}` }}
+            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
             style={styles.image}
             resizeMode="cover"
           />
         ) : (
-          <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
-            <Ionicons name="book" size={24} color="#999" />
-          </View>
+          <Image 
+            source={require('../../../assets/imagemPadrao.jpeg')}
+            style={styles.image}
+            resizeMode="cover"
+          />
         )}
 
         {/* Título e tipo */}

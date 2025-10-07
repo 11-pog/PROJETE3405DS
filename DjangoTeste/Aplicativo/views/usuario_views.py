@@ -138,16 +138,37 @@ class UserView(APIView):
 
 class UploadUserImage(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    # Removido parser_classes para aceitar tanto JSON quanto multipart
     
     def patch(self, request):
         user = request.user
         
-        # Check if a new image is being uploaded
+        # Suporte para base64 (Expo Go)
+        if 'profile_picture_base64' in request.data:
+            import base64
+            from django.core.files.base import ContentFile
+            
+            base64_data = request.data.get('profile_picture_base64')
+            filename = request.data.get('filename', 'profile.jpg')
+            
+            # Decodificar base64
+            image_data = base64.b64decode(base64_data)
+            image_file = ContentFile(image_data, name=filename)
+            
+            # Deletar imagem antiga
+            if user.profile_picture and not user.profile_picture.url.startswith("defaults/"):
+                user.profile_picture.delete(save=False)
+            
+            # Salvar nova imagem
+            user.profile_picture = image_file
+            user.save()
+            
+            return Response({"image_url": request.build_absolute_uri(user.profile_picture.url)})
+        
+        # Método original para multipart
         new_image = request.FILES.get('profile_picture')
         if new_image:
-            # Delete old image if exists and not the default
-            if user.profile_picture and user.profile_picture.url.startswith("defaults/"):
+            if user.profile_picture and not user.profile_picture.url.startswith("defaults/"):
                 user.profile_picture.delete(save=False)
         
         serializer = UploadUserImageSerializer(user, data=request.data, partial=True)

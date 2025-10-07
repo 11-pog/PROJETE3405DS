@@ -58,7 +58,7 @@ export default function InfoIsolado() {
         {/* Capa */}
         {book.post_cover && !book.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: `http://192.168.0.200:8000${book.post_cover}` }}
+            source={{ uri: `http://192.168.0.102:8000${book.post_cover}` }}
             style={{
               width: 150,
               height: 220,

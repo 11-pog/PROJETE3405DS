@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-similarity"
+        ordering = "-created_at"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -53,17 +53,24 @@ class GetBookList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        user_vec = user.full_vector  # store as a vector in DB
-        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(full_vector=None)
+        # Busca todas as publicações exceto as do próprio usuário
+        qs_sorted = Publication.objects.exclude(post_creator=user)
         
-        #if user.cluster_label is not None:
-        #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
-        
-        qs_sorted = qs_sorted.annotate(
-            similarity=-CosineDistance(F("full_vector"), user_vec)
-        )
-        
-        return qs_sorted.order_by('-similarity', 'id')
+        # Se o usuário tem vetor, usa similaridade
+        if hasattr(user, 'full_vector') and user.full_vector is not None:
+            user_vec = user.full_vector
+            qs_with_vector = qs_sorted.exclude(full_vector=None).annotate(
+                similarity=-CosineDistance(F("full_vector"), user_vec)
+            ).order_by('-similarity', 'id')
+            
+            # Publicações sem vetor ordenadas por data
+            qs_without_vector = qs_sorted.filter(full_vector=None).order_by('-created_at', 'id')
+            
+            # Combina os dois querysets
+            return list(qs_with_vector) + list(qs_without_vector)
+        else:
+            # Se usuário não tem vetor, ordena por data
+            return qs_sorted.order_by('-created_at', 'id')
 
 
 
@@ -107,7 +114,7 @@ class GetFavoriteBooks(ListAPIView):
     """
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-saved_at"
+        ordering = "-id"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -116,25 +123,16 @@ class GetFavoriteBooks(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        # Busca apenas as interações salvas do usuário com suas datas
-        saved_interactions = Interaction.objects.filter(
+        # Busca as publicações favoritadas através das interações
+        saved_publication_ids = Interaction.objects.filter(
             user=user,
             is_saved=True
-        ).values('publication_id', 'saved_at')
+        ).values_list('publication_id', flat=True)
         
-        # Cria um dicionário para mapear publication_id -> saved_at
-        saved_dates = {item['publication_id']: item['saved_at'] for item in saved_interactions}
-        
-        # Busca as publicações e adiciona a data de salvamento
-        publications = Publication.objects.filter(
-            id__in=saved_dates.keys()
-        ).distinct()
-        
-        # Ordena manualmente usando as datas do dicionário
-        publications_list = list(publications)
-        publications_list.sort(key=lambda p: saved_dates.get(p.id), reverse=True)
-        
-        return publications_list
+        # Retorna QuerySet das publicações favoritadas
+        return Publication.objects.filter(
+            id__in=saved_publication_ids
+        ).order_by('-id')
 
 
 class FavoritePostView(APIView):
