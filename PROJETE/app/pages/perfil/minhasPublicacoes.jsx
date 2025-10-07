@@ -25,7 +25,7 @@ export default function MinhasPublicacoes() {
 
   const fetchMinhasPublicacoes = useCallback(async (url = 'usuario/publicacoes/') => {
     try {
-      console.log("requisitando pata", url);
+      console.log("requisitando para", url);
       const response = await api.get(url);
       console.log("resposta da api", response.data);
       if (response.data && response.data.results) {
@@ -108,7 +108,7 @@ export default function MinhasPublicacoes() {
       <View style={styles.card}>
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image 
-            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
+            source={{ uri: item.post_cover.startsWith('http') ? item.post_cover : `http://192.168.0.102:8000${item.post_cover}` }}
             style={styles.image}
             resizeMode="cover"
           />

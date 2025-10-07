@@ -52,19 +52,7 @@ class GetBookList(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        
-        user_vec = user.features_embedding  # store as a vector in DB
-        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(features_embedding=None)
-        
-        #if user.cluster_label is not None:
-        #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
-        
-        qs_sorted = qs_sorted.annotate(
-            similarity=-CosineDistance(F("features_embedding"), user_vec)
-        )
-        
-        return qs_sorted.order_by('-similarity', 'id')
-
+        return Publication.objects.exclude(post_creator=user).order_by('-created_at', 'id')
 
 
 

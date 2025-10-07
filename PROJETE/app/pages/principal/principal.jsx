@@ -4,6 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router, usePathname } from 'expo-router'
 import api, { BASE_URL } from '../../functions/api'
+import { Platform } from 'react-native'
+
+// Função para obter a URL base correta para imagens
+const getImageBaseUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000';
+  } else {
+    return 'http://192.168.0.102:8000';
+  }
+};
 import { useNotifications } from '../../hooks/useNotifications'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -147,48 +157,9 @@ export default function FeedLivros() {
     }
   }
 
-  //faz a pesquisa dos livros
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      // Se busca vazia, recarrega feed normal
-      setBooks([]);
-      setIsSearching(false);
-      fetchBooks();
-      return;
-    }
-
-    setIsSearching(true);
-    setLoading(true);
-
-    try {
-      const response = await api.post('pesquisadelivro/', {
-        book_title: searchQuery
-      });
-
-      if (response.data.livros) {
-        // Usa os dados da busca diretamente
-        const searchResults = response.data.livros.map(book => ({
-          ...book,
-          is_saved: false // Valor padrão para busca
-        }));
-        setBooks(searchResults);
-        setNextPage(null); // Busca não tem paginação
-      }
-    } catch (error) {
-      console.error('Erro na busca:', error);
-      if (error.response?.status === 404) {
-        Alert.alert('Nenhum resultado', 'Nenhum livro encontrado com esse título');
-        setBooks([]);
-      } else {
-        Alert.alert('Erro', 'Erro ao buscar livros');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };//fim const handleSearch
+  // Busca é feita automaticamente pelo useEffect
 
   function toggleSaved(item) {
-    console.log("SALVOUUU");
     let bookId = item.id
     const willBeSaved = !item.is_saved;
 
@@ -244,16 +215,18 @@ export default function FeedLivros() {
         {/* Imagem do livro */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: BASE_URL + item.post_cover }}
+            source={{ 
+              uri: item.post_cover.startsWith('http') 
+                ? `${item.post_cover}?t=${Date.now()}` 
+                : `${getImageBaseUrl()}${item.post_cover}?t=${Date.now()}` 
+            }}
             style={styles.image}
             resizeMode="cover"
           />
         ) : (
-          <Image 
-            source={require('../../../assets/imagemPadrao.jpeg')}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <View style={[styles.image, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#ddd' }]}>
+        <Ionicons name="book" size={24} color="#999" />
+        </View>
         )}
 
         {/* Título e tipo */}
@@ -386,11 +359,11 @@ export default function FeedLivros() {
           style={styles.input}
           value={searchQuery}
           onChangeText={setSearchQuery}//onde atualiza a cada tecla
-          onSubmitEditing={handleSearch}
+          onSubmitEditing={() => {}}
         />
         <TouchableOpacity
           style={styles.iconePesquisa}
-          onPress={handleSearch}
+          onPress={() => {}}
         >
           <Ionicons name="search" size={22} color="#9e2a2b" />
         </TouchableOpacity>

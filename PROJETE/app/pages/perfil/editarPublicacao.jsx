@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Image, Platform, Pressable, ActionSheetIOS } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import api from '../../functions/api';
 import MeuInput from '../../functions/textBox';
 
@@ -12,9 +15,18 @@ export default function EditarPublicacao() {
   const [loading, setLoading] = useState(false);
   const [tipo, setTipo] = useState('emprestimo');
   const [genero, setGenero] = useState('');
+  const [bookImage, setBookImage] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef(null);
 
   const params = useLocalSearchParams();
   const bookId = params.bookId;
+
+  const getImageBaseUrl = () => {
+    return Platform.OS === 'web' ? 'http://localhost:8000' : 'http://192.168.0.102:8000';
+  };
 
   useEffect(() => {
     if (bookId) {
@@ -33,11 +45,88 @@ export default function EditarPublicacao() {
       setBookDescription(book.book_description || '');
       setTipo(book.post_type || 'troca');
       setGenero(book.book_genre || '');
+      
+      if (book.post_cover) {
+        const imageUrl = book.post_cover.startsWith('http') 
+          ? book.post_cover 
+          : `${getImageBaseUrl()}${book.post_cover}`;
+        setBookImage(imageUrl);
+      }
 
       console.log('[EDITAR_FRONTEND] Dados carregados:', book);
     } catch (error) {
       console.error('[EDITAR_FRONTEND] Erro ao carregar dados do livro:', error);
       Alert.alert('Erro', 'Não foi possível carregar os dados do livro');
+    }
+  };
+
+  const handleOpenCamera = async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+    }
+    setShowCamera(true);
+  };
+
+  const handleTakePicture = async () => {
+    if (cameraRef.current && cameraReady) {
+      const photo = await cameraRef.current.takePictureAsync();
+      setBookImage(photo.uri);
+      setShowCamera(false);
+      setCameraReady(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setBookImage(result.assets[0].uri);
+    }
+  };
+
+  const handlePickImageFromCamera = async () => {
+    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) {
+      Alert.alert("Permissão necessária", "Você precisa conceder acesso à câmera.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setBookImage(result.assets[0].uri);
+    }
+  };
+
+  const showImageOptions = () => {
+    if (Platform.OS === "web") {
+      handlePickImage();
+    } else if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancelar", "Escolher da Galeria", "Tirar Foto"],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            handlePickImage();
+          } else if (buttonIndex === 2) {
+            handlePickImageFromCamera();
+          }
+        }
+      );
+    } else {
+      Alert.alert("Escolher foto", "De onde você quer pegar a imagem?", [
+        { text: "Galeria", onPress: handlePickImage },
+        { text: "Câmera", onPress: handlePickImageFromCamera },
+        { text: "Cancelar", style: "cancel" },
+      ]);
     }
   };
 
@@ -49,25 +138,40 @@ export default function EditarPublicacao() {
 
     setLoading(true);
     try {
-      const updateData = {
-        book_title: bookTitle,
-        book_author: bookAuthor,
-        book_publisher: bookPublisher,
-        book_description: bookDescription,
-        post_type: tipo,
-        book_genre: genero,
-      };
+      const formData = new FormData();
+      formData.append('book_title', bookTitle);
+      formData.append('book_author', bookAuthor);
+      formData.append('book_publisher', bookPublisher);
+      formData.append('book_description', bookDescription);
+      formData.append('post_type', tipo);
+      formData.append('book_genre', genero);
 
-      console.log('[EDITAR_FRONTEND] Enviando dados:', updateData);
-      console.log('[EDITAR_FRONTEND] Para livro ID:', bookId);
+      if (bookImage && !bookImage.startsWith('http')) {
+        formData.append('post_cover', {
+          uri: bookImage,
+          type: 'image/jpeg',
+          name: 'book_cover.jpg',
+        });
+      }
 
-      const response = await api.put(`livros/${bookId}/editar/`, updateData);
+      console.log('[EDITAR_FRONTEND] Enviando dados para livro ID:', bookId);
+
+      const response = await api.put(`livros/${bookId}/editar/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       console.log('[EDITAR_FRONTEND] Resposta recebida:', response.data);
 
-      await loadBookData();
-
       Alert.alert('Sucesso!', 'Livro atualizado com sucesso!', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => {
+          // Força atualização da imagem no cache
+          if (bookImage) {
+            const timestamp = Date.now();
+            console.log('🔄 Forçando atualização da imagem com timestamp:', timestamp);
+          }
+          router.back();
+        }}
       ]);
     } catch (error) {
       console.error('[EDITAR_FRONTEND] Erro ao atualizar livro:', error);
@@ -79,6 +183,35 @@ export default function EditarPublicacao() {
       setLoading(false);
     }
   };
+
+  if (showCamera) {
+    return (
+      <View style={{ flex: 1 }}>
+        <CameraView
+          style={{ flex: 1 }}
+          ref={cameraRef}
+          facing="back"
+          onCameraReady={() => setCameraReady(true)}
+        />
+        <TouchableOpacity
+          style={[
+            styles.captureButton,
+            { backgroundColor: cameraReady ? "#E09F3E" : "#ccc" }
+          ]}
+          onPress={handleTakePicture}
+          disabled={!cameraReady}
+        >
+          <Text style={styles.captureText}>Tirar Foto</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => setShowCamera(false)}
+        >
+          <Ionicons name="close" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -135,6 +268,28 @@ export default function EditarPublicacao() {
         multiline
         numberOfLines={4}
       />
+
+      <Text style={styles.label}>Foto do Livro</Text>
+      <TouchableOpacity style={styles.imageContainer} onPress={showImageOptions}>
+        {bookImage ? (
+          <Image source={{ uri: bookImage }} style={styles.bookImage} />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Ionicons name="camera" size={40} color="#888" />
+            <Text style={styles.placeholderText}>Toque para adicionar foto</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        onPress={() => {
+          console.log('[DEBUG] Chamando showImageOptions');
+          showImageOptions();
+        }} 
+        style={styles.changePhotoButton}
+      >
+        <Text style={styles.changePhotoText}>Alterar Foto</Text>
+      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Gênero do livro:</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScrollContainer}>
@@ -283,5 +438,75 @@ const styles = StyleSheet.create({
   },
   selectedGenreText: {
     color: "white",
+  },
+  imageContainer: {
+    width: 150,
+    height: 200,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    alignSelf: 'center',
+    marginVertical: 10,
+    overflow: 'hidden',
+  },
+  bookImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  placeholderImage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  placeholderText: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 12,
+  },
+  captureButton: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  captureText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 10,
+  },
+  changePhotoButton: {
+    backgroundColor: '#a13b3dff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginTop: 16,
+    alignSelf: 'center',
+    shadowColor: '#1c292cff',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 10,
+  },
+  changePhotoText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
 });
