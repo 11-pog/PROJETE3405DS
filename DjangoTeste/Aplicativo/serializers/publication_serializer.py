@@ -91,7 +91,8 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "post_type",
             "post_cover",
             "is_saved",
-            "is_owner"
+            "is_owner",
+            "is_available"
         ]
     
     def get_is_saved(self, obj):

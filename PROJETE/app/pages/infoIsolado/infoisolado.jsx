@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { View, Text, Image, ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import api from "../../functions/api";
+import api, { BASE_URL} from "../../functions/api";
 
 export default function InfoIsolado() {
   const { id, path_back } = useLocalSearchParams();
@@ -17,6 +17,9 @@ export default function InfoIsolado() {
       const data = response.data;
 
       setBook(data.book);
+
+      console.log(data.book)
+
       setCreator(data.post_creator);
     } catch (error) {
       console.error("Erro ao buscar livro:", error);
@@ -58,7 +61,7 @@ export default function InfoIsolado() {
         {/* Capa */}
         {book.post_cover && !book.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: `http://192.168.0.102:8000${book.post_cover}` }}
+            source={{ uri: BASE_URL + book.post_cover }}
             style={{
               width: 150,
               height: 220,

@@ -259,6 +259,10 @@ class CompleteLoan(APIView):
             loan.actual_return_date = timezone.now()
             loan.save()
             
+            # Marcar publicação como disponível novamente
+            loan.publication.is_available = True
+            loan.publication.save()
+            
             BookCareRating.objects.create(
                 loan=loan,
                 care_rating=care_rating,
@@ -478,6 +482,10 @@ class AcceptLoan(APIView):
             loan = Loan.objects.get(id=loan_id, lender=request.user, status='pending')
             loan.status = 'accepted'
             loan.save()
+            
+            # Marcar publicação como indisponível
+            loan.publication.is_available = False
+            loan.publication.save()
             
             # Sistema de gamificação - pontos por aceitar empréstimo
             post_type = loan.publication.post_type
