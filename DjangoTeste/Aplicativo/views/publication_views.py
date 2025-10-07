@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-created_at"
+        ordering = "-similarity"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -53,24 +53,18 @@ class GetBookList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        # Busca todas as publicações exceto as do próprio usuário
-        qs_sorted = Publication.objects.exclude(post_creator=user)
+        user_vec = user.full_vector  # store as a vector in DB
+        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(full_vector=None)
         
-        # Se o usuário tem vetor, usa similaridade
-        if hasattr(user, 'full_vector') and user.full_vector is not None:
-            user_vec = user.full_vector
-            qs_with_vector = qs_sorted.exclude(full_vector=None).annotate(
-                similarity=-CosineDistance(F("full_vector"), user_vec)
-            ).order_by('-similarity', 'id')
-            
-            # Publicações sem vetor ordenadas por data
-            qs_without_vector = qs_sorted.filter(full_vector=None).order_by('-created_at', 'id')
-            
-            # Combina os dois querysets
-            return list(qs_with_vector) + list(qs_without_vector)
-        else:
-            # Se usuário não tem vetor, ordena por data
-            return qs_sorted.order_by('-created_at', 'id')
+        #if user.cluster_label is not None:
+        #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
+        
+        qs_sorted = qs_sorted.annotate(
+            similarity=-CosineDistance(F("full_vector"), user_vec)
+        )
+        
+        return qs_sorted.order_by('-similarity', 'id')
+
 
 
 
