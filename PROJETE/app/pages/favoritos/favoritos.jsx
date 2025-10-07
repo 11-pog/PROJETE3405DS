@@ -70,7 +70,19 @@ export default function Favoritos() {
         }
       })}>
         {/* Capa */}
-        < Image source={{ uri: item.post_cover }} style={styles.image} />
+        {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
+          <Image 
+            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <Image 
+            source={require('../../../assets/imagemPadrao.jpeg')}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
 
         {/* Texto */}
         <Text style={styles.title} numberOfLines={2}>

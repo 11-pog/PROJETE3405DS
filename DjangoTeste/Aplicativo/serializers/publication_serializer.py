@@ -59,6 +59,13 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data.setdefault("post_location_city", "Não informado")
         validated_data.setdefault("post_type", Publication.PostType.EMPRESTIMO)
+        
+        print(f"[SERIALIZER] validated_data keys: {list(validated_data.keys())}")
+        if 'post_cover' in validated_data:
+            print(f"[SERIALIZER] post_cover no validated_data: {validated_data['post_cover']}")
+        else:
+            print(f"[SERIALIZER] post_cover NÃO está no validated_data")
+        
         return Publication.objects.create(post_creator=user, **validated_data)
 
 
@@ -68,6 +75,7 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source="post_creator.username", read_only=True)
     is_saved = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    post_cover = serializers.SerializerMethodField()
     
     class Meta:
         model = Publication
@@ -83,7 +91,8 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "post_type",
             "post_cover",
             "is_saved",
-            "is_owner"
+            "is_owner",
+            "is_available"
         ]
     
     def get_is_saved(self, obj):
@@ -93,3 +102,8 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
     def get_is_owner(self, obj):
         user: Usuario = self.context['request'].user
         return obj.post_creator.id == user.id
+    
+    def get_post_cover(self, obj):
+        if obj.post_cover:
+            return obj.post_cover.url
+        return None

@@ -2,11 +2,15 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://192.168.18.39:8000/api/"
+export const BASE_API_URL = "http://192.168.0.102:8000/api/"
 axios.defaults.baseURL = BASE_API_URL
 
 const api = axios.create({
-    baseURL: BASE_API_URL
+    baseURL: BASE_API_URL,
+    timeout: 60000,
+    headers: {
+        'Content-Type': 'application/json',
+    }
 })
 
 api.interceptors.request.use(
@@ -36,6 +40,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     response => response,
     async error => {
+        console.log('[API ERROR] Código:', error.code);
+        console.log('[API ERROR] Mensagem:', error.message);
+        
+        if (error.code === 'ECONNABORTED') {
+            console.log('[API ERROR] Timeout - servidor demorou para responder');
+            return Promise.reject(new Error('Servidor demorou para responder. Tente novamente.'));
+        }
+        
+        if (error.message === 'Network Error') {
+            console.log('[API ERROR] Erro de rede - sem conexão');
+            return Promise.reject(new Error('Erro de conexão. Verifique sua internet.'));
+        }
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {

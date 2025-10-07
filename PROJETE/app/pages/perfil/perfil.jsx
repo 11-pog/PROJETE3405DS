@@ -14,6 +14,7 @@ import BarraInicial from '../../functions/barra_inicial'
 import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as ImagePicker from 'expo-image-picker'
+import * as FileSystem from 'expo-file-system/legacy'
 
 export default function Perfil() {
   const router = useRouter()
@@ -45,30 +46,24 @@ export default function Perfil() {
   }
 
   async function uploadProfilePicture(uri) {
-    const formData = new FormData()
-
-    if (Platform.OS === 'web') {
-      const response = await fetch(uri)
-      const blob = await response.blob()
-      formData.append('profile_picture', blob, 'user.jpg')
-    } else {
-      formData.append('profile_picture', {
-        uri,
-        name: 'user.png',
-        type: 'image/png'
-      })
-    }
-
     try {
-      const res = await api.patch('usuario/mudarfoto/', formData)
+      // Método alternativo: converter para base64 e enviar como JSON
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      })
 
-      if (res.status !== 200) throw new Error('Upload failed')
 
-      const data = await res.data
-      setProfileImage(data.image_url + "?t=" + new Date().getTime()); // update the avatar immediately
+      const response = await api.patch('usuario/mudarfoto/', {
+        profile_picture_base64: base64,
+        filename: 'profile.jpg'
+      })
+
+      if (response.status === 200) {
+        setProfileImage(response.data.image_url + "?t=" + new Date().getTime())
+      }
     } catch (err) {
-      console.error(err)
-      alert('Falha ao enviar a imagem.')
+      console.error('Erro completo:', err)
+      alert(`Falha ao enviar a imagem: ${err.message}`)
     }
   }
 

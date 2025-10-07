@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-similarity"
+        ordering = "-created_at"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -53,17 +53,24 @@ class GetBookList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        user_vec = user.full_vector  # store as a vector in DB
-        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(full_vector=None)
+        # Busca todas as publicações exceto as do próprio usuário
+        qs_sorted = Publication.objects.exclude(post_creator=user)
         
-        #if user.cluster_label is not None:
-        #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
-        
-        qs_sorted = qs_sorted.annotate(
-            similarity=-CosineDistance(F("full_vector"), user_vec)
-        )
-        
-        return qs_sorted.order_by('-similarity', 'id')
+        # Se o usuário tem vetor, usa similaridade
+        if hasattr(user, 'full_vector') and user.full_vector is not None:
+            user_vec = user.full_vector
+            qs_with_vector = qs_sorted.exclude(full_vector=None).annotate(
+                similarity=-CosineDistance(F("full_vector"), user_vec)
+            ).order_by('-similarity', 'id')
+            
+            # Publicações sem vetor ordenadas por data
+            qs_without_vector = qs_sorted.filter(full_vector=None).order_by('-created_at', 'id')
+            
+            # Combina os dois querysets
+            return list(qs_with_vector) + list(qs_without_vector)
+        else:
+            # Se usuário não tem vetor, ordena por data
+            return qs_sorted.order_by('-created_at', 'id')
 
 
 
@@ -116,12 +123,17 @@ class GetFavoriteBooks(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
+        
+        # Busca as publicações favoritadas através das interações
+        saved_publication_ids = Interaction.objects.filter(
+            user=user,
+            is_saved=True
+        ).values_list('publication_id', flat=True)
+        
+        # Retorna QuerySet das publicações favoritadas
         return Publication.objects.filter(
-            interactions__user=user,
-            interactions__is_saved=True
-        ).distinct().order_by('-id')
-    
-    
+            id__in=saved_publication_ids
+        ).order_by('-id')
 
 
 class FavoritePostView(APIView):
@@ -184,9 +196,33 @@ class CadastrarLivro(APIView):
     
     def post(self, request):
         try:
-            serializer = CreatePublicationSerializer(data=request.data, context={'request': request})
+            print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
+            print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
+            if 'post_cover' in request.data:
+                print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
+                print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+            
+            # Separar a imagem dos outros dados
+            data_dict = {}
+            image_file = None
+            
+            for key, value in request.data.items():
+                if key == 'post_cover':
+                    image_file = value
+                else:
+                    data_dict[key] = value
+            
+            serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
             if serializer.is_valid():
                 publication = serializer.save()
+                
+                # Adicionar a imagem após salvar
+                if image_file:
+                    publication.post_cover = image_file
+                    publication.save()
+                    print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
+                
+                print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
                 
                 # Dispara notificação
                 channel_layer = get_channel_layer()
@@ -260,7 +296,8 @@ class pesquisadelivro(APIView):
             Q(book_title__icontains=busca) |
             Q(post_location_city__icontains=busca) |
             Q(post_type__icontains=busca) |
-            Q(book_author__icontains=busca)
+            Q(book_author__icontains=busca) |
+            Q(post_creator__username__icontains=busca)
         )
         
         if not livros.exists():

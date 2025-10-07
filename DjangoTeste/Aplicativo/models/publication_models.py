@@ -54,9 +54,11 @@ class Publication(models.Model):
     
     
     post_cover = models.ImageField(
-        upload_to='thumbnails/',
-        default='defaults/default_thumbnail.png'
+        upload_to='livros/',
+        null=True,
+        blank=True
         )
+    
     post_location_city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Post City")
     post_description = models.TextField(blank=True, null=True, verbose_name= "Post Description")
     
@@ -67,6 +69,7 @@ class Publication(models.Model):
     )
     
     is_fake = models.BooleanField(default=False) # determina se a postagem é verdadeira ou foi criada pelo comando
+    is_available = models.BooleanField(default=True) # determina se o livro está disponível para empréstimo
     
     isbn = models.CharField(max_length=20, blank=True, null=True)
     language = models.CharField(max_length=30, blank=True, null=True)

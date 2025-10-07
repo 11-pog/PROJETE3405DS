@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { View, Text, Image, ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import api from "../../functions/api";
+import api, { BASE_URL} from "../../functions/api";
 
 export default function InfoIsolado() {
   const { id, path_back } = useLocalSearchParams();
@@ -17,6 +17,9 @@ export default function InfoIsolado() {
       const data = response.data;
 
       setBook(data.book);
+
+      console.log(data.book)
+
       setCreator(data.post_creator);
     } catch (error) {
       console.error("Erro ao buscar livro:", error);
@@ -56,9 +59,9 @@ export default function InfoIsolado() {
       {/* Container principal */}
       <View style={{ alignItems: "center", padding: 20 }}>
         {/* Capa */}
-        {book.post_cover ? (
+        {book.post_cover && !book.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: book.post_cover }}
+            source={{ uri: BASE_URL + book.post_cover }}
             style={{
               width: 150,
               height: 220,
@@ -70,19 +73,27 @@ export default function InfoIsolado() {
               shadowRadius: 5,
               elevation: 5,
             }}
+            resizeMode="cover"
           />
         ) : (
           <View
             style={{
               width: 150,
               height: 220,
-              backgroundColor: "#e09f3e",
               borderRadius: 12,
-              alignItems: "center",
-              justifyContent: "center",
               marginBottom: 16,
+              backgroundColor: "#ddd",
+              shadowColor: "#000",
+              shadowOffset: { width: 4, height: 4 },
+              shadowOpacity: 1,
+              shadowRadius: 5,
+              elevation: 5,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-          />
+          >
+            <Ionicons name="book" size={40} color="#999" />
+          </View>
         )}
 
         <Text
@@ -228,6 +239,20 @@ export default function InfoIsolado() {
             </Text>   
             </View>
           </View>
+
+          <TouchableOpacity
+            style={{ padding: 8, borderRadius: 8 }}
+            onPress={() => {
+              router.push({
+                pathname: '/pages/chat/privatechat',
+                params: {
+                  chatPartner: creator.username
+                }
+              });
+            }}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={30} color="#E09F3E" />
+          </TouchableOpacity>
         </View>
         <View style={{ width: "90%", marginBottom: 20 }}>
           <Text

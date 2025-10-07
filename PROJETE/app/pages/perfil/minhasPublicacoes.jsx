@@ -106,7 +106,17 @@ export default function MinhasPublicacoes() {
   function renderBook({ item }) {
     return (
       <View style={styles.card}>
-        <Image source={{ uri: item.post_cover }} style={styles.image} />
+        {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
+          <Image 
+            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
+            <Ionicons name="book" size={24} color="#999" />
+          </View>
+        )}
 
         <View style={styles.content}>
           <Pressable
