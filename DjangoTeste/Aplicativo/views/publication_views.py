@@ -53,14 +53,14 @@ class GetBookList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        user_vec = user.full_vector  # store as a vector in DB
-        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(full_vector=None)
+        user_vec = user.features_embedding  # store as a vector in DB
+        qs_sorted = Publication.objects.exclude(post_creator=user).exclude(features_embedding=None)
         
         #if user.cluster_label is not None:
         #    qs_sorted = qs_sorted.filter() # filtrar por cluster, de acordo com uma matriz entre cluster de usuario e cluster de publicação
         
         qs_sorted = qs_sorted.annotate(
-            similarity=-CosineDistance(F("full_vector"), user_vec)
+            similarity=-CosineDistance(F("features_embedding"), user_vec)
         )
         
         return qs_sorted.order_by('-similarity', 'id')
@@ -189,55 +189,52 @@ class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        try:
-            print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
-            print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
-            if 'post_cover' in request.data:
-                print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
-                print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+
+        print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
+        print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
+        if 'post_cover' in request.data:
+            print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
+            print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+        
+        # Separar a imagem dos outros dados
+        data_dict = {}
+        image_file = None
+        
+        for key, value in request.data.items():
+            if key == 'post_cover':
+                image_file = value
+            else:
+                data_dict[key] = value
+        
+        serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
+        if serializer.is_valid():
+            publication = serializer.save()
             
-            # Separar a imagem dos outros dados
-            data_dict = {}
-            image_file = None
+            # Adicionar a imagem após salvar
+            if image_file:
+                publication.post_cover = image_file
+                publication.save()
+                print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
             
-            for key, value in request.data.items():
-                if key == 'post_cover':
-                    image_file = value
-                else:
-                    data_dict[key] = value
+            print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
             
-            serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
-            if serializer.is_valid():
-                publication = serializer.save()
-                
-                # Adicionar a imagem após salvar
-                if image_file:
-                    publication.post_cover = image_file
-                    publication.save()
-                    print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
-                
-                print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
-                
-                # Dispara notificação
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    message_data = {
-                        'type': 'new_publication',
-                        'publication': {
-                            'title': publication.book_title,
-                            'author': publication.book_author or 'Autor não informado',
-                            'user': publication.post_creator.username,
-                            'message': f'Novo livro cadastrado: {publication.book_title}'
-                        }
+            # Dispara notificação
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                message_data = {
+                    'type': 'new_publication',
+                    'publication': {
+                        'title': publication.book_title,
+                        'author': publication.book_author or 'Autor não informado',
+                        'user': publication.post_creator.username,
+                        'message': f'Novo livro cadastrado: {publication.book_title}'
                     }
-                    async_to_sync(channel_layer.group_send)('publications', message_data)
-                
-                return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+                }
+                async_to_sync(channel_layer.group_send)('publications', message_data)
             
-            return Response(serializer.errors, status=400)
-            
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+        
+        return Response(serializer.errors, status=400)
 
 
 class EditarLivro(APIView):

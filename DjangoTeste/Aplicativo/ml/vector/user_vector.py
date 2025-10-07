@@ -1,4 +1,4 @@
-from Aplicativo.ml.vector.shared import User, text_model, encode_all_texts
+from Aplicativo.ml.vector.shared import FRONTEND_ID_TO_BACKEND_GENRE, User, zero_desc_embedding, encode_all_texts
 from collections import defaultdict
 from django.db.models import Avg, Sum, Count, Q
 from Aplicativo.models.publication_models import Publication, Interaction
@@ -27,6 +27,8 @@ def get_user_feature_vec(user, **kwargs):
         stats['message_count'] or 0
     ]
     
+    
+    
     post_type_counts = kwargs.get('post_type_counts') or user.interactions.values('publication__post_type').annotate(count=Count('id'))
     post_type_vector = [0] * len(Publication.PostType.values)
     
@@ -37,12 +39,25 @@ def get_user_feature_vec(user, **kwargs):
     total = sum(post_type_vector) or 1
     post_type_vector = [g/total for g in post_type_vector]
     
+    
+    
     genre_counts = kwargs.get('book_genre_counts') or user.interactions.values('publication__book_genre').annotate(count=Count('id'))
     genre_vector = [0] * len(Publication.BookGenre.values)
     
     for count_data in genre_counts:
         idx = Publication.BookGenre.values.index(count_data['publication__book_genre'])
         genre_vector[idx] = count_data['count']
+    
+    preferred_genres_ids = kwargs.get('preferred_genres') or getattr(user, 'preferred_genres', []) or []
+    pref_vector = [0] * len(Publication.BookGenre.values)
+    
+    for frontend_id in preferred_genres_ids:
+        backend_genre = FRONTEND_ID_TO_BACKEND_GENRE.get(frontend_id)
+        if backend_genre is not None:
+            idx = Publication.BookGenre.values.index(backend_genre)
+            pref_vector[idx] = 1
+    
+    genre_vector = [g + p for g, p in zip(genre_vector, pref_vector)]
     
     total = sum(genre_vector) or 1
     genre_vector = [g/total for g in genre_vector]
@@ -52,10 +67,9 @@ def get_user_feature_vec(user, **kwargs):
 
 def get_text_vector(user, **kwargs):
     pubs = kwargs.get('interacted_pubs') or Publication.objects.filter(interactions__user=user)
-    zeros = np.zeros(text_model.get_sentence_embedding_dimension())
     
     if len(pubs) == 0:
-        return zeros
+        return zero_desc_embedding()
     
     ratings_dict = kwargs.get('ratings_dict')
     if ratings_dict is None:
@@ -71,7 +85,7 @@ def get_text_vector(user, **kwargs):
     for pub in pubs:
         vec = pub.description_embedding
         if vec is None:
-            vec = zeros
+            vec = zero_desc_embedding()
         w = ratings_dict.get(pub.id) or 1
         text_vectors.append(vec)
         weights.append(w)

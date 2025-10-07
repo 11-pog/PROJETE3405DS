@@ -30,9 +30,12 @@ export default function Categorias() {
         .filter(cat => selected[cat.id])
         .map(cat => cat.id);
 
+      console.log(generosSelecionados)
+      
       await api.patch("usuario/", {
         preferred_genres: generosSelecionados
       });
+
 
       router.push("/pages/principal/principal");
     } catch (error) {

@@ -1,16 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
-from django.utils import timezone
-from datetime import datetime
 from Aplicativo.models.user_models import Usuario
-from Aplicativo.models.publication_models import Loan, Publication
+from Aplicativo.models.publication_models import Publication
 from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from Aplicativo.ml.vector.user_vector import get_user_vector
+from Aplicativo.ml.vector.user_vector import get_user_feature_vec
+from Aplicativo.ml.vector.shared import build_full_vec, zero_feat_embedding, zero_desc_embedding, zero_full_embedding
 
 class ListUsers(APIView):
     permission_classes = [IsAuthenticated]
@@ -83,9 +81,13 @@ class UserView(APIView):
         if Usuario.objects.filter(email=email).exists():
             return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
         
-        user = Usuario.objects.create_user(username=usuario, password=senha, email=email)
-        user.full_vector = get_user_vector(user)
-        user.save()
+        user = Usuario.objects.create_user(username=usuario, password=senha, email=email,
+            description_embedding=zero_desc_embedding(),
+            features_embedding=zero_feat_embedding(),
+            full_vector=zero_full_embedding(),
+            updt_feat_vec=True,
+            updt_text_vec=True
+        )
         
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -94,24 +96,27 @@ class UserView(APIView):
             "refresh": str(refresh),
         }, status=201)
     
-    # Eu uni a logica de edição de usuario aqui pra GetUser
+    # Eu uni a logica de edição de usuario aqui pra UserView
     # PATCH -> parcialmente atualiza algum objeto
     def patch(self, request):
+        user = request.user
         # Salvar preferred_genres diretamente
         if 'preferred_genres' in request.data:
-            request.user.preferred_genres = request.data['preferred_genres']
-            request.user.full_vector = get_user_vector(request.user)
-            request.user.save()
+            user.preferred_genres = request.data['preferred_genres']
+            user.features_embedding = get_user_feature_vec(user,
+                                                        preferred_genres=user.preferred_genres)
+            user.full_vector = build_full_vec(user)
+            user.save()
         
         serializer = UpdateUserSerializer(
-            request.user,
+            user,
             data=request.data,
             partial = True
         )
         
         if serializer.is_valid():
             serializer.save()
-            refresh = RefreshToken.for_user(request.user)
+            refresh = RefreshToken.for_user(user)
             return Response({
                 "mensagem": "Dados atualizados com sucesso!",
                 "access": str(refresh.access_token),

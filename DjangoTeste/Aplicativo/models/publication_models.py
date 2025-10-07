@@ -1,3 +1,4 @@
+from dirtyfields import DirtyFieldsMixin
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -7,7 +8,7 @@ from django.utils import timezone
 from pgvector.django import VectorField
 
 # Modelo de banco de dados de Postagem/Publicação
-class Publication(models.Model):
+class Publication(DirtyFieldsMixin, models.Model):
     class PostType(models.TextChoices):
         EMPRESTIMO = "emprestimo", "Empréstimo"
         TROCA = "troca", "Troca"

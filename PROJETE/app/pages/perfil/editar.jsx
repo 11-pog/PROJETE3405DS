@@ -41,8 +41,7 @@ export default function Editar() {
   const Editar = async () => {
     const generosSelecionados = categorias
       .filter(cat => selected[cat.id])
-      .map(cat => cat.nome)
-      .join(", ");
+      .map(cat => cat.id)
     
     try {
       const data = {
