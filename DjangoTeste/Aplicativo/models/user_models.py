@@ -66,14 +66,30 @@ class Usuario(AbstractUser):
     total_user_rating = models.IntegerField(default=0)
     user_rating_count = models.IntegerField(default=0)
     
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
+    
     
     # Isso aqui é de extrema importancia pra ia de recomendação
     # por favor, NAO TIRAR
     
     # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA
+    feature_embedding_size = Publication.feature_embedding_size
+    features_embedding = VectorField(
+        dimensions=feature_embedding_size,
+        null=True,
+        blank=True
+    )
+    
+    # Text embedding (heavy part)
+    text_embedding_size = Publication.text_embedding_size
+    description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    
+    # The full vector for pgvector search (indexed)
+    full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,
+                        null=True,
+                        blank=True)
     cluster_label = models.IntegerField(null=True, blank=True)
-    embedding_size = Publication.embedding_size
-    embedding = VectorField(dimensions=embedding_size, null=True, blank=True)
     
     def __str__(self):
         return self.email

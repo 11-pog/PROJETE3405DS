@@ -77,8 +77,22 @@ class Publication(models.Model):
     # por favor, NAO TIRAR
     
     # se der erro tenta instalar pgvector inves de deletar literalmente o negocio mais importante relacionado a IA 
-    embedding_size = 5 + len(PostType) + len(BookGenre) + 384
-    embedding = VectorField(dimensions=embedding_size, null = True, blank= True)
+    feature_embedding_size = 5 + len(PostType) + len(BookGenre)
+    features_embedding = VectorField(
+        dimensions=feature_embedding_size,
+        null=True,
+        blank=True
+    )
+    
+    # Text embedding (heavy part)
+    text_embedding_size = 384
+    description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    
+    # The full vector for pgvector search (indexed)
+    full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,
+                        null=True,
+                        blank=True)
+    
     cluster_label = models.IntegerField(null=True, blank=True)
     
     def __str__(self):

@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from Aplicativo.serializers.user_serializer import UploadUserImageSerializer, UserSerializer, UpdateUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from Aplicativo.ml.vector import get_user_vector
+from Aplicativo.ml.vector.user_vector import get_user_vector
 
 class ListUsers(APIView):
     permission_classes = [IsAuthenticated]
@@ -172,6 +172,8 @@ class SearchUser(APIView):
                     'username': usuario.username,
                     'email': usuario.email,
                     'is_active': usuario.is_active,
+                    'is_online': usuario.is_online,
+                    'image_url': request.build_absolute_uri(usuario.profile_picture.url) if usuario.profile_picture else None,
                     'date_joined': usuario.date_joined.strftime('%Y-%m-%d') if usuario.date_joined else None,
                     'chat_url': f'/private/{min(request.user.id, usuario.id)}/{max(request.user.id, usuario.id)}/'
                 }

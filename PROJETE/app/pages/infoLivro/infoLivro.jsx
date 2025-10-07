@@ -336,8 +336,10 @@ export default function CadastroLivro() {
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Fechar</Text>
             </TouchableOpacity>
           </View>
-        </Modal><Botao texto="Adicionar foto do livro" aoApertar={handleChoosePhoto} />
-      <Botao texto="Salvar livro" aoApertar={SalvarLivro} />
+        </Modal><Botao texto="Adicionar Foto do Livro" aoApertar={handleChoosePhoto} />
+<TouchableOpacity onPress={SalvarLivro} style={styles.botaoSalvar}>
+  <Text style={styles.textoBotao}>Salvar Livro</Text>
+</TouchableOpacity>
       
     </ScrollView>
       <BarraInicial />
@@ -369,6 +371,30 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 5,
     textAlign: "center",
+  },
+  botaoSalvar: {
+    backgroundColor: '#a13b3dff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginTop: 16,
+    // Sombra no iOS
+    shadowColor: '#1c292cff',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+
+    // Sombra no Android
+    elevation: 10,
+  },
+  textoBotao: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
   tipoContainer: {
     marginVertical: 15,
