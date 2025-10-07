@@ -1,6 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+
+
+def test_view(request):
+    return JsonResponse({"status": "ok", "message": "Django funcionando"})
 
 class TestAuth(APIView):
     permission_classes = [IsAuthenticated]

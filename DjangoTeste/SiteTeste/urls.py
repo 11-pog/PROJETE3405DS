@@ -38,10 +38,11 @@ from Aplicativo.views.usuario_views import UserView, UploadUserImage
 from Aplicativo.views.chat.chat_views import PrivateChat
 from Aplicativo.views.chat.chat_author_view import GetBookAuthor
 from Aplicativo.views.chat.chat_message_view import SendChatMessage
-from Aplicativo.views.test_auth import TestAuth
-from Aplicativo.views.usuario_views import CreateLoan, CompleteLoan, UserProfile, GenerateChatLink, RateLoanCare, RequestLoan, GetUserBooks, AcceptLoan, RejectLoan, RateUser, GetUserById
+from Aplicativo.views.test_view import TestAuth, test_view
+from Aplicativo.views.usuario_views import UserProfile, GenerateChatLink, GetUserBooks, RateUser, GetUserById
+from Aplicativo.views.loan_views import CreateLoan, CompleteLoan, RateLoanCare, RequestLoan, AcceptLoan, RejectLoan
 from rest_framework_simplejwt.views import TokenRefreshView
-from Aplicativo.views.test_simple import test_view
+
 
 urlpatterns = [
     # Admin
