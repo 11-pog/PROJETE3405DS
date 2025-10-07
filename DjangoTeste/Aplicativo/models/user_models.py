@@ -80,10 +80,12 @@ class Usuario(AbstractUser):
         null=True,
         blank=True
     )
+    updt_feat_vec = models.BooleanField(default=False)
     
     # Text embedding (heavy part)
     text_embedding_size = Publication.text_embedding_size
     description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    updt_text_vec = models.BooleanField(default=False)
     
     # The full vector for pgvector search (indexed)
     full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,
