@@ -52,7 +52,19 @@ class GetBookList(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        return Publication.objects.exclude(post_creator=user).order_by('-created_at', 'id')
+        qs_sorted = Publication.objects.exclude(post_creator=user)
+        
+        # Se o usuário tem vetor, usa similaridade
+        if hasattr(user, 'full_vector') and user.full_vector is not None:
+            user_vec = user.full_vector
+            qs = qs_sorted.exclude(full_vector=None).annotate(
+                similarity=-CosineDistance(F("full_vector"), user_vec)
+            ).order_by('-similarity', 'id')
+            
+            return qs
+        else:
+            # Se usuário não tem vetor, ordena por data
+            return qs_sorted.order_by('-created_at', 'id')
 
 
 

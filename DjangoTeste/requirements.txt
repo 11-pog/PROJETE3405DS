@@ -18,3 +18,4 @@ sentence-transformers==5.1.1
 pgvector==0.4.1
 psycopg2==2.9.10
 psycopg[binary]
+celery[redis]
