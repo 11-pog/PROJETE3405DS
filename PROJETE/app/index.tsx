@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
 const DisplayAnImage = () => (
   <Image
     style={styles.logo}
-    source={require('./img/logo.png')}
+    source={require('./img/projeteLogo.png')}
   />
 );
 
