@@ -105,5 +105,13 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
     
     def get_post_cover(self, obj):
         if obj.post_cover:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.post_cover.url)
             return obj.post_cover.url
-        return None
+        else:
+            # Retorna URL da imagem padrão cinza
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri('/media/defaults/default_thumbnail.png')
+            return '/media/defaults/default_thumbnail.png'

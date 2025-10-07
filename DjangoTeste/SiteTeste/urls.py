@@ -66,6 +66,7 @@ urlpatterns = [
     path('api/livros/<int:book_id>/author/', GetBookAuthor.as_view(), name='book-author'),
     path('api/livros/<int:book_id>/favoritar/', FavoritePostView.as_view(), name="favoritar-livro"),
     path('api/search/livros/', pesquisadelivro.as_view(), name="pesquisa-livros"),
+    path('api/pesquisadelivro/', pesquisadelivro.as_view(), name="pesquisa-livros-alt"),
     path('api/usuario/publicacoes/', GetMinhasPublicacoes.as_view(), name="minhas-publicacoes"),
 
     # Empréstimos

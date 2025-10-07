@@ -6,6 +6,15 @@ import { fetchLivrosMock } from '../../mocks/mockBooks';
 import { router, usePathname } from 'expo-router'
 import api from '../../functions/api';
 
+// Função para obter a URL base correta para imagens
+const getImageBaseUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000';
+  } else {
+    return 'http://192.168.0.102:8000';
+  }
+};
+
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
 
@@ -67,21 +76,20 @@ export default function Favoritos() {
         params: {
           id: item.id,
           path_back: path_back
+        
         }
       })}>
         {/* Capa */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image 
-            source={{ uri: `http://192.168.0.102:8000${item.post_cover}` }}
+            source={{ uri: item.post_cover.startsWith('http') ? item.post_cover : getImageBaseUrl() + item.post_cover }}
             style={styles.image}
             resizeMode="cover"
           />
         ) : (
-          <Image 
-            source={require('../../../assets/imagemPadrao.jpeg')}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <View style={[styles.image, styles.placeholderImage]}>
+            <Ionicons name="book" size={40} color="#777" />
+          </View>
         )}
 
         {/* Texto */}
@@ -194,6 +202,11 @@ const styles = StyleSheet.create({
   actionBtn: {
     padding: 6,
     borderRadius: 8,
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#bbb',
   },
 
 });
