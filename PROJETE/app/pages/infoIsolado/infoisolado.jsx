@@ -121,9 +121,9 @@ export default function InfoIsolado() {
         {book.book_genre && (
           <View style={{
             paddingHorizontal: 12,
-            paddingVertical: 6,
+            paddingVertical: 2,
             borderRadius: 15,
-            marginBottom: 16,
+            marginBottom: 4,
           }}>
             <Text style={{
               fontSize: 12,
@@ -142,7 +142,30 @@ export default function InfoIsolado() {
             </Text>
           </View>
         )}
-
+<View style={{ width: "90%", marginBottom: 10 }}>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 12,
+              color: "#335c67",
+              marginBottom: 4,
+              alignSelf: "center",
+              marginVertical: 2
+            }}
+          >
+            Nota do livro:
+</Text>
+<View style={{ flexDirection: "row", marginVertical: 0, justifyContent: "center" }}>
+  {[1, 2, 3, 4, 5].map((star) => (
+    <Ionicons
+      key={star}
+      name={star <= (book.book_rating || 0) ? "star" : "star-outline"}
+      size={20}
+      color="#E09F3E"
+    />
+  ))}
+          </View>
+        </View>
         <View style={{ width: "90%", marginBottom: 20 }}>
           <Text
             style={{
@@ -254,31 +277,7 @@ export default function InfoIsolado() {
             <Ionicons name="chatbubble-ellipses-outline" size={30} color="#E09F3E" />
           </TouchableOpacity>
         </View>
-        <View style={{ width: "90%", marginBottom: 20 }}>
-          <Text
-            style={{
-              fontWeight: "bold",
-              fontSize: 16,
-              color: "#335c67",
-              marginBottom: 5,
-              alignSelf: "center",
-              marginVertical: 10
-            }}
-          >
-            Avalie esta publicação:
-          </Text>
-          <View style={{ flexDirection: "row", marginVertical: 10, justifyContent: "center", }}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
-                <Ionicons
-                  name={star <= rating ? "star" : "star-outline"}
-                  size={28}
-                  color="#E09F3E"
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        
       </View>
     </ScrollView>
   );

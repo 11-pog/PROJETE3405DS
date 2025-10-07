@@ -1,3 +1,4 @@
+from dirtyfields import DirtyFieldsMixin
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -7,7 +8,7 @@ from django.utils import timezone
 from pgvector.django import VectorField
 
 # Modelo de banco de dados de Postagem/Publicação
-class Publication(models.Model):
+class Publication(DirtyFieldsMixin, models.Model):
     class PostType(models.TextChoices):
         EMPRESTIMO = "emprestimo", "Empréstimo"
         TROCA = "troca", "Troca"
@@ -86,10 +87,12 @@ class Publication(models.Model):
         null=True,
         blank=True
     )
+    updt_feat_vec = models.BooleanField(default=False)
     
     # Text embedding (heavy part)
     text_embedding_size = 384
     description_embedding = VectorField(dimensions=text_embedding_size, null=True, blank=True)
+    updt_text_vec = models.BooleanField(default=False)
     
     # The full vector for pgvector search (indexed)
     full_vector = VectorField(dimensions=feature_embedding_size + text_embedding_size,

@@ -2,6 +2,8 @@ from Aplicativo.models.publication_models import Publication
 from Aplicativo.models.user_models import Usuario
 from rest_framework import serializers
 
+from Aplicativo.ml.vector.shared import zero_desc_embedding, zero_feat_embedding, zero_full_embedding
+
 
 """
 Os serializadores das publicações so sitezinho
@@ -46,6 +48,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_genre",
             "post_location_city",
             "post_type",
+            "book_rating",
         ]
     
     def to_internal_value(self, data):
@@ -59,6 +62,9 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data.setdefault("post_location_city", "Não informado")
         validated_data.setdefault("post_type", Publication.PostType.EMPRESTIMO)
+        
+        validated_data.setdefault("features_embedding", zero_feat_embedding())
+        validated_data.setdefault("full_vector", zero_full_embedding())
         
         print(f"[SERIALIZER] validated_data keys: {list(validated_data.keys())}")
         if 'post_cover' in validated_data:
@@ -92,7 +98,8 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "post_cover",
             "is_saved",
             "is_owner",
-            "is_available"
+            "is_available",
+            "book_rating",
         ]
     
     def get_is_saved(self, obj):

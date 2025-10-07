@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-created_at"
+        ordering = "-similarity"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -177,55 +177,52 @@ class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        try:
-            print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
-            print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
-            if 'post_cover' in request.data:
-                print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
-                print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+
+        print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
+        print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
+        if 'post_cover' in request.data:
+            print(f"[CADASTRO] Tipo do arquivo: {type(request.data['post_cover'])}")
+            print(f"[CADASTRO] Nome do arquivo: {getattr(request.data['post_cover'], 'name', 'N/A')}")
+        
+        # Separar a imagem dos outros dados
+        data_dict = {}
+        image_file = None
+        
+        for key, value in request.data.items():
+            if key == 'post_cover':
+                image_file = value
+            else:
+                data_dict[key] = value
+        
+        serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
+        if serializer.is_valid():
+            publication = serializer.save()
             
-            # Separar a imagem dos outros dados
-            data_dict = {}
-            image_file = None
+            # Adicionar a imagem após salvar
+            if image_file:
+                publication.post_cover = image_file
+                publication.save()
+                print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
             
-            for key, value in request.data.items():
-                if key == 'post_cover':
-                    image_file = value
-                else:
-                    data_dict[key] = value
+            print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
             
-            serializer = CreatePublicationSerializer(data=data_dict, context={'request': request})
-            if serializer.is_valid():
-                publication = serializer.save()
-                
-                # Adicionar a imagem após salvar
-                if image_file:
-                    publication.post_cover = image_file
-                    publication.save()
-                    print(f"[CADASTRO] Imagem salva: {publication.post_cover}")
-                
-                print(f"[CADASTRO] Publicacao salva com post_cover: {publication.post_cover}")
-                
-                # Dispara notificação
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    message_data = {
-                        'type': 'new_publication',
-                        'publication': {
-                            'title': publication.book_title,
-                            'author': publication.book_author or 'Autor não informado',
-                            'user': publication.post_creator.username,
-                            'message': f'Novo livro cadastrado: {publication.book_title}'
-                        }
+            # Dispara notificação
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                message_data = {
+                    'type': 'new_publication',
+                    'publication': {
+                        'title': publication.book_title,
+                        'author': publication.book_author or 'Autor não informado',
+                        'user': publication.post_creator.username,
+                        'message': f'Novo livro cadastrado: {publication.book_title}'
                     }
-                    async_to_sync(channel_layer.group_send)('publications', message_data)
-                
-                return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+                }
+                async_to_sync(channel_layer.group_send)('publications', message_data)
             
-            return Response(serializer.errors, status=400)
-            
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"mensagem": "Livro cadastrado com sucesso!"}, status=201)
+        
+        return Response(serializer.errors, status=400)
 
 
 class EditarLivro(APIView):
