@@ -46,6 +46,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "book_genre",
             "post_location_city",
             "post_type",
+            "book_rating",
         ]
     
     def to_internal_value(self, data):
@@ -92,7 +93,8 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
             "post_cover",
             "is_saved",
             "is_owner",
-            "is_available"
+            "is_available",
+            "book_rating",
         ]
     
     def get_is_saved(self, obj):
