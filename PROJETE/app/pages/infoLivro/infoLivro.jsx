@@ -47,7 +47,6 @@ export default function CadastroLivro() {
     formData.append("book_description", descricao);
     formData.append("book_genre", genero);
     formData.append("post_type", tipo);
-    formData.append("post_location_city", "São Paulo");
     formData.append("book_rating", rating); // Adiciona a avaliação
 
     if (fotoLivro) {

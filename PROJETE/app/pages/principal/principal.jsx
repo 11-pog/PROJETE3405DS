@@ -24,6 +24,7 @@ export default function FeedLivros() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false); // para indicar se o usuário está no modo busca
   const [refreshing, setRefreshing] = useState(false);
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
   const { notifications } = useNotifications();
   const path_back = usePathname()
 
@@ -146,10 +147,30 @@ export default function FeedLivros() {
     useCallback(() => {
       console.log('Tela principal ganhou foco - recarregando feed');
       if (!isSearching) {
-        onRefresh();
+        console.log('🔄 [FEED] Forçando refresh das imagens');
+        setImageRefreshKey(Date.now()); // Força refresh das imagens
+        fetchBooks("livros/feed/", true); // Força reload completo
       }
-    }, [onRefresh, isSearching])
+    }, [fetchBooks, isSearching])
   );
+
+  // Função global para refresh forçado
+  useEffect(() => {
+    global.refreshFeed = () => {
+      console.log('🔄 [FEED] Executando refresh global');
+      const newKey = Date.now();
+      console.log('🔄 [FEED] Novo imageRefreshKey:', newKey);
+      setImageRefreshKey(newKey);
+      // Força re-render da lista
+      setBooks([]);
+      setTimeout(() => {
+        fetchBooks("livros/feed/", true);
+      }, 100);
+    };
+    return () => {
+      delete global.refreshFeed;
+    };
+  }, [fetchBooks]);
 
   function handleLoadMore() {
     if (nextPage) {
@@ -210,18 +231,19 @@ export default function FeedLivros() {
 
   function renderBook({ item }) {
     console.log(`Livro: ${item.book_title}, post_cover: ${item.post_cover}`);
+    const finalImageUrl = item.post_cover.startsWith('http') 
+      ? `${item.post_cover}?t=${imageRefreshKey}` 
+      : `${getImageBaseUrl()}${item.post_cover}?t=${imageRefreshKey}`;
+    console.log(`🖼️ [IMAGE] URL final para ${item.book_title}:`, finalImageUrl);
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ 
-              uri: item.post_cover.startsWith('http') 
-                ? `${item.post_cover}?t=${Date.now()}` 
-                : `${getImageBaseUrl()}${item.post_cover}?t=${Date.now()}` 
-            }}
+            source={{ uri: finalImageUrl }}
             style={styles.image}
             resizeMode="cover"
+            key={`image-${item.id}-${item.post_cover}-${imageRefreshKey}`}
           />
         ) : (
           <View style={[styles.image, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#ddd' }]}>
@@ -248,6 +270,23 @@ export default function FeedLivros() {
             </Text>
           </Pressable>
 
+ {(item.post_creator_username || item.post_creator || item.username || item.author_username) && (
+            <TouchableOpacity onPress={async () => {
+              try {
+                const response = await api.get(`livros/${item.id}/author/`);
+                const creatorId = response.data.author_id;
+                if (creatorId) {
+                  router.push(`/pages/perfil/perfilUsuario?userId=${creatorId}`);
+                }
+              } catch (error) {
+                console.error('Erro ao buscar ID do autor:', error);
+              }
+            }}>
+              <Text style={styles.usernameText}>
+                Postado por: {item.post_creator_username || item.post_creator || item.username || item.author_username}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <Text style={styles.tipoAcao}>
             {
@@ -273,23 +312,7 @@ export default function FeedLivros() {
             </Text>
           )}
 
-          {(item.post_creator_username || item.post_creator || item.username || item.author_username) && (
-            <TouchableOpacity onPress={async () => {
-              try {
-                const response = await api.get(`livros/${item.id}/author/`);
-                const creatorId = response.data.author_id;
-                if (creatorId) {
-                  router.push(`/pages/perfil/perfilUsuario?userId=${creatorId}`);
-                }
-              } catch (error) {
-                console.error('Erro ao buscar ID do autor:', error);
-              }
-            }}>
-              <Text style={styles.usernameText}>
-                Postado por: {item.post_creator_username || item.post_creator || item.username || item.author_username}
-              </Text>
-            </TouchableOpacity>
-          )}
+         
         </View>
 
         {/* Botões de interação */}
@@ -448,7 +471,7 @@ const styles = StyleSheet.create({
   usernameText: {
     marginTop: 2,
     fontSize: 11,
-    color: '#9e2a2b',
+    color: '#888',
   },
   actions: {
     alignItems: 'flex-end',

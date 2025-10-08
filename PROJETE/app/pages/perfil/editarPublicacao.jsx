@@ -51,6 +51,8 @@ export default function EditarPublicacao() {
           ? book.post_cover 
           : `${getImageBaseUrl()}${book.post_cover}`;
         setBookImage(imageUrl);
+        console.log('📸 [EDITAR_DEBUG] URL da imagem salva no banco:', book.post_cover);
+        console.log('📸 [EDITAR_DEBUG] URL final para exibição:', imageUrl);
       }
 
       console.log('[EDITAR_FRONTEND] Dados carregados:', book);
@@ -131,6 +133,10 @@ export default function EditarPublicacao() {
   };
 
   const saveChanges = async () => {
+    console.log('🚀 [DEBUG] Iniciando saveChanges');
+    console.log('🚀 [DEBUG] bookImage atual:', bookImage);
+    console.log('🚀 [DEBUG] bookId:', bookId);
+    
     if (!bookTitle.trim()) {
       Alert.alert('Erro', 'O título do livro é obrigatório');
       return;
@@ -147,30 +153,63 @@ export default function EditarPublicacao() {
       formData.append('book_genre', genero);
 
       if (bookImage && !bookImage.startsWith('http')) {
-        formData.append('post_cover', {
-          uri: bookImage,
-          type: 'image/jpeg',
-          name: 'book_cover.jpg',
-        });
+        console.log('📸 [DEBUG] Anexando nova imagem:', bookImage);
+        
+        if (Platform.OS === 'web') {
+          // No web, precisa converter blob para File
+          try {
+            const response = await fetch(bookImage);
+            const blob = await response.blob();
+            const file = new File([blob], 'book_cover.jpg', { type: 'image/jpeg' });
+            formData.append('post_cover', file);
+            console.log('📸 [DEBUG] Arquivo web criado:', file.name);
+          } catch (error) {
+            console.error('📸 [DEBUG] Erro ao converter blob:', error);
+          }
+        } else {
+          // No mobile, usa o formato original
+          formData.append('post_cover', {
+            uri: bookImage,
+            type: 'image/jpeg',
+            name: 'book_cover.jpg',
+          });
+        }
+      } else if (bookImage && bookImage.startsWith('http')) {
+        console.log('⚠️ [DEBUG] Imagem é URL existente, não enviando');
+      } else {
+        console.log('⚠️ [DEBUG] Nenhuma imagem para enviar');
       }
 
-      console.log('[EDITAR_FRONTEND] Enviando dados para livro ID:', bookId);
+      console.log('🚀 [DEBUG] Enviando dados para livro ID:', bookId);
 
       const response = await api.put(`livros/${bookId}/editar/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log('[EDITAR_FRONTEND] Resposta recebida:', response.data);
+      console.log('✅ [DEBUG] Resposta recebida:', response.data);
+      console.log('✅ [DEBUG] Nova URL da imagem:', response.data.post_cover);
+
+      // Se backend não retorna dados, recarrega do servidor
+      if (!response.data.post_cover) {
+        console.log('🔄 [DEBUG] Backend não retornou imagem, recarregando dados...');
+        await loadBookData();
+      }
 
       Alert.alert('Sucesso!', 'Livro atualizado com sucesso!', [
         { text: 'OK', onPress: () => {
-          // Força atualização da imagem no cache
-          if (bookImage) {
-            const timestamp = Date.now();
-            console.log('🔄 Forçando atualização da imagem com timestamp:', timestamp);
+          console.log('🔄 [DEBUG] Voltando para tela anterior');
+          // Força refresh das imagens no feed
+          if (global.refreshFeed) {
+            console.log('🔄 [DEBUG] Chamando global.refreshFeed');
+            global.refreshFeed();
+          } else {
+            console.log('⚠️ [DEBUG] global.refreshFeed não encontrado');
           }
-          router.back();
+          // Delay para dar tempo do backend processar
+          setTimeout(() => {
+            router.back();
+          }, 500);
         }}
       ]);
     } catch (error) {

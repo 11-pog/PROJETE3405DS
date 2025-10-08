@@ -49,6 +49,7 @@ class CreatePublicationSerializer(serializers.ModelSerializer):
             "post_location_city",
             "post_type",
             "book_rating",
+            "post_cover",
         ]
     
     def to_internal_value(self, data):
@@ -111,13 +112,17 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
         return obj.post_creator.id == user.id
     
     def get_post_cover(self, obj):
+        print(f"[SERIALIZER] get_post_cover para {obj.book_title}: obj.post_cover = {obj.post_cover}")
         if obj.post_cover:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.post_cover.url)
+                url = request.build_absolute_uri(obj.post_cover.url)
+                print(f"[SERIALIZER] Retornando URL da imagem: {url}")
+                return url
             return obj.post_cover.url
         else:
             # Retorna URL da imagem padrão cinza
+            print(f"[SERIALIZER] obj.post_cover é falsy, retornando imagem padrão")
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri('/media/defaults/default_thumbnail.png')

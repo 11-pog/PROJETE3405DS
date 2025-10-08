@@ -212,7 +212,7 @@ AUTH_USER_MODEL = 'Aplicativo.Usuario'
 # CELERYYYYYYYYY
 
 
-CELERY_BEAT_SCHEDULE = { # TESTE
+"""CELERY_BEAT_SCHEDULE = { # TESTE
     'say-hello-every-10-seconds': {
         'task': 'SiteTeste.celery.debug_task',
         'schedule': 20.0,  # in seconds
@@ -221,4 +221,4 @@ CELERY_BEAT_SCHEDULE = { # TESTE
         'task': 'Aplicativo.ml.tasks.cluster_all_labels',
         'schedule': 300,
     }
-}
+}"""
