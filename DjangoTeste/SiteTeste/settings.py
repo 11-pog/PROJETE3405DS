@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from corsheaders.defaults import default_headers
+from celery.schedules import crontab
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -205,3 +206,19 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # COISAS ADICIONADAS DEPOIS BEM BIZARRO
 AUTH_USER_MODEL = 'Aplicativo.Usuario'
+
+
+
+# CELERYYYYYYYYY
+
+
+CELERY_BEAT_SCHEDULE = { # TESTE
+    'say-hello-every-10-seconds': {
+        'task': 'SiteTeste.celery.debug_task',
+        'schedule': 20.0,  # in seconds
+    },
+    'ml-cluster': {
+        'task': 'Aplicativo.ml.tasks.cluster_all_labels',
+        'schedule': 300,
+    }
+}

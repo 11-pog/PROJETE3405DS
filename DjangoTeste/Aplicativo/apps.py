@@ -2,7 +2,7 @@ import os
 import shutil
 from django.apps import AppConfig
 from django.conf import settings
-
+from SiteTeste.celery import debug_task
 
 class AplicativoConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -12,6 +12,8 @@ class AplicativoConfig(AppConfig):
     def ready(self): # Automaticamente copia a imagem icone padrão de static para media/defaults
         media_defaults = os.path.join(settings.MEDIA_ROOT, 'defaults')
         os.makedirs(media_defaults, exist_ok=True)
+        
+        debug_task.delay()
         
         static_images_dir = os.path.join(settings.BASE_DIR, 'static', 'img')
         
