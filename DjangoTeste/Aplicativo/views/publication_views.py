@@ -189,7 +189,6 @@ class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-
         print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
         print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
         if 'post_cover' in request.data:
@@ -254,6 +253,11 @@ class EditarLivro(APIView):
             serializer = CreatePublicationSerializer(publication, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 updated_publication = serializer.save()
+                
+                updated_publication.updt_feat_vec = True
+                updated_publication.updt_text_vec = True
+                updated_publication.save()
+                
                 print(f"[EDITAR] Livro atualizado com sucesso!")
                 print(f"[EDITAR] Novos dados: Título={updated_publication.book_title}, Tipo={updated_publication.post_type}")
                 return Response({"mensagem": "Livro atualizado com sucesso!"}, status=200)
