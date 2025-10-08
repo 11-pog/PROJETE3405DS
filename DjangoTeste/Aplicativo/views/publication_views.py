@@ -189,7 +189,6 @@ class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-
         print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
         print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
         if 'post_cover' in request.data:
@@ -275,13 +274,13 @@ class EditarLivro(APIView):
             if serializer.is_valid():
                 updated_publication = serializer.save()
                 
-                # Adicionar a imagem após salvar (igual ao cadastro)
+                # Adicionar a imagem após salvar em editar
                 if image_file:
                     updated_publication.post_cover = image_file
                     updated_publication.save()
                     print(f"[EDITAR] Nova imagem salva: {updated_publication.post_cover}")
                     print(f"[EDITAR] Verificando se foi salva: {bool(updated_publication.post_cover)}")
-                    # Recarrega do banco para confirmar
+                    # isso é meio que para garantir a atualização(precisa)
                     updated_publication.refresh_from_db()
                     print(f"[EDITAR] Após refresh_from_db: {updated_publication.post_cover}")
                 

@@ -1,4 +1,4 @@
-from Aplicativo.ml.vector.shared import FRONTEND_ID_TO_BACKEND_GENRE, User, zero_desc_embedding, encode_all_texts
+from Aplicativo.ml.vector.shared import FRONTEND_ID_TO_BACKEND_GENRE, User, build_full_vec, zero_desc_embedding, encode_all_texts
 from collections import defaultdict
 from django.db.models import Avg, Sum, Count, Q
 from Aplicativo.models.publication_models import Publication, Interaction
@@ -6,9 +6,11 @@ import numpy as np
 
 def get_user_vector(user, **kwargs):
     feat_vector = get_user_feature_vec(user, **kwargs)
-    text_vector = get_text_vector(user, **kwargs)
+    text_vector = get_user_text_vector(user, **kwargs)
     
-    return feat_vector, text_vector, np.concatenate([feat_vector, text_vector])
+    full_vec = build_full_vec(feat=feat_vector, text=text_vector)
+    
+    return feat_vector, text_vector, full_vec
 
 
 def get_user_feature_vec(user, **kwargs):
@@ -65,7 +67,7 @@ def get_user_feature_vec(user, **kwargs):
     return np.concatenate([behavior_vector, post_type_vector, genre_vector])
 
 
-def get_text_vector(user, **kwargs):
+def get_user_text_vector(user, **kwargs):
     pubs = kwargs.get('interacted_pubs') or Publication.objects.filter(interactions__user=user)
     
     if len(pubs) == 0:
