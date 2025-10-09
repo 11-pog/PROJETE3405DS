@@ -66,12 +66,12 @@ def update_pending_vectors():
     
     for pub in pubs_feat:
         feat_vec = get_publication_feature_vec(pub)
-        full_vec = build_full_vec(user, feat=feat_vec)
+        full_vec = build_full_vec(pub, feat=feat_vec)
         
-        pub.description_embedding = text_vec
+        pub.features_embedding = feat_vec
         pub.full_vector = full_vec
         
-        pub.updt_text_vec = False
+        pub.updt_feat_vec = False
         pub.save()
 
 
