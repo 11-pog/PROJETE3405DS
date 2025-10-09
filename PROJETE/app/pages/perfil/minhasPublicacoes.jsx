@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   FlatList,
@@ -14,12 +15,24 @@ import { Ionicons } from '@expo/vector-icons';
 import BarraInicial from '../../functions/barra_inicial';
 import { router, usePathname } from 'expo-router';
 import api from '../../functions/api';
+import { Platform } from 'react-native';
+
+// Função para obter a URL base correta para imagens
+const getImageBaseUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000';
+  } else {
+    return 'http://192.168.0.102:8000';
+  }
+};
 
 export default function MinhasPublicacoes() {
   const [publicacoes, setPublicacoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nextPage, setNextPage] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+
 
   const path_back = usePathname()
 
@@ -51,6 +64,17 @@ export default function MinhasPublicacoes() {
   useEffect(() => {
     fetchMinhasPublicacoes();
   }, [fetchMinhasPublicacoes]);
+
+  // Atualiza imagens quando a tela ganha foco (igual página principal)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Minhas Publicações ganhou foco - recarregando');
+      const newKey = Date.now();
+      console.log('Novo imageRefreshKey:', newKey);
+      setImageRefreshKey(newKey); // Força refresh das imagens
+      fetchMinhasPublicacoes();
+    }, [fetchMinhasPublicacoes])
+  );
 
   async function confirmDelete(item) {
     console.log('confirmDelete iniciado para item:', item.id);
@@ -104,14 +128,31 @@ export default function MinhasPublicacoes() {
   }
 
   function renderBook({ item }) {
+    // Força cache-busting mais agressivo
+    const cacheBuster = `${imageRefreshKey}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const finalImageUrl = item.post_cover && item.post_cover.startsWith('http') 
+      ? `${item.post_cover}?cb=${cacheBuster}` 
+      : `${getImageBaseUrl()}${item.post_cover}?cb=${cacheBuster}`;
+    
+    console.log(`🖼️ [FEED_DEBUG] ===== Livro ${item.id} - ${item.book_title} =====`);
+    console.log(`🖼️ [FEED_DEBUG] URL do banco (post_cover):`, item.post_cover);
+    console.log(`🖼️ [FEED_DEBUG] URL final com cache-bust:`, finalImageUrl);
+    console.log(`🖼️ [FEED_DEBUG] CacheBuster:`, cacheBuster);
+    console.log(`🖼️ [FEED_DEBUG] =====================================`);
+    
     return (
-      <View style={styles.card}>
+      <View style={styles.card} key={`card-${item.id}-${imageRefreshKey}`}>
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
-          <Image 
-            source={{ uri: item.post_cover.startsWith('http') ? item.post_cover : `http://192.168.0.102:8000${item.post_cover}` }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <View style={styles.image}>
+            <Image 
+              source={{ uri: finalImageUrl }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+              key={cacheBuster}
+              onLoad={() => console.log(`✅ [DEBUG] Imagem carregada para livro ${item.id}`)}
+              onError={(error) => console.log(`❌ [DEBUG] Erro ao carregar imagem livro ${item.id}:`, error.nativeEvent.error)}
+            />
+          </View>
         ) : (
           <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
             <Ionicons name="book" size={24} color="#999" />

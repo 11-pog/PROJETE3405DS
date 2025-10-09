@@ -47,11 +47,10 @@ export default function CadastroLivro() {
     formData.append("book_description", descricao);
     formData.append("book_genre", genero);
     formData.append("post_type", tipo);
-    formData.append("post_location_city", "São Paulo");
     formData.append("book_rating", rating); // Adiciona a avaliação
 
     if (fotoLivro) {
-      console.log('📸 Anexando foto:', fotoLivro);
+
       
       if (Platform.OS === 'web') {
         try {
@@ -60,7 +59,7 @@ export default function CadastroLivro() {
           const file = new File([blob], 'livro.jpg', { type: 'image/jpeg' });
           formData.append('post_cover', file);
         } catch (error) {
-          console.error('Erro ao processar imagem web:', error);
+          // Erro ao processar imagem web
         }
       } else {
         // Android e iOS
@@ -72,8 +71,7 @@ export default function CadastroLivro() {
       }
     }
 
-    console.log('📝 Dados sendo enviados com imagem:', fotoLivro ? 'SIM' : 'NÃO');
-    console.log('🎭 Gênero selecionado:', genero);
+
 
     try {
       const response = await api.post('livros/cadastrar/', formData, {
@@ -85,20 +83,18 @@ export default function CadastroLivro() {
 
       Alert.alert("Sucesso", "Livro cadastrado com sucesso!");
 
-      setTimeout(() => {
+      /*setTimeout(() => {
         Alert.alert(
           "📚 Novo livro disponível!",
           `${titulo} foi adicionado por ${response.data.user || "um usuário"}`,
           [{ text: "OK" }]
         );
-      }, 2000);
+
+      }, 2000);*/
 
       router.push('/pages/principal/principal');
     } catch (error) {
-      console.log("Erro completo:", error);
-      console.log('❌ Erro response.data:', error.response?.data);
-      console.log('❌ Erro post_creator:', error.response?.data?.post_creator);
-      console.log('❌ Erro status:', error.response?.status);
+
 
       if (error.response) {
         let errorMessage = "Erro desconhecido";
@@ -192,8 +188,7 @@ export default function CadastroLivro() {
 
   function handleBarCodeScanned({ type, data }) {
     setScanned(true); // bloqueia novas leituras
-    console.log("Código lido:", type, data);
-    alert(`ISBN detectado: ${data}`);
+
     setIsbn(data);
     setShowCamera(false);
     buscarLivro(data);
@@ -225,7 +220,7 @@ export default function CadastroLivro() {
         Alert.alert("Livro não encontrado", "Não foi possível encontrar informações para este ISBN.");
       }
     } catch (error) {
-      console.log("Erro ao buscar livro:", error);
+      // Erro ao buscar livro
       Alert.alert("Erro", "Falha ao buscar dados do livro.", "Tente novamente. Se não der certo provavelmente seu livro não está em nossa API",
         "Então você pode preencher os dados manualmente."
       );
@@ -241,7 +236,7 @@ export default function CadastroLivro() {
         setFotoLivro(photo.uri);
         setShowCamera(false);
       } catch (error) {
-        console.log("Erro ao tirar foto:", error);
+        // Erro ao tirar foto
       }
     }
   };
@@ -349,11 +344,13 @@ export default function CadastroLivro() {
       }} />
         <Modal visible={modalIsVisible} animationType="slide">
           <View style={{ flex: 1 }}>
-            <CameraView 
-              style={{ flex: 1 }} 
+            <CameraView
+              style={{ flex: 1 }}
               facing="back"
               onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-              barcodeScannerSettings={{ barcodeTypes: ["ean13"] }}
+              barcodeScannerSettings={{
+                barcodeTypes: ["ean13"]
+              }}
             />
             <TouchableOpacity
               style={styles.closeButton}

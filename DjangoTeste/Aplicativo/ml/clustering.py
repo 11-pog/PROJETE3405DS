@@ -55,6 +55,7 @@ def cluster_publications(**kwargs):
     if stdout:
         stdout.write("Publication clustering completed")
 
+
 def cluster_users(**kwargs):
     stdout = kwargs.get('stdout')
     if stdout:

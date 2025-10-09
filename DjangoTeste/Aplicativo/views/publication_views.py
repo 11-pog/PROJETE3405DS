@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-similarity"
+        ordering = "-created_at"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -189,7 +189,6 @@ class CadastrarLivro(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-
         print(f"[CADASTRO] Dados recebidos: {list(request.data.keys())}")
         print(f"[CADASTRO] Tem post_cover: {'post_cover' in request.data}")
         if 'post_cover' in request.data:
@@ -251,15 +250,60 @@ class EditarLivro(APIView):
             if publication.post_creator != request.user:
                 return Response({"error": "Você não pode editar este livro"}, status=403)
             
-            serializer = CreatePublicationSerializer(publication, data=request.data, partial=True, context={'request': request})
+            # Guarda referência da imagem antiga
+            old_image = publication.post_cover if 'post_cover' in request.data and publication.post_cover else None
+            
+            # Separar a imagem dos outros dados (igual ao cadastro)
+            data_dict = {}
+            image_file = None
+            
+            for key, value in request.data.items():
+                if key == 'post_cover':
+                    # Verifica se é um arquivo válido
+                    if hasattr(value, 'read') and hasattr(value, 'name'):
+                        image_file = value
+                        print(f"[EDITAR] Arquivo de imagem válido recebido: {value.name}")
+                    else:
+                        print(f"[EDITAR] Valor inválido para post_cover: {type(value)} - {value}")
+                        image_file = None
+                else:
+                    data_dict[key] = value
+            
+            print(f"[EDITAR] Criando serializer com dados: {list(data_dict.keys())}")
+            serializer = CreatePublicationSerializer(publication, data=data_dict, partial=True, context={'request': request})
             if serializer.is_valid():
                 updated_publication = serializer.save()
+                
+                # Adicionar a imagem após salvar em editar
+                if image_file:
+                    updated_publication.post_cover = image_file
+                    updated_publication.save()
+                    print(f"[EDITAR] Nova imagem salva: {updated_publication.post_cover}")
+                    print(f"[EDITAR] Verificando se foi salva: {bool(updated_publication.post_cover)}")
+                    # isso é meio que para garantir a atualização(precisa)
+                    updated_publication.refresh_from_db()
+                    print(f"[EDITAR] Após refresh_from_db: {updated_publication.post_cover}")
+                
                 print(f"[EDITAR] Livro atualizado com sucesso!")
-                print(f"[EDITAR] Novos dados: Título={updated_publication.book_title}, Tipo={updated_publication.post_type}")
+                
+                # Só deleta a antiga se a nova foi salva com sucesso
+                if old_image and image_file and updated_publication.post_cover != old_image:
+                    try:
+                        print(f"[EDITAR] Deletando imagem antiga: {old_image}")
+                        old_image.delete(save=False)
+                        print(f"[EDITAR] Imagem antiga deletada com sucesso")
+                    except Exception as delete_error:
+                        print(f"[EDITAR] Erro ao deletar imagem antiga: {delete_error}")
+                
                 return Response({"mensagem": "Livro atualizado com sucesso!"}, status=200)
             
             print(f"[EDITAR] Erros de validação: {serializer.errors}")
-            return Response(serializer.errors, status=400)
+            print(f"[EDITAR] Dados que causaram erro: {request.data}")
+            return Response({
+                "error": "Erro de validação",
+                "details": serializer.errors,
+                "message": str(serializer.errors)
+            }, status=400)
             
         except Exception as e:
             print(f"[EDITAR] Exceção: {str(e)}")
@@ -283,15 +327,35 @@ class pesquisadelivro(APIView):
             return Response({'error': 'O título do livro é obrigatório'}, status=400)
         
         busca = request.data.get('book_title')
-        livros = Publication.objects.filter(
+        print(f"[BUSCA] Termo de busca: '{busca}'")
+        
+        # Busca básica
+        query = (
             Q(book_title__icontains=busca) |
             Q(post_location_city__icontains=busca) |
             Q(post_type__icontains=busca) |
             Q(book_author__icontains=busca) |
+            Q(book_genre__icontains=busca) |
             Q(post_creator__username__icontains=busca)
         )
         
+        # Busca por gêneros específicos
+        busca_lower = busca.lower()
+        if 'peça' in busca_lower:
+            query |= Q(book_genre='peca_teatral')
+        if 'romance' in busca_lower or 'narrativa' in busca_lower:
+            query |= Q(book_genre='romance_narrativa')
+        if 'não-ficção' in busca_lower or 'nao ficcao' in busca_lower:
+            query |= Q(book_genre='nao_ficcao')
+            
+        livros = Publication.objects.filter(query)
+        
+        print(f"[BUSCA] Encontrados {livros.count()} livros")
+        for livro in livros[:3]:  # Mostra os primeiros 3
+            print(f"[BUSCA] - {livro.book_title} (gênero: {livro.book_genre})")
+        
         if not livros.exists():
+            print(f"[BUSCA] Nenhum resultado encontrado para '{busca}'")
             return Response({'message': 'Nenhum livro encontrado com esse título'}, status=404)
         
         serializer = PublicationFeedSerializer(livros, many=True, context={'request': request})

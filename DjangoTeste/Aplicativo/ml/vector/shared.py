@@ -36,10 +36,15 @@ def encode_all_texts(publications: Publication):
 
 
 def build_full_vec(item = None, **kwargs):
-    alpha = 0.8  # feature weight
-    beta = 0.2   # text weight
+    feat = kwargs.get("feat")
+    if feat is None:
+        feat = item.features_embedding
     
-    feat = kwargs.get("feat") or item.features_embedding
-    text = kwargs.get("text") or item.description_embedding
+    text = kwargs.get("text")
+    if text is None:
+        text = item.description_embedding
     
-    return np.concatenate([alpha * feat, beta * text])
+    vec = np.concatenate([feat, text])
+    vec = vec / np.linalg.norm(vec)
+    
+    return vec

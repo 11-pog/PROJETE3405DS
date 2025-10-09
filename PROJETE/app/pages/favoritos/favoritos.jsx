@@ -43,9 +43,8 @@ export default function Favoritos() {
       }
       
       setNextPage(response.data.next);
-      console.log(response.data)
     } catch (error) {
-      console.error("Erro ao buscar livros:", error);
+      // Erro ao buscar livros
     } finally {
       setLoading(false);
     }
@@ -106,7 +105,7 @@ export default function Favoritos() {
             <Ionicons name="heart" size={20} color="#9e2a2b" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => console.log('Ir para chat')} style={styles.actionBtn}>
+          <TouchableOpacity onPress={() => {}} style={styles.actionBtn}>
             <Ionicons name="chatbubble-ellipses-outline" size={20} color="#E09F3E" />
           </TouchableOpacity>
         </View>
@@ -174,11 +173,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   image: {
-    width: '100%',
-    height: CARD_WIDTH * 1.0, // was 1.2
+    width: CARD_WIDTH - 18,
+    height: CARD_WIDTH * 1.0,
     borderRadius: 12,
     marginBottom: 6,
     backgroundColor: '#ddd',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 12,

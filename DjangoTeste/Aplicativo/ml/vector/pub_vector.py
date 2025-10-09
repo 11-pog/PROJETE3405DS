@@ -1,4 +1,4 @@
-from Aplicativo.ml.vector.shared import text_model, encode_all_texts
+from Aplicativo.ml.vector.shared import text_model, encode_all_texts, build_full_vec
 from django.db.models import Avg, Sum, Count, Q
 from Aplicativo.models.publication_models import Publication, Interaction
 import numpy as np
@@ -7,10 +7,13 @@ import numpy as np
 def get_publication_vector(pub, **kwargs):
     feat_vector = get_publication_feature_vec(pub, **kwargs)
     text_vector = kwargs.get('text_vector')
+    
     if text_vector is None:
         text_vector = get_publication_text_vec(pub)
     
-    return feat_vector, text_vector, np.concatenate([feat_vector, text_vector])
+    full_vec = build_full_vec(feat=feat_vector, text=text_vector)
+    
+    return feat_vector, text_vector, full_vec
 
 
 def get_publication_feature_vec(pub, **kwargs):

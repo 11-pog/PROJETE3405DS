@@ -28,14 +28,14 @@ export default function Login () {
       await AsyncStorage.setItem('access', token)
       await AsyncStorage.setItem('refresh', refresh)
 
-      console.log(' token salvo.', token )
+
       router.push('/pages/principal/principal')
     } catch (error) {
       if (error.response) {
-        console.log('Erro no login:', error.response.data)
+
         setErro(error.response.data.detail || 'E-mail ou senha inválidos.')
       } else {
-        console.log('Erro no login:', error.message)
+
         setErro('Erro de conexão. Verifique sua internet.')
       }
     }

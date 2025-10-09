@@ -28,7 +28,7 @@ export default function PrivateChat() {
     try {
       await AsyncStorage.setItem(chatKey, JSON.stringify(newMessages));
     } catch (error) {
-      console.error('Erro ao salvar mensagens:', error);
+      // Erro ao salvar mensagens
     }
   };
 
@@ -40,7 +40,7 @@ export default function PrivateChat() {
         setMessages(JSON.parse(savedMessages));
       }
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error);
+      // Erro ao carregar mensagens
     }
   };
 
@@ -234,7 +234,7 @@ export default function PrivateChat() {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => router.back()}>
+      <Pressable onPress={() => router.push('/pages/chat/chatlist')}>
         <View style={styles.headerContainer}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
           <Text style={styles.header}>Conversando com {chatPartner}</Text>
@@ -348,7 +348,7 @@ export default function PrivateChat() {
                 params: { chatPartner: chatPartner }
               });
             } catch (error) {
-              console.error('Erro na navegação:', error);
+              // Erro na navegação
             }
           }}
         >
