@@ -137,6 +137,17 @@ class Interaction(models.Model):
     class Meta:
         unique_together = ('user', 'publication')
 
+
+class ClusterInteractionMatrix(models.Model):
+    user_cluster_id = models.IntegerField()
+    publication_cluster_id = models.IntegerField()
+    interaction_strength = models.FloatField(default=0.0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_cluster_id', 'publication_cluster_id')
+
+
 class Loan(models.Model):
     class LoanStatus(models.TextChoices):
         PENDING = "pending", "Pendente"

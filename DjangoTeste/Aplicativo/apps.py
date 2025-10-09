@@ -3,6 +3,7 @@ import shutil
 from django.apps import AppConfig
 from django.conf import settings
 
+
 class AplicativoConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'Aplicativo'
@@ -11,6 +12,7 @@ class AplicativoConfig(AppConfig):
     def ready(self): # Automaticamente copia a imagem icone padrão de static para media/defaults
         media_defaults = os.path.join(settings.MEDIA_ROOT, 'defaults')
         os.makedirs(media_defaults, exist_ok=True)
+        
         
         static_images_dir = os.path.join(settings.BASE_DIR, 'static', 'img')
         
@@ -27,3 +29,8 @@ class AplicativoConfig(AppConfig):
                     shutil.copy(source_path, dest_path)
                 else:
                     print(f"Warning: static {image_file} missing!")
+        
+        
+        
+        from Aplicativo.ml.tasks import cluster_all_labels # Garante que já esteja carregado tudo quando tentar importar isso
+        cluster_all_labels.delay() # Requisita o celery a recalcular os labels

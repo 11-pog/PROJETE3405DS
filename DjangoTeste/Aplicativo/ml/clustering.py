@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from Aplicativo.ml.vector.pub_vector import get_all_publication_vector
 from Aplicativo.ml.vector.user_vector import get_all_user_vector
-from Aplicativo.models.publication_models import Publication
+from Aplicativo.models.publication_models import Interaction, Publication, ClusterInteractionMatrix
+from django.db.models import Sum
 from django.contrib.auth import get_user_model
 from sklearn.metrics import silhouette_score
 from django.db import transaction
@@ -83,3 +84,31 @@ def cluster_users(**kwargs):
     
     if stdout:
         stdout.write("User clustering completed")
+
+
+def update_cluster_interaction_matrix():
+    # Aggregate interaction counts per (user_cluster, pub_cluster)
+    data = (
+        Interaction.objects
+        .values('user__cluster_label', 'publication__cluster_label')
+        .annotate(total_views=Sum('view_count'))
+    )
+
+    # Build or update matrix entries
+    objs_to_update = []
+    for entry in data:
+        user_cluster = entry['user__cluster_label']
+        pub_cluster = entry['publication__cluster_label']
+        total = entry['total_views']
+
+        obj, created = ClusterInteractionMatrix.objects.get_or_create(
+            user_cluster_id=user_cluster,
+            publication_cluster_id=pub_cluster,
+            defaults={'interaction_strength': total}
+        )
+
+        if not created:
+            obj.interaction_strength = total
+        objs_to_update.append(obj)
+
+    ClusterInteractionMatrix.objects.bulk_update(objs_to_update, ['interaction_strength', 'updated_at'])

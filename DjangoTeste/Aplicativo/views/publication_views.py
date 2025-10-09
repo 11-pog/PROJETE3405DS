@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.pagination import CursorPagination
 from django.db.models import F
 
-from Aplicativo.models.publication_models import Publication, Interaction
+from Aplicativo.models.publication_models import ClusterInteractionMatrix, Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
 from django.db.models import Q
@@ -52,19 +52,35 @@ class GetBookList(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        qs_sorted = Publication.objects.exclude(post_creator=user)
+        qs = Publication.objects.exclude(post_creator=user)
+        
+        if hasattr(user, 'cluster_label') and user.cluster_label is not None:
+            user_cluster = user.cluster_label
+            
+            top_cluster = (
+                ClusterInteractionMatrix.objects
+                .filter(user_cluster_id=user_cluster)
+                .order_by('-interaction_strength')
+                .values_list('publication_cluster_id', flat=True)
+                .first()
+            )
+            
+            if top_cluster is not None:
+                qs = qs.filter(Q(cluster_label=top_cluster) | Q(cluster_label=None))
         
         # Se o usuário tem vetor, usa similaridade
         if hasattr(user, 'full_vector') and user.full_vector is not None:
             user_vec = user.full_vector
-            qs = qs_sorted.exclude(full_vector=None).annotate(
+            
+            
+            qs = qs.exclude(full_vector=None).annotate(
                 similarity=-CosineDistance(F("full_vector"), user_vec)
             ).order_by('-similarity', 'id')
             
             return qs
         else:
             # Se usuário não tem vetor, ordena por data
-            return qs_sorted.order_by('-created_at', 'id')
+            return qs.order_by('-created_at', 'id')
 
 
 

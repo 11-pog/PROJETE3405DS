@@ -1,5 +1,5 @@
 from celery import shared_task
-from Aplicativo.ml.clustering import cluster_publications, cluster_users
+from Aplicativo.ml.clustering import cluster_publications, cluster_users, update_cluster_interaction_matrix
 from Aplicativo.models.user_models import Usuario
 from Aplicativo.models.publication_models import Publication
 from Aplicativo.ml.vector.shared import build_full_vec
@@ -21,6 +21,8 @@ from Aplicativo.ml.vector.pub_vector import get_publication_feature_vec, get_pub
 def cluster_all_labels():
     cluster_users()
     cluster_publications()
+    update_cluster_interaction_matrix()
+
 
 
 @shared_task
