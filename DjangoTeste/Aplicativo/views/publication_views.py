@@ -4,14 +4,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.pagination import CursorPagination
-from django.db.models import F
+from django.db.models import F, Q, Value, FloatField, Case, When    
 
 from Aplicativo.models.publication_models import ClusterInteractionMatrix, Publication, Interaction
 from Aplicativo.serializers.publication_serializer import PublicationFeedSerializer, CreatePublicationSerializer
 from Aplicativo.serializers.interaction_serializer import InteractionSerializer
-from django.db.models import Q
 from Aplicativo.serializers.user_serializer import UserSerializer
-from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from channels.layers import get_channel_layer
@@ -44,42 +42,55 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-created_at"
+        ordering = ['-cluster_strength', '-similarity', '-created_at', 'id']
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
     
+    def get_ranked_queryset(qs, user):
+        # Default annotations
+        qs = qs.annotate(
+            cluster_strength=Value(0.0, output_field=FloatField()),
+            similarity=Value(0.0, output_field=FloatField())
+        )
+
+        # If user has cluster_label, add cluster strength info
+        if hasattr(user, 'cluster_label') and user.cluster_label is not None:
+            user_cluster = user.cluster_label
+
+            # Build a mapping of cluster → strength
+            strengths = dict(
+                ClusterInteractionMatrix.objects
+                .filter(user_cluster_id=user_cluster)
+                .values_list('publication_cluster_id', 'interaction_strength')
+            )
+
+            # Annotate each publication with the corresponding cluster strength (or 0)
+            cases = [
+                When(cluster_label=cluster_id, then=Value(strength))
+                for cluster_id, strength in strengths.items()
+            ]
+            if cases:
+                qs = qs.annotate(cluster_strength=Case(*cases, default=Value(0.0), output_field=FloatField()))
+
+        # If user has a full vector, compute similarity
+        if hasattr(user, 'full_vector') and user.full_vector is not None:
+            user_vec = user.full_vector
+            qs = qs.exclude(full_vector=None).annotate(
+                similarity=-CosineDistance(F("full_vector"), user_vec)
+            )
+
+        # Order by: cluster_strength DESC → similarity DESC → created_at DESC → id ASC
+        qs = qs.order_by('-cluster_strength', '-similarity', '-created_at', 'id')
+
+        return qs
+
     def get_queryset(self):
         user = self.request.user
         qs = Publication.objects.exclude(post_creator=user)
         
-        if hasattr(user, 'cluster_label') and user.cluster_label is not None:
-            user_cluster = user.cluster_label
-            
-            top_cluster = (
-                ClusterInteractionMatrix.objects
-                .filter(user_cluster_id=user_cluster)
-                .order_by('-interaction_strength')
-                .values_list('publication_cluster_id', flat=True)
-                .first()
-            )
-            
-            if top_cluster is not None:
-                qs = qs.filter(Q(cluster_label=top_cluster) | Q(cluster_label=None))
-        
-        # Se o usuário tem vetor, usa similaridade
-        if hasattr(user, 'full_vector') and user.full_vector is not None:
-            user_vec = user.full_vector
-            
-            qs = qs.exclude(full_vector=None).annotate(
-                similarity=-CosineDistance(F("full_vector"), user_vec)
-            ).order_by('-similarity', 'id')
-            
-            return qs
-        else:
-            # Se usuário não tem vetor, ordena por data
-            return qs.order_by('-created_at', 'id')
+        return GetBookList.get_ranked_queryset(qs, user)
 
 
 
