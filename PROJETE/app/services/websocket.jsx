@@ -10,7 +10,7 @@ class WebSocketService {
       // Substitua pelo IP do seu servidor
       this.ws = new WebSocket('ws://localhost:8001/ws/publications/');
 
-      this.ws.onopen = () => console.log('WebSocket conectado!');
+      this.ws.onopen = () => {};
       
       this.ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -19,17 +19,15 @@ class WebSocketService {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket desconectado.');
         // Tenta reconectar após 3 segundos
         setTimeout(() => this.connect(), 3000);
       };
       
       this.ws.onerror = (error) => {
-        console.log('Erro WebSocket:', error);
         // Se der erro, não tenta conectar novamente
       };
     } catch (error) {
-      console.log('Erro ao conectar WebSocket:', error);
+      // Erro ao conectar WebSocket
     }
   }
 

@@ -7,9 +7,11 @@ from django.utils import timezone
 class PrivateChatConsumer(AsyncWebsocketConsumer):
     # Executado quando um usuário conecta ao WebSocket
     async def connect(self):
+        print(f"[WEBSOCKET] Tentativa de conexão: {self.scope['path']}")
         # Pega os usernames dos 2 usuários da URL (ex: ws/private/joao/maria/)
         user1 = self.scope['url_route']['kwargs']['user1']
         user2 = self.scope['url_route']['kwargs']['user2']
+        print(f"[WEBSOCKET] Usuários: {user1} e {user2}")
         
         # Identifica qual usuário está conectando (quem abriu o chat)
         # Assume que user1 é sempre o usuário atual

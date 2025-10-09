@@ -31,7 +31,7 @@ export default function FeedLivros() {
   // Funções de busca com useCallback para evitar re-renders
   const performSearch = useCallback(async (query) => {
 
-    console.log("Iniciando busca para:", query);
+
     setIsSearching(true);
     setLoading(true);
 
@@ -40,7 +40,7 @@ export default function FeedLivros() {
         book_title: query
       });
 
-      console.log("Resultado da busca:", response.data);
+
 
       if (response.data.livros) {
         const searchResults = response.data.livros.map(book => ({
@@ -51,7 +51,7 @@ export default function FeedLivros() {
         setNextPage(null);
       }
     } catch (error) {
-      console.error('Erro na busca:', error);
+      // Erro na busca
       setBooks([]);
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export default function FeedLivros() {
   }, []);
 
   const resetToFeed = useCallback(async () => {
-    console.log("Resetando para feed normal");
+
     setIsSearching(false);
     setLoading(true);
 
@@ -70,7 +70,7 @@ export default function FeedLivros() {
         setNextPage(response.data.next);
       }
     } catch (error) {
-      console.error("Erro ao carregar feed:", error);
+      // Erro ao carregar feed
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export default function FeedLivros() {
         setNextPage(response.data.next);
       }
     } catch (error) {
-      console.error("Erro ao buscar livros:", error);
+      // Erro ao buscar livros
       // Se for erro de servidor, mostra uma mensagem mais amigável
       if (error.response?.status === 500) {
         Alert.alert("Erro", "Servidor temporariamente indisponível");
@@ -109,11 +109,11 @@ export default function FeedLivros() {
 
   // useEffect para busca em tempo real
   useEffect(() => {
-    console.log("searchQuery mudou:", searchQuery);
+
 
     // Cancela timeout anterior se existir
     const timeoutId = setTimeout(() => {
-      console.log("Executando busca para:", searchQuery);
+
 
       if (searchQuery.trim().length > 0) {
         performSearch(searchQuery);// Busca em tempo real
@@ -124,7 +124,7 @@ export default function FeedLivros() {
     }, 500);
 
     return () => {
-      console.log("Cancelando timeout anterior");
+
       clearTimeout(timeoutId);
     };
   }, [searchQuery, performSearch, resetToFeed]);
@@ -136,7 +136,7 @@ export default function FeedLivros() {
 
   // Função para atualizar manualmente
   const onRefresh = useCallback(() => {
-    console.log('Atualizando feed manualmente');
+
     if (!isSearching) {
       fetchBooks("livros/feed/", true);
     }
@@ -145,9 +145,9 @@ export default function FeedLivros() {
   // Recarrega quando a tela ganha foco (volta de outras telas)
   useFocusEffect(
     useCallback(() => {
-      console.log('Tela principal ganhou foco - recarregando feed');
+
       if (!isSearching) {
-        console.log('🔄 [FEED] Forçando refresh das imagens');
+
         setImageRefreshKey(Date.now()); // Força refresh das imagens
         fetchBooks("livros/feed/", true); // Força reload completo
       }
@@ -157,9 +157,7 @@ export default function FeedLivros() {
   // Função global para refresh forçado
   useEffect(() => {
     global.refreshFeed = () => {
-      console.log('🔄 [FEED] Executando refresh global');
       const newKey = Date.now();
-      console.log('🔄 [FEED] Novo imageRefreshKey:', newKey);
       setImageRefreshKey(newKey);
       // Força re-render da lista
       setBooks([]);
@@ -196,7 +194,7 @@ export default function FeedLivros() {
 
     if (willBeSaved) {
       api.post(endpoint).catch(error => {
-        console.error('Erro ao favoritar:', error);
+        // Erro ao favoritar
 
         // Se o livro não existe mais (404), remove da lista
         if (error.response?.status === 404) {
@@ -216,7 +214,7 @@ export default function FeedLivros() {
     }
     else {
       api.delete(endpoint).catch(error => {
-        console.error('Erro ao desfavoritar:', error);
+        // Erro ao desfavoritar
         // Reverte o estado se der erro
         setBooks(prevBooks =>
           prevBooks.map(book =>
@@ -230,11 +228,9 @@ export default function FeedLivros() {
   }
 
   function renderBook({ item }) {
-    console.log(`Livro: ${item.book_title}, post_cover: ${item.post_cover}`);
     const finalImageUrl = item.post_cover.startsWith('http') 
       ? `${item.post_cover}?t=${imageRefreshKey}` 
       : `${getImageBaseUrl()}${item.post_cover}?t=${imageRefreshKey}`;
-    console.log(`🖼️ [IMAGE] URL final para ${item.book_title}:`, finalImageUrl);
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
@@ -279,7 +275,7 @@ export default function FeedLivros() {
                   router.push(`/pages/perfil/perfilUsuario?userId=${creatorId}`);
                 }
               } catch (error) {
-                console.error('Erro ao buscar ID do autor:', error);
+                // Erro ao buscar ID do autor
               }
             }}>
               <Text style={styles.usernameText}>
@@ -333,11 +329,8 @@ export default function FeedLivros() {
                 const authorUsername = response.data.author_username;
 
                 if (!authorUsername) {
-                  console.error('Autor não encontrado!');
                   return;
                 }
-
-                console.log('Navegando para chat com:', authorUsername);
                 router.push({
                   pathname: '/pages/chat/privatechat',
                   params: {
@@ -345,8 +338,7 @@ export default function FeedLivros() {
                   }
                 });
               } catch (error) {
-                console.error('Erro ao buscar autor:', error);
-                console.error('Detalhes do erro:', error.response?.data);
+                // Erro ao buscar autor
               }
             }}
           >

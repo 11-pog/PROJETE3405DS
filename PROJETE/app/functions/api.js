@@ -2,7 +2,7 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 
-export const BASE_API_URL = "http://localhost:8000/api/"
+export const BASE_API_URL = "http://192.168.0.102:8000/api/"
 export const BASE_URL = BASE_API_URL.replace("api/", "")
 axios.defaults.baseURL = BASE_API_URL
 
@@ -16,8 +16,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
     async config => {
-        console.log(`[API] Fazendo requisição ${config.method?.toUpperCase()} para: ${config.url}`);
-        console.log(`[API] URL completa: ${config.baseURL}${config.url}`);
+
 
         // Não exigir token para login e cadastro de usuário
         if (config.url?.includes('login/') || config.url?.includes('usuarios/cadastrar/')) {
@@ -41,16 +40,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     response => response,
     async error => {
-        console.log('[API ERROR] Código:', error.code);
-        console.log('[API ERROR] Mensagem:', error.message);
-        
         if (error.code === 'ECONNABORTED') {
-            console.log('[API ERROR] Timeout - servidor demorou para responder');
             return Promise.reject(new Error('Servidor demorou para responder. Tente novamente.'));
         }
         
         if (error.message === 'Network Error') {
-            console.log('[API ERROR] Erro de rede - sem conexão');
             return Promise.reject(new Error('Erro de conexão. Verifique sua internet.'));
         }
         const originalRequest = error.config
@@ -59,7 +53,7 @@ api.interceptors.response.use(
             originalRequest._retry = true
             const refreshToken = await AsyncStorage.getItem('refresh')
 
-            console.log(refreshToken)
+
 
             if (refreshToken) {
                 try {

@@ -44,7 +44,7 @@ class GetMinhasPublicacoes(ListAPIView):
 class GetBookList(ListAPIView):
     class Pagination(CursorPagination):
         page_size = 20
-        ordering = "-similarity"
+        ordering = "-created_at"
     
     serializer_class = PublicationFeedSerializer
     pagination_class = Pagination
@@ -329,7 +329,8 @@ class pesquisadelivro(APIView):
         busca = request.data.get('book_title')
         print(f"[BUSCA] Termo de busca: '{busca}'")
         
-        livros = Publication.objects.filter(
+        # Busca básica
+        query = (
             Q(book_title__icontains=busca) |
             Q(post_location_city__icontains=busca) |
             Q(post_type__icontains=busca) |
@@ -337,6 +338,17 @@ class pesquisadelivro(APIView):
             Q(book_genre__icontains=busca) |
             Q(post_creator__username__icontains=busca)
         )
+        
+        # Busca por gêneros específicos
+        busca_lower = busca.lower()
+        if 'peça' in busca_lower:
+            query |= Q(book_genre='peca_teatral')
+        if 'romance' in busca_lower or 'narrativa' in busca_lower:
+            query |= Q(book_genre='romance_narrativa')
+        if 'não-ficção' in busca_lower or 'nao ficcao' in busca_lower:
+            query |= Q(book_genre='nao_ficcao')
+            
+        livros = Publication.objects.filter(query)
         
         print(f"[BUSCA] Encontrados {livros.count()} livros")
         for livro in livros[:3]:  # Mostra os primeiros 3

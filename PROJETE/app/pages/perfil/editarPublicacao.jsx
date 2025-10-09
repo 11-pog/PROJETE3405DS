@@ -203,17 +203,15 @@ export default function EditarPublicacao() {
           if (global.refreshFeed) {
             console.log('🔄 [DEBUG] Chamando global.refreshFeed');
             global.refreshFeed();
-          } else {
-            console.log('⚠️ [DEBUG] global.refreshFeed não encontrado');
           }
           // Delay para dar tempo do backend processar
           setTimeout(() => {
-            router.back();
+            router.push('/pages/perfil/minhasPublicacoes');
           }, 500);
         }}
       ]);
     } catch (error) {
-      console.error('[EDITAR_FRONTEND] Erro ao atualizar livro:', error);
+      // Erro ao atualizar livro
       Alert.alert(
         'Erro',
         `Não foi possível atualizar o livro: ${error.response?.data?.message || error.message}`
@@ -321,10 +319,7 @@ export default function EditarPublicacao() {
       </TouchableOpacity>
       
       <TouchableOpacity 
-        onPress={() => {
-          console.log('[DEBUG] Chamando showImageOptions');
-          showImageOptions();
-        }} 
+        onPress={showImageOptions}
         style={styles.changePhotoButton}
       >
         <Text style={styles.changePhotoText}>Alterar Foto</Text>

@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 import os
-import sys
 import django
-from django.core.management import execute_from_command_line
+from daphne.cli import CommandLineInterface
 
 if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SiteTeste.settings')
-    execute_from_command_line(['manage.py', 'runserver', '0.0.0.0:8000'])
+    django.setup()
+    
+    # Roda Daphne com suporte a WebSocket
+    cli = CommandLineInterface()
+    cli.run(['-b', '0.0.0.0', '-p', '8000', 'SiteTeste.asgi:application'])

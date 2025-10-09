@@ -66,14 +66,12 @@ function Cadastrar() {
       });
     } catch (error) {
       if (error.response) {
-        console.log(error.response.data);
         if (error.response.data && error.response.data.error) {
           Alert.alert("Erro", error.response.data.error);
         } else {
           Alert.alert("Erro", "Erro ao cadastrar");
         }
       } else {
-        console.log(error.message);
         Alert.alert("Erro", "Erro ao cadastrar");
       }
     }
