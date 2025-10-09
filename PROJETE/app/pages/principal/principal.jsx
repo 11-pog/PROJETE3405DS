@@ -228,15 +228,15 @@ export default function FeedLivros() {
   }
 
   function renderBook({ item }) {
-    const finalImageUrl = item.post_cover.startsWith('http') 
-      ? `${item.post_cover}?t=${imageRefreshKey}` 
-      : `${getImageBaseUrl()}${item.post_cover}?t=${imageRefreshKey}`;
+    //=/const finalImageUrl = item.post_cover.startsWith('http') 
+     // ? `${item.post_cover}?t=${imageRefreshKey}` 
+     // : `${getImageBaseUrl()}${item.post_cover}?t=${imageRefreshKey}`;
     return (
       <View style={styles.card}>
         {/* Imagem do livro */}
         {item.post_cover && !item.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: finalImageUrl }}
+            source={{ uri: item.post_cover }}
             style={styles.image}
             resizeMode="cover"
             key={`image-${item.id}-${item.post_cover}-${imageRefreshKey}`}

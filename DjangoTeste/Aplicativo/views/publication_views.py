@@ -72,7 +72,6 @@ class GetBookList(ListAPIView):
         if hasattr(user, 'full_vector') and user.full_vector is not None:
             user_vec = user.full_vector
             
-            
             qs = qs.exclude(full_vector=None).annotate(
                 similarity=-CosineDistance(F("full_vector"), user_vec)
             ).order_by('-similarity', 'id')

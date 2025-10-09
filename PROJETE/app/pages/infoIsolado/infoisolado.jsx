@@ -61,7 +61,7 @@ export default function InfoIsolado() {
         {/* Capa */}
         {book.post_cover && !book.post_cover.includes('default_thumbnail') ? (
           <Image
-            source={{ uri: BASE_URL + book.post_cover }}
+            source={{ uri: book.post_cover }}
             style={{
               width: 150,
               height: 220,

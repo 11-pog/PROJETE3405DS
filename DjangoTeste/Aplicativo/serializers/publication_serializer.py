@@ -112,7 +112,7 @@ class PublicationFeedSerializer(serializers.ModelSerializer):
         return obj.post_creator.id == user.id
     
     def get_post_cover(self, obj):
-        if obj.post_cover:
-            return obj.post_cover.url
-        else:
-            return '/media/defaults/default_thumbnail.png'
+        request = self.context.get('request')
+        if obj.post_cover and request:
+            return request.build_absolute_uri(obj.post_cover.url)
+        return None

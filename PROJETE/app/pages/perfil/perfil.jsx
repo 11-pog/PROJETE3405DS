@@ -126,7 +126,7 @@ export default function Perfil() {
       />
       <Botao
         texto='Sair'
-        aoApertar={() => router.push('/pages/login/Login')}
+        aoApertar={() => router.push('/pages/index')}
       />
 
       <BarraInicial />
