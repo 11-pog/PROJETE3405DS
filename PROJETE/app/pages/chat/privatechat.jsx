@@ -56,7 +56,7 @@ export default function PrivateChat() {
 
     loadMessages();
 
-    const wsUrl = `ws://192.168.0.102:8000/ws/private/${currentUser}/${chatPartner}/`;
+    const wsUrl = `ws://10.48.202.176:8000/ws/private/${currentUser}/${chatPartner}/`;
 
     socketRef.current = new WebSocket(wsUrl);
 
