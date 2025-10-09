@@ -12,7 +12,7 @@ export function useOnlineStatus() {
 
     // Conectar WebSocket global para status online
     const connectWebSocket = () => {
-      const wsUrl = `ws://192.168.18.39:8000/ws/online/${user.username}/`;
+      const wsUrl = `ws://10.48.202.176:8000/ws/online/${user.username}/`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
